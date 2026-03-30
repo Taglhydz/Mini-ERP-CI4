@@ -61,12 +61,13 @@ class ProduitController extends BaseController
             $row['prix_unitaire'] = number_format((float) $row['prix_unitaire'], 2, ',', ' ') . ' €';
             $row['actions']       = sprintf(
                 '<a href="%s" class="btn btn-sm btn-outline-primary me-1" title="Modifier"><i class="bi bi-pencil"></i></a>'
-                . '<form action="%s" method="post" class="d-inline" onsubmit="return confirm(\'Supprimer ce produit ?\');">'
+                . '<form action="%s" method="post" class="d-inline">'
                 . csrf_field()
-                . '<button class="btn btn-sm btn-outline-danger" title="Supprimer"><i class="bi bi-trash"></i></button>'
+                . '<button type="button" class="btn btn-sm btn-outline-danger" title="Supprimer" data-confirm="Supprimer le produit &laquo;%s&raquo; ?"><i class="bi bi-trash"></i></button>'
                 . '</form>',
                 base_url('produits/' . $row['id'] . '/edit'),
-                base_url('produits/' . $row['id'] . '/delete')
+                base_url('produits/' . $row['id'] . '/delete'),
+                htmlspecialchars($row['designation'], ENT_QUOTES | ENT_HTML5, 'UTF-8')
             );
 
             return $row;

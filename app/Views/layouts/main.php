@@ -51,23 +51,32 @@
     </div>
 </nav>
 
+<!-- Conteneur de toasts (bas droite) -->
+<div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:1100;"></div>
+
+<!-- Modale de confirmation suppression -->
+<div class="modal fade" id="modal-confirm" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white border-0 pb-2">
+                <h6 class="modal-title mb-0"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmation</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body py-3" id="modal-confirm-body">Confirmer cette action ?</div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
+                    <i class="bi bi-x-lg me-1"></i>Annuler
+                </button>
+                <button type="button" class="btn btn-danger btn-sm" id="btn-confirm-ok">
+                    <i class="bi bi-trash me-1"></i>Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Contenu principal -->
 <main class="container-fluid py-4 px-4 flex-grow-1">
-
-    <!-- Messages flash -->
-    <?php if (session()->getFlashdata('success')): ?>
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle me-2"></i><?= esc(session()->getFlashdata('success')) ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php endif; ?>
-
-    <?php if (session()->getFlashdata('error')): ?>
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle me-2"></i><?= esc(session()->getFlashdata('error')) ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php endif; ?>
 
     <?= $this->renderSection('content') ?>
 </main>
@@ -84,7 +93,18 @@
 <!-- DataTables + Bootstrap 5 -->
 <script src="<?= base_url('assets/js/dataTables.min.js') ?>"></script>
 <script src="<?= base_url('assets/js/dataTables.bootstrap5.min.js') ?>"></script>
+<!-- Toasts & confirm -->
+<script src="<?= base_url('assets/js/toasts.js') ?>"></script>
 
 <?= $this->renderSection('scripts') ?>
+
+<?php $flashSuccess = session()->getFlashdata('success'); ?>
+<?php $flashError   = session()->getFlashdata('error');   ?>
+<?php if ($flashSuccess): ?>
+<script>showToast('<?= esc($flashSuccess, 'js') ?>', 'success');</script>
+<?php endif; ?>
+<?php if ($flashError): ?>
+<script>showToast('<?= esc($flashError, 'js') ?>', 'error');</script>
+<?php endif; ?>
 </body>
 </html>
