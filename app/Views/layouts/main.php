@@ -8,11 +8,12 @@
     <title><?= esc($titre ?? 'Mini-ERP') ?> — Mini-ERP</title>
 
     <!-- Bootstrap 5 -->
-    <link rel="stylesheet" href="<?= base_url('assets/css/bootstrap.min.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/css/bootstrap.min.css') ?>?v=5.3.8">
     <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="<?= base_url('assets/css/bootstrap-icons.min.css') ?>">
+    <link rel="preload" href="<?= base_url('assets/fonts/bootstrap-icons.woff2') ?>" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="<?= base_url('assets/css/bootstrap-icons.min.css') ?>?v=1.13.1">
     <!-- DataTables + Bootstrap 5 -->
-    <link rel="stylesheet" href="<?= base_url('assets/css/dataTables.bootstrap5.min.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/css/dataTables.bootstrap5.min.css') ?>?v=2.3.7">
 
     <?= $this->renderSection('styles') ?>
     <style>
@@ -221,14 +222,14 @@
 </footer>
 
 <!-- jQuery -->
-<script src="<?= base_url('assets/js/jquery.min.js') ?>"></script>
+<script src="<?= base_url('assets/js/jquery.min.js') ?>?v=4.0.0"></script>
 <!-- Bootstrap 5 JS -->
-<script src="<?= base_url('assets/js/bootstrap.bundle.min.js') ?>"></script>
+<script src="<?= base_url('assets/js/bootstrap.bundle.min.js') ?>?v=5.3.8"></script>
 <!-- DataTables + Bootstrap 5 -->
-<script src="<?= base_url('assets/js/dataTables.min.js') ?>"></script>
-<script src="<?= base_url('assets/js/dataTables.bootstrap5.min.js') ?>"></script>
+<script src="<?= base_url('assets/js/dataTables.min.js') ?>?v=2.3.7"></script>
+<script src="<?= base_url('assets/js/dataTables.bootstrap5.min.js') ?>?v=2.3.7"></script>
 <!-- Toasts & confirm -->
-<script src="<?= base_url('assets/js/toasts.js') ?>"></script>
+<script src="<?= base_url('assets/js/toasts.js') ?>?v=1.0"></script>
 
 <?= $this->renderSection('scripts') ?>
 

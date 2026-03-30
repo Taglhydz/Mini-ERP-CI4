@@ -26,7 +26,7 @@
     <!-- Infos commande -->
     <div class="col-md-4">
         <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white border-bottom fw-semibold">
+            <div class="card-header border-bottom fw-semibold">
                 <i class="bi bi-person me-2 text-primary"></i>Client
             </div>
             <div class="card-body">
@@ -38,7 +38,7 @@
 
     <div class="col-md-8">
         <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white border-bottom fw-semibold">
+            <div class="card-header border-bottom fw-semibold">
                 <i class="bi bi-info-circle me-2 text-primary"></i>Détails
             </div>
             <div class="card-body">
@@ -59,13 +59,13 @@
     <!-- Lignes -->
     <div class="col-12">
         <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white border-bottom fw-semibold">
+            <div class="card-header border-bottom fw-semibold">
                 <i class="bi bi-list-ul me-2 text-primary"></i>Lignes de commande
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table mb-0">
-                        <thead class="table-light">
+                        <thead>
                             <tr>
                                 <th>Désignation</th>
                                 <th class="text-center">Qté</th>
@@ -83,7 +83,7 @@
                             </tr>
                         <?php endforeach; ?>
                         </tbody>
-                        <tfoot class="table-light fw-bold">
+                        <tfoot class="fw-bold">
                             <tr>
                                 <td colspan="3" class="text-end">Total HT</td>
                                 <td class="text-end"><?= number_format((float)$commande['montant_ht'], 2, ',', ' ') ?> €</td>
@@ -94,7 +94,7 @@
                                     <?= number_format((float)$commande['montant_ttc'] - (float)$commande['montant_ht'], 2, ',', ' ') ?> €
                                 </td>
                             </tr>
-                            <tr class="table-primary">
+                            <tr class="table-active">
                                 <td colspan="3" class="text-end fs-5">Total TTC</td>
                                 <td class="text-end fs-5"><?= number_format((float)$commande['montant_ttc'], 2, ',', ' ') ?> €</td>
                             </tr>

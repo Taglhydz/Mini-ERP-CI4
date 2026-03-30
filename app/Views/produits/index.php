@@ -15,7 +15,7 @@
 <div class="card border-0 shadow-sm">
     <div class="card-body">
         <table id="table-produits" class="table table-hover w-100">
-            <thead class="table-light">
+            <thead>
                 <tr>
                     <th>Réf.</th>
                     <th>Désignation</th>

@@ -90,7 +90,7 @@
 
 <!-- Dernières commandes -->
 <div class="card border-0 shadow-sm">
-    <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+    <div class="card-header border-bottom d-flex justify-content-between align-items-center">
         <h5 class="mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>Dernières commandes</h5>
         <a href="<?= base_url('commandes/create') ?>" class="btn btn-sm btn-primary">
             <i class="bi bi-plus-lg me-1"></i>Nouvelle commande
@@ -99,7 +99,7 @@
     <div class="card-body p-0">
         <div class="table-responsive">
             <table class="table table-hover mb-0">
-                <thead class="table-light">
+                <thead>
                     <tr>
                         <th>Numéro</th>
                         <th>Client</th>

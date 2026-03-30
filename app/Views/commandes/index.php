@@ -15,7 +15,7 @@
 <div class="card border-0 shadow-sm">
     <div class="card-body">
         <table id="table-commandes" class="table table-hover w-100">
-            <thead class="table-light">
+            <thead>
                 <tr>
                     <th>Numéro</th>
                     <th>Client</th>

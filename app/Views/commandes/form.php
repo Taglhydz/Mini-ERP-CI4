@@ -22,7 +22,7 @@
         <!-- Informations générales -->
         <div class="col-lg-4">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom fw-semibold">Informations</div>
+                <div class="card-header border-bottom fw-semibold">Informations</div>
                 <div class="card-body">
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Client <span class="text-danger">*</span></label>
@@ -74,7 +74,7 @@
         <!-- Lignes de commande -->
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white border-bottom fw-semibold d-flex justify-content-between">
+                <div class="card-header border-bottom fw-semibold d-flex justify-content-between">
                     <span>Lignes de commande</span>
                     <button type="button" class="btn btn-sm btn-outline-primary" id="btn-add-ligne">
                         <i class="bi bi-plus-lg me-1"></i>Ajouter une ligne
@@ -83,7 +83,7 @@
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table mb-0" id="table-lignes">
-                            <thead class="table-light">
+                            <thead>
                                 <tr>
                                     <th style="min-width:160px;">Produit</th>
                                     <th style="min-width:180px;">Désignation</th>
@@ -142,7 +142,7 @@
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                             </tbody>
-                            <tfoot class="table-light fw-bold">
+                            <tfoot class="fw-bold">
                                 <tr>
                                     <td colspan="4" class="text-end">Total HT</td>
                                     <td class="text-end" id="total-ht">0,00 €</td>
@@ -153,7 +153,7 @@
                                     <td class="text-end" id="total-tva">0,00 €</td>
                                     <td></td>
                                 </tr>
-                                <tr class="table-primary">
+                                <tr class="table-active">
                                     <td colspan="4" class="text-end fs-5">Total TTC</td>
                                     <td class="text-end fs-5 fw-bold" id="total-ttc">0,00 €</td>
                                     <td></td>
