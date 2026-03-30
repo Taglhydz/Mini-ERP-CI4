@@ -72,7 +72,7 @@
                     <label class="form-label fw-semibold">Type de voie</label>
                     <?php
                     $types   = ['Allée','Avenue','Boulevard','Chemin','Cour','Domaine',
-                                'Hameau','Impasse','Lotissement','Passage','Place',
+                                'Hameau','Impasse','Lieu-dit','Lotissement','Passage','Place',
                                 'Résidence','Route','Rue','Square','Voie','Zone'];
                     $selType = old('adresse_type_voie', $client['adresse_type_voie'] ?? '');
                     $isCustom = $selType !== '' && !in_array($selType, $types);
@@ -88,7 +88,7 @@
                     </select>
                     <input type="text" id="input-type-custom"
                            class="form-control mt-1 <?= $isCustom ? '' : 'd-none' ?>"
-                           placeholder="Ex : Lieu-dit"
+                           placeholder="Rue, Avenue..."
                            value="<?= $isCustom ? esc($selType) : '' ?>">
                     <input type="hidden" name="adresse_type_voie" id="input-type-voie"
                            value="<?= esc($selType) ?>">
