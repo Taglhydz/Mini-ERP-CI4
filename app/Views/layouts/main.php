@@ -14,7 +14,7 @@
 
     <?= $this->renderSection('styles') ?>
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
 
 <!-- Barre de navigation -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
@@ -52,7 +52,7 @@
 </nav>
 
 <!-- Contenu principal -->
-<main class="container-fluid py-4 px-4">
+<main class="container-fluid py-4 px-4 flex-grow-1">
 
     <!-- Messages flash -->
     <?php if (session()->getFlashdata('success')): ?>
