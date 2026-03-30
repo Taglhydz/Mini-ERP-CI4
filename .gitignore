@@ -1,18 +1,33 @@
-*/config/development
-*/logs/log-*.php
-!*/logs/index.html
-*/cache/*
-!system/cache/*
-!*/cache/index.html
-!*/cache/.htaccess
+###############################################################################
+# Mini-ERP CI4 — .gitignore
+###############################################################################
 
-user_guide_src/build/*
-user_guide_src/cilexer/build/*
-user_guide_src/cilexer/dist/*
-user_guide_src/cilexer/pycilexer.egg-info/*
-
-#codeigniter 3
-application/logs/*
-!application/logs/index.html
-!application/logs/.htaccess
+# Dépendances Composer
 /vendor/
+
+# Fichier d'environnement (contient les identifiants DB)
+.env
+
+# Logs CodeIgniter
+/writable/logs/
+/writable/cache/
+/writable/session/
+/writable/uploads/
+/writable/debugbar/
+
+# Fichiers de configuration locaux générés
+app/Config/development/
+
+# PHPUnit
+.phpunit.result.cache
+/build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
