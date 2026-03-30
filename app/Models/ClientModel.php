@@ -15,10 +15,13 @@ class ClientModel extends Model
     protected $useSoftDeletes   = true;
 
     protected $allowedFields = [
+        'prenom',
         'nom',
         'email',
         'telephone',
-        'adresse',
+        'adresse_numero',
+        'adresse_type_voie',
+        'adresse_nom_voie',
         'ville',
         'code_postal',
     ];
@@ -29,11 +32,15 @@ class ClientModel extends Model
     protected $deletedField  = 'deleted_at';
 
     protected $validationRules = [
-        'nom'   => 'required|min_length[2]|max_length[100]',
-        'email' => 'required|valid_email|max_length[150]|is_unique[clients.email,id,{id}]',
-        'telephone' => 'permit_empty|max_length[20]',
-        'ville'     => 'permit_empty|max_length[100]',
-        'code_postal' => 'permit_empty|max_length[10]',
+        'nom'               => 'required|min_length[2]|max_length[100]',
+        'prenom'            => 'permit_empty|max_length[100]',
+        'email'             => 'required|valid_email|max_length[150]|is_unique[clients.email,id,{id}]',
+        'telephone'         => 'permit_empty|max_length[20]',
+        'adresse_numero'    => 'permit_empty|max_length[10]',
+        'adresse_type_voie' => 'permit_empty|max_length[50]',
+        'adresse_nom_voie'  => 'permit_empty|max_length[200]',
+        'ville'             => 'permit_empty|max_length[100]',
+        'code_postal'       => 'permit_empty|max_length[10]',
     ];
 
     protected $validationMessages = [

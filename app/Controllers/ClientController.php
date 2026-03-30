@@ -49,6 +49,7 @@ class ClientController extends BaseController
         if ($search !== '') {
             $builder->groupStart()
                 ->like('nom', $search)
+                ->orLike('prenom', $search)
                 ->orLike('email', $search)
                 ->orLike('ville', $search)
                 ->groupEnd();
@@ -71,6 +72,9 @@ class ClientController extends BaseController
                 }
             }
 
+            // Nom complet Prénom + Nom
+            $row['nom_complet'] = trim(($row['prenom'] ?? '') . ' ' . $row['nom']);
+
             $row['actions'] = sprintf(
                 '<a href="%s" class="btn btn-sm btn-outline-primary me-1" title="Modifier"><i class="bi bi-pencil"></i></a>'
                 . '<form action="%s" method="post" class="d-inline">'
@@ -79,7 +83,7 @@ class ClientController extends BaseController
                 . '</form>',
                 base_url('clients/' . $row['id'] . '/edit'),
                 base_url('clients/' . $row['id'] . '/delete'),
-                htmlspecialchars($row['nom'], ENT_QUOTES | ENT_HTML5, 'UTF-8')
+                htmlspecialchars($row['nom_complet'], ENT_QUOTES | ENT_HTML5, 'UTF-8')
             );
 
             return $row;
@@ -102,7 +106,7 @@ class ClientController extends BaseController
 
     public function store(): RedirectResponse
     {
-        $data = $this->request->getPost(['nom', 'email', 'telephone', 'adresse', 'ville', 'code_postal']);
+        $data = $this->request->getPost(['prenom', 'nom', 'email', 'telephone', 'adresse_numero', 'adresse_type_voie', 'adresse_nom_voie', 'ville', 'code_postal']);
 
         $data = $this->normalizeClientData($data);
 
@@ -131,7 +135,7 @@ class ClientController extends BaseController
         if (! $client) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
-        $data = $this->request->getPost(['nom', 'email', 'telephone', 'adresse', 'ville', 'code_postal']);
+        $data = $this->request->getPost(['prenom', 'nom', 'email', 'telephone', 'adresse_numero', 'adresse_type_voie', 'adresse_nom_voie', 'ville', 'code_postal']);
 
         $data = $this->normalizeClientData($data);
 
@@ -156,7 +160,7 @@ class ClientController extends BaseController
             $data['telephone'] = substr(preg_replace('/\D/', '', $data['telephone']), 0, 10);
         }
 
-        foreach (['nom', 'ville'] as $field) {
+        foreach (['nom', 'prenom', 'ville', 'adresse_type_voie', 'adresse_nom_voie'] as $field) {
             if (! empty($data[$field])) {
                 $data[$field] = $this->capitalizeWords($data[$field]);
             }

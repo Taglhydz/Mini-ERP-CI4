@@ -21,19 +21,30 @@
             <?= csrf_field() ?>
 
             <div class="row g-3">
-                <div class="col-12">
+                <!-- Prénom + Nom -->
+                <div class="col-md-5">
+                    <label class="form-label fw-semibold">Prénom</label>
+                    <input type="text" id="input-prenom" name="prenom"
+                           class="form-control"
+                           value="<?= esc(old('prenom', $client['prenom'] ?? '')) ?>"
+                           autocomplete="given-name">
+                </div>
+
+                <div class="col-md-7">
                     <label class="form-label fw-semibold">Nom <span class="text-danger">*</span></label>
                     <input type="text" id="input-nom" name="nom"
                            class="form-control <?= session('errors.nom') ? 'is-invalid' : '' ?>"
                            value="<?= esc(old('nom', $client['nom'] ?? '')) ?>"
-                           autocomplete="organization" required>
+                           autocomplete="family-name" required>
                     <div class="invalid-feedback"><?= session('errors.nom') ?></div>
                 </div>
 
+                <!-- Email + Téléphone -->
                 <div class="col-md-7">
                     <label class="form-label fw-semibold">Email <span class="text-danger">*</span></label>
                     <input type="email" name="email" class="form-control <?= session('errors.email') ? 'is-invalid' : '' ?>"
-                           value="<?= esc(old('email', $client['email'] ?? '')) ?>" required>
+                           value="<?= esc(old('email', $client['email'] ?? '')) ?>"
+                           autocomplete="email" required>
                     <div class="invalid-feedback"><?= session('errors.email') ?></div>
                 </div>
 
@@ -42,20 +53,54 @@
                     <input type="text" id="input-telephone" name="telephone"
                            class="form-control" inputmode="numeric"
                            placeholder="06 12 34 56 78" maxlength="14"
-                           value="<?= esc(old('telephone', $client['telephone'] ?? '')) ?>">
+                           value="<?= esc(old('telephone', $client['telephone'] ?? '')) ?>"
+                           autocomplete="tel">
                     <div class="form-text">Format : 10 chiffres (ex : 06 12 34 56 78)</div>
                 </div>
 
-                <div class="col-12">
-                    <label class="form-label fw-semibold">Adresse</label>
-                    <textarea name="adresse" class="form-control" rows="2"><?= esc(old('adresse', $client['adresse'] ?? '')) ?></textarea>
+                <!-- Adresse décomposée -->
+                <div class="col-2">
+                    <label class="form-label fw-semibold">N°</label>
+                    <input type="text" name="adresse_numero"
+                           class="form-control"
+                           placeholder="12"
+                           value="<?= esc(old('adresse_numero', $client['adresse_numero'] ?? '')) ?>"
+                           maxlength="10">
                 </div>
 
+                <div class="col-3">
+                    <label class="form-label fw-semibold">Type de voie</label>
+                    <select name="adresse_type_voie" class="form-select">
+                        <option value="">—</option>
+                        <?php
+                        $types = ['Allée','Avenue','Boulevard','Chemin','Cour','Domaine',
+                                  'Hameau','Impasse','Lotissement','Passage','Place',
+                                  'Résidence','Route','Rue','Square','Voie','Zone'];
+                        $selType = old('adresse_type_voie', $client['adresse_type_voie'] ?? '');
+                        foreach ($types as $t):
+                        ?>
+                            <option value="<?= esc($t) ?>" <?= ($selType === $t) ? 'selected' : '' ?>>
+                                <?= esc($t) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="col-7">
+                    <label class="form-label fw-semibold">Nom de la voie</label>
+                    <input type="text" id="input-nom-voie" name="adresse_nom_voie"
+                           class="form-control"
+                           placeholder="de la Paix"
+                           value="<?= esc(old('adresse_nom_voie', $client['adresse_nom_voie'] ?? '')) ?>">
+                </div>
+
+                <!-- Ville + Code postal -->
                 <div class="col-md-8">
                     <label class="form-label fw-semibold">Ville</label>
                     <input type="text" id="input-ville" name="ville"
                            class="form-control"
-                           value="<?= esc(old('ville', $client['ville'] ?? '')) ?>">
+                           value="<?= esc(old('ville', $client['ville'] ?? '')) ?>"
+                           autocomplete="address-level2">
                 </div>
 
                 <div class="col-md-4">
@@ -63,7 +108,8 @@
                     <input type="text" id="input-code-postal" name="code_postal"
                            class="form-control" inputmode="numeric"
                            maxlength="5" pattern="\d{5}"
-                           value="<?= esc(old('code_postal', $client['code_postal'] ?? '')) ?>">
+                           value="<?= esc(old('code_postal', $client['code_postal'] ?? '')) ?>"
+                           autocomplete="postal-code">
                 </div>
 
                 <div class="col-12 d-flex gap-2 pt-2">
@@ -89,10 +135,7 @@ $(function () {
     }
 
     var $tel = $('#input-telephone');
-
-    // Formater la valeur déjà présente au chargement (ex : numéro de la BDD)
     $tel.val(formatPhone($tel.val()));
-
     $tel.on('input', function () {
         var pos  = this.selectionStart;
         var prev = this.value.length;
@@ -101,14 +144,14 @@ $(function () {
         this.setSelectionRange(pos + delta, pos + delta);
     });
 
-    // ── Capitalisation : Nom & Ville (après espaces et tirets) ──────────────
+    // ── Capitalisation (après espaces et tirets) ─────────────────────────────
     function capitalizeWords(str) {
         return str.toLowerCase().replace(/(^|[\s\-])([\p{L}])/gu, function (m, sep, letter) {
             return sep + letter.toUpperCase();
         });
     }
 
-    $('#input-nom, #input-ville').on('blur', function () {
+    $('#input-prenom, #input-nom, #input-ville, #input-nom-voie').on('blur', function () {
         this.value = capitalizeWords(this.value);
     });
 
@@ -124,8 +167,10 @@ $(function () {
 
     // ── Avant soumission : capitaliser au cas où le champ n'a pas perdu le focus
     $('form').on('submit', function () {
+        $('#input-prenom').val(capitalizeWords($('#input-prenom').val()));
         $('#input-nom').val(capitalizeWords($('#input-nom').val()));
         $('#input-ville').val(capitalizeWords($('#input-ville').val()));
+        $('#input-nom-voie').val(capitalizeWords($('#input-nom-voie').val()));
     });
 });
 </script>

@@ -42,12 +42,12 @@ $(function () {
             type: 'POST',
         },
         columns: [
-            { data: 'id',         width: '60px' },
-            { data: 'nom' },
+            { data: 'id',           width: '60px' },
+            { data: 'nom_complet' },
             { data: 'email' },
-            { data: 'telephone',  defaultContent: '—' },
-            { data: 'ville',      defaultContent: '—' },
-            { data: 'actions',    orderable: false, className: 'text-center' },
+            { data: 'telephone',   defaultContent: '—' },
+            { data: 'ville',       defaultContent: '—' },
+            { data: 'actions',     orderable: false, className: 'text-center' },
         ],
         language: {
             url: '<?= base_url("assets/js/i18n/fr-FR.json") ?>',
