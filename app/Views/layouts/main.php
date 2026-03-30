@@ -6,11 +6,11 @@
     <title><?= esc($titre ?? 'Mini-ERP') ?> — Mini-ERP</title>
 
     <!-- Bootstrap 5 -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="<?= base_url('assets/css/bootstrap.min.css') ?>">
     <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="<?= base_url('assets/css/bootstrap-icons.min.css') ?>">
     <!-- DataTables + Bootstrap 5 -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="<?= base_url('assets/css/dataTables.bootstrap5.min.css') ?>">
 
     <?= $this->renderSection('styles') ?>
 </head>
@@ -78,12 +78,12 @@
 </footer>
 
 <!-- jQuery -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="<?= base_url('assets/js/jquery.min.js') ?>"></script>
 <!-- Bootstrap 5 JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="<?= base_url('assets/js/bootstrap.bundle.min.js') ?>"></script>
 <!-- DataTables + Bootstrap 5 -->
-<script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/2.0.8/js/dataTables.bootstrap5.min.js"></script>
+<script src="<?= base_url('assets/js/dataTables.min.js') ?>"></script>
+<script src="<?= base_url('assets/js/dataTables.bootstrap5.min.js') ?>"></script>
 
 <?= $this->renderSection('scripts') ?>
 </body>
