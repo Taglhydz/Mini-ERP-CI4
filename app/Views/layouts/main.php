@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Init thème avant le rendu CSS pour éviter le flash -->
+    <script>(function(){var t=localStorage.getItem('erp-theme')||'light';document.documentElement.setAttribute('data-bs-theme',t);})();</script>
     <title><?= esc($titre ?? 'Mini-ERP') ?> — Mini-ERP</title>
 
     <!-- Bootstrap 5 -->
@@ -47,20 +49,30 @@
         }
         /* ── Footer ────────────────────────────────────────────── */
         .footer-main {
-            background: #1a1d21;
-            color: #adb5bd;
+            background: var(--bs-secondary-bg);
+            color: var(--bs-secondary-color);
             font-size: .8rem;
+            border-top: 1px solid var(--bs-border-color);
         }
-        .footer-main a { color: #6ea8fe; text-decoration: none; }
-        .footer-main a:hover { color: #fff; text-decoration: underline; }
+        .footer-main a { color: var(--bs-link-color); text-decoration: none; }
+        .footer-main a:hover { color: var(--bs-link-hover-color); text-decoration: underline; }
         .footer-main .footer-title {
-            color: #fff;
+            color: var(--bs-body-color);
             font-size: .7rem;
             letter-spacing: .1em;
             text-transform: uppercase;
             font-weight: 600;
         }
-        .footer-divider { border-color: rgba(255,255,255,.08); }
+        .footer-divider { border-color: var(--bs-border-color) !important; }
+        /* ── Bouton toggle thème ─────────────────────────────────────── */
+        #btn-theme-toggle {
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .18s, color .18s;
+        }
     </style>
 </head>
 <body class="d-flex flex-column min-vh-100">
@@ -114,6 +126,12 @@
                 <span class="d-none d-xl-inline">
                     <i class="bi bi-calendar3 me-1"></i><?= date('d/m/Y') ?>
                 </span>
+                <button id="btn-theme-toggle"
+                        class="btn btn-sm btn-outline-light border-0 rounded-3"
+                        title="Basculer thème clair / sombre"
+                        aria-label="Basculer thème">
+                    <i id="icon-theme" class="bi"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -158,7 +176,7 @@
             <div class="col-12 col-md-4">
                 <p class="footer-title mb-2"><i class="bi bi-box-seam me-1"></i>Mini-ERP</p>
                 <p class="mb-1">Application de gestion simplifiée&nbsp;: clients, produits et commandes.</p>
-                <p class="mb-0 text-white-50 small">Données stockées localement &mdash; usage démo.</p>
+                <p class="mb-0 text-body-secondary small">Données stockées localement &mdash; usage démo.</p>
             </div>
 
             <!-- Colonne 2 : Navigation -->
@@ -197,7 +215,7 @@
         <hr class="footer-divider mt-4 mb-3">
         <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-2">
             <span>&copy; <?= date('Y') ?> Mini-ERP &mdash; Tous droits réservés.</span>
-            <span class="text-white-50">Fait avec CodeIgniter</span>
+            <span class="text-body-secondary">Fait avec CodeIgniter</span>
         </div>
     </div>
 </footer>
@@ -213,6 +231,28 @@
 <script src="<?= base_url('assets/js/toasts.js') ?>"></script>
 
 <?= $this->renderSection('scripts') ?>
+
+<script>
+/* ── Toggle thème clair / sombre ─────────────────────────────────────── */
+(function () {
+    var root = document.documentElement;
+    var icon = document.getElementById('icon-theme');
+
+    function applyIcon(theme) {
+        icon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+    }
+
+    // Init icône selon le thème déjà appliqué
+    applyIcon(root.getAttribute('data-bs-theme') || 'light');
+
+    document.getElementById('btn-theme-toggle').addEventListener('click', function () {
+        var next = (root.getAttribute('data-bs-theme') || 'light') === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-bs-theme', next);
+        localStorage.setItem('erp-theme', next);
+        applyIcon(next);
+    });
+})();
+</script>
 
 <?php $flashSuccess = session()->getFlashdata('success'); ?>
 <?php $flashError   = session()->getFlashdata('error');   ?>
