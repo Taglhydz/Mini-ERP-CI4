@@ -117,15 +117,21 @@ class ClientController extends BaseController
 
     public function edit(int $id): string
     {
-        $client = $this->clientModel->findOrFail($id);
+        $client = $this->clientModel->find($id);
+        if (! $client) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
 
         return view('clients/form', ['titre' => 'Modifier le client', 'client' => $client]);
     }
 
     public function update(int $id): RedirectResponse
     {
-        $client = $this->clientModel->findOrFail($id);
-        $data   = $this->request->getPost(['nom', 'email', 'telephone', 'adresse', 'ville', 'code_postal']);
+        $client = $this->clientModel->find($id);
+        if (! $client) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+        $data = $this->request->getPost(['nom', 'email', 'telephone', 'adresse', 'ville', 'code_postal']);
 
         $data = $this->normalizeClientData($data);
 
@@ -177,7 +183,9 @@ class ClientController extends BaseController
 
     public function delete(int $id): RedirectResponse
     {
-        $this->clientModel->findOrFail($id);
+        if (! $this->clientModel->find($id)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
         $this->clientModel->delete($id);
 
         return redirect()->to(base_url('clients'))->with('success', 'Client supprimé.');

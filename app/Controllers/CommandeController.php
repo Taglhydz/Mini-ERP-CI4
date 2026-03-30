@@ -161,8 +161,11 @@ class CommandeController extends BaseController
 
     public function edit(int $id): string
     {
-        $commande = $this->commandeModel->findOrFail($id);
-        $lignes   = $this->ligneModel->getByCommande($id);
+        $commande = $this->commandeModel->find($id);
+        if (! $commande) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+        $lignes = $this->ligneModel->getByCommande($id);
 
         return view('commandes/form', [
             'titre'    => 'Modifier la commande',
@@ -175,8 +178,10 @@ class CommandeController extends BaseController
 
     public function update(int $id): RedirectResponse
     {
-        $this->commandeModel->findOrFail($id);
-        $post       = $this->request->getPost();
+        if (! $this->commandeModel->find($id)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
+        $post = $this->request->getPost();
         $lignes     = $this->parseLignes($post);
         $montantHt  = array_sum(array_column($lignes, 'sous_total'));
         $tauxTva    = (float) ($post['taux_tva'] ?? 20);
@@ -206,7 +211,9 @@ class CommandeController extends BaseController
 
     public function delete(int $id): RedirectResponse
     {
-        $this->commandeModel->findOrFail($id);
+        if (! $this->commandeModel->find($id)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
         $this->commandeModel->delete($id);
 
         return redirect()->to(base_url('commandes'))->with('success', 'Commande supprimée.');

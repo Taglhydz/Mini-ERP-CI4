@@ -104,14 +104,19 @@ class ProduitController extends BaseController
 
     public function edit(int $id): string
     {
-        $produit = $this->produitModel->findOrFail($id);
+        $produit = $this->produitModel->find($id);
+        if (! $produit) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
 
         return view('produits/form', ['titre' => 'Modifier le produit', 'produit' => $produit]);
     }
 
     public function update(int $id): RedirectResponse
     {
-        $this->produitModel->findOrFail($id);
+        if (! $this->produitModel->find($id)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
         $data = $this->request->getPost(['reference', 'designation', 'description', 'prix_unitaire', 'stock']);
 
         $this->produitModel->setValidationRule('reference',
@@ -128,7 +133,9 @@ class ProduitController extends BaseController
 
     public function delete(int $id): RedirectResponse
     {
-        $this->produitModel->findOrFail($id);
+        if (! $this->produitModel->find($id)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
         $this->produitModel->delete($id);
 
         return redirect()->to(base_url('produits'))->with('success', 'Produit supprimé.');
