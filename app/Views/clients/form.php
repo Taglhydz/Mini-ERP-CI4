@@ -23,11 +23,12 @@
             <div class="row g-3">
                 <!-- Prénom + Nom -->
                 <div class="col-md-5">
-                    <label class="form-label fw-semibold">Prénom</label>
+                    <label class="form-label fw-semibold">Prénom <span class="text-danger">*</span></label>
                     <input type="text" id="input-prenom" name="prenom"
-                           class="form-control"
+                           class="form-control <?= session('errors.prenom') ? 'is-invalid' : '' ?>"
                            value="<?= esc(old('prenom', $client['prenom'] ?? '')) ?>"
-                           autocomplete="given-name">
+                           autocomplete="given-name" required>
+                    <div class="invalid-feedback"><?= session('errors.prenom') ?></div>
                 </div>
 
                 <div class="col-md-7">
@@ -61,29 +62,36 @@
                 <!-- Adresse décomposée -->
                 <div class="col-2">
                     <label class="form-label fw-semibold">N°</label>
-                    <input type="text" name="adresse_numero"
-                           class="form-control"
-                           placeholder="12"
-                           value="<?= esc(old('adresse_numero', $client['adresse_numero'] ?? '')) ?>"
-                           maxlength="10">
+                    <input type="text" id="input-adresse-numero" name="adresse_numero"
+                           class="form-control" inputmode="numeric"
+                           placeholder="12" maxlength="10"
+                           value="<?= esc(old('adresse_numero', $client['adresse_numero'] ?? '')) ?>">
                 </div>
 
                 <div class="col-3">
                     <label class="form-label fw-semibold">Type de voie</label>
-                    <select name="adresse_type_voie" class="form-select">
+                    <?php
+                    $types   = ['Allée','Avenue','Boulevard','Chemin','Cour','Domaine',
+                                'Hameau','Impasse','Lotissement','Passage','Place',
+                                'Résidence','Route','Rue','Square','Voie','Zone'];
+                    $selType = old('adresse_type_voie', $client['adresse_type_voie'] ?? '');
+                    $isCustom = $selType !== '' && !in_array($selType, $types);
+                    ?>
+                    <select id="sel-type-voie" class="form-select">
                         <option value="">—</option>
-                        <?php
-                        $types = ['Allée','Avenue','Boulevard','Chemin','Cour','Domaine',
-                                  'Hameau','Impasse','Lotissement','Passage','Place',
-                                  'Résidence','Route','Rue','Square','Voie','Zone'];
-                        $selType = old('adresse_type_voie', $client['adresse_type_voie'] ?? '');
-                        foreach ($types as $t):
-                        ?>
+                        <?php foreach ($types as $t): ?>
                             <option value="<?= esc($t) ?>" <?= ($selType === $t) ? 'selected' : '' ?>>
                                 <?= esc($t) ?>
                             </option>
                         <?php endforeach; ?>
+                        <option value="__autre__" <?= $isCustom ? 'selected' : '' ?>>Autre…</option>
                     </select>
+                    <input type="text" id="input-type-custom"
+                           class="form-control mt-1 <?= $isCustom ? '' : 'd-none' ?>"
+                           placeholder="Ex : Lieu-dit"
+                           value="<?= $isCustom ? esc($selType) : '' ?>">
+                    <input type="hidden" name="adresse_type_voie" id="input-type-voie"
+                           value="<?= esc($selType) ?>">
                 </div>
 
                 <div class="col-7">
@@ -128,6 +136,26 @@
 <?= $this->section('scripts') ?>
 <script>
 $(function () {
+    // ── N° adresse : chiffres uniquement ────────────────────────────────────
+    $('#input-adresse-numero').on('input', function () {
+        this.value = this.value.replace(/\D/g, '').substring(0, 10);
+    });
+
+    // ── Type de voie : select + champ "Autre" ────────────────────────────────
+    $('#sel-type-voie').on('change', function () {
+        var val = this.value;
+        if (val === '__autre__') {
+            $('#input-type-custom').removeClass('d-none').val('').trigger('focus');
+            $('#input-type-voie').val('');
+        } else {
+            $('#input-type-custom').addClass('d-none').val('');
+            $('#input-type-voie').val(val);
+        }
+    });
+    $('#input-type-custom').on('input', function () {
+        $('#input-type-voie').val(this.value);
+    });
+
     // ── Téléphone : formatage XX XX XX XX XX ────────────────────────────────
     function formatPhone(val) {
         var digits = val.replace(/\D/g, '').substring(0, 10);
@@ -153,6 +181,25 @@ $(function () {
 
     $('#input-prenom, #input-nom, #input-ville, #input-nom-voie').on('blur', function () {
         this.value = capitalizeWords(this.value);
+    });
+
+    // ── Ville → auto-remplissage code postal (geo.api.gouv.fr) ───────────────
+    $('#input-ville').on('blur', function () {
+        var ville = this.value.trim();
+        if (!ville) return;
+        fetch('https://geo.api.gouv.fr/communes?nom=' + encodeURIComponent(ville)
+              + '&fields=codesPostaux&limit=1&boost=population')
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data && data.length && data[0].codesPostaux && data[0].codesPostaux.length) {
+                    var cp = data[0].codesPostaux[0];
+                    var $cp = $('#input-code-postal');
+                    if (!$cp.val()) {
+                        $cp.val(cp);
+                    }
+                }
+            })
+            .catch(function () { /* Pas de connexion — silencieux */ });
     });
 
     // ── Ville : interdire les chiffres ───────────────────────────────────────

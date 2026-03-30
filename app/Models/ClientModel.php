@@ -33,7 +33,7 @@ class ClientModel extends Model
 
     protected $validationRules = [
         'nom'               => 'required|min_length[2]|max_length[100]',
-        'prenom'            => 'permit_empty|max_length[100]',
+        'prenom'            => 'required|min_length[2]|max_length[100]',
         'email'             => 'required|valid_email|max_length[150]|is_unique[clients.email,id,{id}]',
         'telephone'         => 'permit_empty|max_length[20]',
         'adresse_numero'    => 'permit_empty|max_length[10]',
@@ -44,8 +44,9 @@ class ClientModel extends Model
     ];
 
     protected $validationMessages = [
-        'nom'   => ['required' => 'Le nom est obligatoire.'],
-        'email' => [
+        'nom'    => ['required' => 'Le nom est obligatoire.'],
+        'prenom' => ['required' => 'Le prénom est obligatoire.'],
+        'email'  => [
             'required'    => "L'email est obligatoire.",
             'valid_email' => "L'email n'est pas valide.",
             'is_unique'   => 'Cet email est déjà utilisé.',
