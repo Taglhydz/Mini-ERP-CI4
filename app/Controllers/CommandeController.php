@@ -75,10 +75,16 @@ class CommandeController extends BaseController
             $row['actions']     = sprintf(
                 '<a href="%s" class="btn btn-sm btn-outline-secondary me-1" title="Voir"><i class="bi bi-eye"></i></a>'
                 . '<a href="%s" class="btn btn-sm btn-outline-primary me-1" title="Modifier"><i class="bi bi-pencil"></i></a>'
-                . '<a href="%s" class="btn btn-sm btn-outline-danger me-1" title="PDF"><i class="bi bi-file-pdf"></i></a>',
+                . '<a href="%s" class="btn btn-sm btn-outline-info me-1" title="PDF"><i class="bi bi-file-pdf"></i></a>'
+                . '<form action="%s" method="post" class="d-inline">'
+                . csrf_field()
+                . '<button type="button" class="btn btn-sm btn-outline-danger" title="Supprimer" data-confirm="Supprimer la commande &laquo;%s&raquo; ?"><i class="bi bi-trash"></i></button>'
+                . '</form>',
                 base_url('commandes/' . $row['id']),
                 base_url('commandes/' . $row['id'] . '/edit'),
-                base_url('commandes/' . $row['id'] . '/pdf')
+                base_url('commandes/' . $row['id'] . '/pdf'),
+                base_url('commandes/' . $row['id'] . '/delete'),
+                htmlspecialchars($row['numero'], ENT_QUOTES | ENT_HTML5, 'UTF-8')
             );
 
             return $row;

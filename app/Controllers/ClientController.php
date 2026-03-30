@@ -44,6 +44,7 @@ class ClientController extends BaseController
         $orderCol      = $columns[$orderColIndex] ?? 'id';
 
         $builder = $this->clientModel->builder();
+        $builder->where('deleted_at', null);
 
         if ($search !== '') {
             $builder->groupStart()

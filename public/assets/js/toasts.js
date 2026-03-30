@@ -77,7 +77,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var modalEl = document.getElementById('modal-confirm');
         document.getElementById('modal-confirm-body').textContent = message;
 
-        var modal  = bootstrap.Modal.getOrCreate(modalEl);
+        var modal  = bootstrap.Modal.getOrCreateInstance(modalEl);
         var okBtn  = document.getElementById('btn-confirm-ok');
 
         // Cloner le bouton pour supprimer les anciens listeners avant d'en attacher un nouveau

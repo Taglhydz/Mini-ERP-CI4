@@ -13,8 +13,8 @@ Application ERP pédagogique développée avec **CodeIgniter 4**, Bootstrap 5, j
 
 ## Stack technique
 
-- **Backend** : PHP 8.4 / CodeIgniter 4.7
-- **Frontend** : Bootstrap 5.3, jQuery 3.7, DataTables 2.0 (mode Ajax server-side)
+- **Backend** : PHP 8.4.0 / CodeIgniter 4.7.2
+- **Frontend** : Bootstrap 5.3.8, jQuery 4.0.0, DataTables 2.3.7 (mode Ajax server-side)
 - **PDF** : dompdf 3.x
 - **BDD** : MySQL (via MySQLi)
 

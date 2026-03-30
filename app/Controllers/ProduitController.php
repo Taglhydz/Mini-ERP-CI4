@@ -41,6 +41,7 @@ class ProduitController extends BaseController
         $orderCol      = $columns[$orderColIndex] ?? 'designation';
 
         $builder = $this->produitModel->builder();
+        $builder->where('deleted_at', null);
 
         if ($search !== '') {
             $builder->groupStart()
