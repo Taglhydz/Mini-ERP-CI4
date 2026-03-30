@@ -62,14 +62,23 @@ class ClientController extends BaseController
             ->getResultArray();
 
         $data = array_map(function (array $row): array {
+            // Formater le téléphone en XX XX XX XX XX pour l'affichage
+            if (! empty($row['telephone'])) {
+                $digits = preg_replace('/\D/', '', $row['telephone']);
+                if (strlen($digits) === 10) {
+                    $row['telephone'] = implode(' ', str_split($digits, 2));
+                }
+            }
+
             $row['actions'] = sprintf(
                 '<a href="%s" class="btn btn-sm btn-outline-primary me-1" title="Modifier"><i class="bi bi-pencil"></i></a>'
-                . '<form action="%s" method="post" class="d-inline" onsubmit="return confirm(\'Supprimer ce client ?\');">'
+                . '<form action="%s" method="post" class="d-inline">'
                 . csrf_field()
-                . '<button class="btn btn-sm btn-outline-danger" title="Supprimer"><i class="bi bi-trash"></i></button>'
+                . '<button type="button" class="btn btn-sm btn-outline-danger" title="Supprimer" data-confirm="Supprimer le client &laquo;%s&raquo; ?"><i class="bi bi-trash"></i></button>'
                 . '</form>',
                 base_url('clients/' . $row['id'] . '/edit'),
-                base_url('clients/' . $row['id'] . '/delete')
+                base_url('clients/' . $row['id'] . '/delete'),
+                htmlspecialchars($row['nom'], ENT_QUOTES | ENT_HTML5, 'UTF-8')
             );
 
             return $row;
@@ -94,6 +103,8 @@ class ClientController extends BaseController
     {
         $data = $this->request->getPost(['nom', 'email', 'telephone', 'adresse', 'ville', 'code_postal']);
 
+        $data = $this->normalizeClientData($data);
+
         if (! $this->clientModel->save($data)) {
             return redirect()->back()->withInput()->with('errors', $this->clientModel->errors());
         }
@@ -115,6 +126,8 @@ class ClientController extends BaseController
         $client = $this->clientModel->findOrFail($id);
         $data   = $this->request->getPost(['nom', 'email', 'telephone', 'adresse', 'ville', 'code_postal']);
 
+        $data = $this->normalizeClientData($data);
+
         $this->clientModel->setValidationRule('email',
             "required|valid_email|max_length[150]|is_unique[clients.email,id,{$id}]");
 
@@ -123,6 +136,40 @@ class ClientController extends BaseController
         }
 
         return redirect()->to(base_url('clients'))->with('success', 'Client mis à jour.');
+    }
+
+    // ─── Helpers privés ──────────────────────────────────────────────────────
+
+    /**
+     * Normalise le téléphone (chiffres seuls) et capitalise nom/ville.
+     */
+    private function normalizeClientData(array $data): array
+    {
+        if (! empty($data['telephone'])) {
+            $data['telephone'] = substr(preg_replace('/\D/', '', $data['telephone']), 0, 10);
+        }
+
+        foreach (['nom', 'ville'] as $field) {
+            if (! empty($data[$field])) {
+                $data[$field] = $this->capitalizeWords($data[$field]);
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Capitalise la première lettre de chaque mot (espaces et tirets).
+     */
+    private function capitalizeWords(string $str): string
+    {
+        $lower = mb_strtolower(trim($str), 'UTF-8');
+
+        return preg_replace_callback(
+            '/(?:^|[\s\-])\p{L}/u',
+            static fn (array $m): string => mb_strtoupper($m[0], 'UTF-8'),
+            $lower
+        );
     }
 
     // ─── Suppression ─────────────────────────────────────────────────────────

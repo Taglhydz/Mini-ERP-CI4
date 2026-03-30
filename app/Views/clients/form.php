@@ -23,8 +23,10 @@
             <div class="row g-3">
                 <div class="col-12">
                     <label class="form-label fw-semibold">Nom <span class="text-danger">*</span></label>
-                    <input type="text" name="nom" class="form-control <?= session('errors.nom') ? 'is-invalid' : '' ?>"
-                           value="<?= esc(old('nom', $client['nom'] ?? '')) ?>" required>
+                    <input type="text" id="input-nom" name="nom"
+                           class="form-control <?= session('errors.nom') ? 'is-invalid' : '' ?>"
+                           value="<?= esc(old('nom', $client['nom'] ?? '')) ?>"
+                           autocomplete="organization" required>
                     <div class="invalid-feedback"><?= session('errors.nom') ?></div>
                 </div>
 
@@ -37,8 +39,11 @@
 
                 <div class="col-md-5">
                     <label class="form-label fw-semibold">Téléphone</label>
-                    <input type="text" name="telephone" class="form-control"
+                    <input type="text" id="input-telephone" name="telephone"
+                           class="form-control" inputmode="numeric"
+                           placeholder="06 12 34 56 78" maxlength="14"
                            value="<?= esc(old('telephone', $client['telephone'] ?? '')) ?>">
+                    <div class="form-text">Format : 10 chiffres (ex : 06 12 34 56 78)</div>
                 </div>
 
                 <div class="col-12">
@@ -48,13 +53,16 @@
 
                 <div class="col-md-8">
                     <label class="form-label fw-semibold">Ville</label>
-                    <input type="text" name="ville" class="form-control"
+                    <input type="text" id="input-ville" name="ville"
+                           class="form-control"
                            value="<?= esc(old('ville', $client['ville'] ?? '')) ?>">
                 </div>
 
                 <div class="col-md-4">
                     <label class="form-label fw-semibold">Code postal</label>
-                    <input type="text" name="code_postal" class="form-control"
+                    <input type="text" id="input-code-postal" name="code_postal"
+                           class="form-control" inputmode="numeric"
+                           maxlength="5" pattern="\d{5}"
                            value="<?= esc(old('code_postal', $client['code_postal'] ?? '')) ?>">
                 </div>
 
@@ -69,4 +77,56 @@
     </div>
 </div>
 
+<?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
+<script>
+$(function () {
+    // ── Téléphone : formatage XX XX XX XX XX ────────────────────────────────
+    function formatPhone(val) {
+        var digits = val.replace(/\D/g, '').substring(0, 10);
+        return digits.replace(/(\d{2})(?=\d)/g, '$1 ').trim();
+    }
+
+    var $tel = $('#input-telephone');
+
+    // Formater la valeur déjà présente au chargement (ex : numéro de la BDD)
+    $tel.val(formatPhone($tel.val()));
+
+    $tel.on('input', function () {
+        var pos  = this.selectionStart;
+        var prev = this.value.length;
+        this.value = formatPhone(this.value);
+        var delta = this.value.length - prev;
+        this.setSelectionRange(pos + delta, pos + delta);
+    });
+
+    // ── Capitalisation : Nom & Ville (après espaces et tirets) ──────────────
+    function capitalizeWords(str) {
+        return str.toLowerCase().replace(/(^|[\s\-])([\p{L}])/gu, function (m, sep, letter) {
+            return sep + letter.toUpperCase();
+        });
+    }
+
+    $('#input-nom, #input-ville').on('blur', function () {
+        this.value = capitalizeWords(this.value);
+    });
+
+    // ── Ville : interdire les chiffres ───────────────────────────────────────
+    $('#input-ville').on('input', function () {
+        this.value = this.value.replace(/\d/g, '');
+    });
+
+    // ── Code postal : chiffres uniquement, 5 max ─────────────────────────────
+    $('#input-code-postal').on('input', function () {
+        this.value = this.value.replace(/\D/g, '').substring(0, 5);
+    });
+
+    // ── Avant soumission : capitaliser au cas où le champ n'a pas perdu le focus
+    $('form').on('submit', function () {
+        $('#input-nom').val(capitalizeWords($('#input-nom').val()));
+        $('#input-ville').val(capitalizeWords($('#input-ville').val()));
+    });
+});
+</script>
 <?= $this->endSection() ?>
