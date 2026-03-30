@@ -77,13 +77,12 @@ class ClientController extends BaseController
 
             $row['actions'] = sprintf(
                 '<a href="%s" class="btn btn-sm btn-outline-primary me-1" title="Modifier"><i class="bi bi-pencil"></i></a>'
-                . '<form action="%s" method="post" class="d-inline">'
-                . csrf_field()
-                . '<button type="button" class="btn btn-sm btn-outline-danger" title="Supprimer" data-confirm="Supprimer le client &laquo;%s&raquo; ?"><i class="bi bi-trash"></i></button>'
-                . '</form>',
+                . '<button type="button" class="btn btn-sm btn-outline-danger" title="Supprimer"'
+                . ' data-confirm="Supprimer le client &laquo;%s&raquo; ?"'
+                . ' data-delete-url="%s" data-table="table-clients"><i class="bi bi-trash"></i></button>',
                 base_url('clients/' . $row['id'] . '/edit'),
-                base_url('clients/' . $row['id'] . '/delete'),
-                htmlspecialchars($row['nom_complet'], ENT_QUOTES | ENT_HTML5, 'UTF-8')
+                htmlspecialchars($row['nom_complet'], ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+                base_url('clients/' . $row['id'] . '/delete')
             );
 
             return $row;
@@ -185,13 +184,14 @@ class ClientController extends BaseController
 
     // ─── Suppression ─────────────────────────────────────────────────────────
 
-    public function delete(int $id): RedirectResponse
+    public function delete(int $id): ResponseInterface
     {
         if (! $this->clientModel->find($id)) {
-            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+            return $this->response->setStatusCode(404)
+                ->setJSON(['success' => false, 'message' => 'Client introuvable.']);
         }
         $this->clientModel->delete($id);
 
-        return redirect()->to(base_url('clients'))->with('success', 'Client supprimé.');
+        return $this->response->setJSON(['success' => true, 'message' => 'Client supprimé.']);
     }
 }

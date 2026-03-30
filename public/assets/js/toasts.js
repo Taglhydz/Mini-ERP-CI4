@@ -86,7 +86,30 @@ document.addEventListener('DOMContentLoaded', function () {
 
         fresh.addEventListener('click', function () {
             modal.hide();
-            if (form) { form.submit(); }
+
+            var deleteUrl = trigger.dataset.deleteUrl;
+            var tableId   = trigger.dataset.table;
+
+            if (deleteUrl) {
+                // Suppression Ajax : pas de rechargement de page
+                fetch(deleteUrl, {
+                    method:  'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (data) {
+                    showToast(data.message, data.success ? 'success' : 'error');
+                    // Recharger uniquement la DataTable concernée
+                    if (tableId && typeof $ !== 'undefined' && $.fn.DataTable.isDataTable('#' + tableId)) {
+                        $('#' + tableId).DataTable().ajax.reload(null, false);
+                    }
+                })
+                .catch(function () {
+                    showToast('Une erreur est survenue.', 'error');
+                });
+            } else if (form) {
+                form.submit();
+            }
         });
 
         modal.show();

@@ -62,13 +62,12 @@ class ProduitController extends BaseController
             $row['prix_unitaire'] = number_format((float) $row['prix_unitaire'], 2, ',', ' ') . ' €';
             $row['actions']       = sprintf(
                 '<a href="%s" class="btn btn-sm btn-outline-primary me-1" title="Modifier"><i class="bi bi-pencil"></i></a>'
-                . '<form action="%s" method="post" class="d-inline">'
-                . csrf_field()
-                . '<button type="button" class="btn btn-sm btn-outline-danger" title="Supprimer" data-confirm="Supprimer le produit &laquo;%s&raquo; ?"><i class="bi bi-trash"></i></button>'
-                . '</form>',
+                . '<button type="button" class="btn btn-sm btn-outline-danger" title="Supprimer"'
+                . ' data-confirm="Supprimer le produit &laquo;%s&raquo; ?"'
+                . ' data-delete-url="%s" data-table="table-produits"><i class="bi bi-trash"></i></button>',
                 base_url('produits/' . $row['id'] . '/edit'),
-                base_url('produits/' . $row['id'] . '/delete'),
-                htmlspecialchars($row['designation'], ENT_QUOTES | ENT_HTML5, 'UTF-8')
+                htmlspecialchars($row['designation'], ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+                base_url('produits/' . $row['id'] . '/delete')
             );
 
             return $row;
@@ -131,13 +130,14 @@ class ProduitController extends BaseController
 
     // ─── Suppression ─────────────────────────────────────────────────────────
 
-    public function delete(int $id): RedirectResponse
+    public function delete(int $id): ResponseInterface
     {
         if (! $this->produitModel->find($id)) {
-            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+            return $this->response->setStatusCode(404)
+                ->setJSON(['success' => false, 'message' => 'Produit introuvable.']);
         }
         $this->produitModel->delete($id);
 
-        return redirect()->to(base_url('produits'))->with('success', 'Produit supprimé.');
+        return $this->response->setJSON(['success' => true, 'message' => 'Produit supprimé.']);
     }
 }
