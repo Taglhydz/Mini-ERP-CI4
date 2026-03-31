@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Filters;
 
+use App\Libraries\ClientLinker;
 use App\Models\AuthTokenModel;
 use App\Models\UserModel;
 use CodeIgniter\Filters\FilterInterface;
@@ -67,11 +68,15 @@ class AuthFilter implements FilterInterface
             return null;
         }
 
+        $clientLinker = new ClientLinker();
+        $clientId = $clientLinker->ensureClientId($user);
+
         return [
             'id' => $user['id'],
             'username' => $user['username'] ?? $user['email'],
             'email' => $user['email'],
             'role' => $user['role'],
+            'client_id' => $clientId,
         ];
     }
 }

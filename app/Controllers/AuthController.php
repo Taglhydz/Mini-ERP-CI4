@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Libraries\ClientLinker;
 use App\Models\AuthTokenModel;
 use App\Models\UserModel;
 use CodeIgniter\HTTP\RedirectResponse;
@@ -12,11 +13,13 @@ class AuthController extends BaseController
 {
     protected UserModel $userModel;
     protected AuthTokenModel $authTokenModel;
+    protected ClientLinker $clientLinker;
 
     public function __construct()
     {
         $this->userModel = model(UserModel::class);
         $this->authTokenModel = model(AuthTokenModel::class);
+        $this->clientLinker = new ClientLinker();
     }
 
     public function login()
@@ -49,12 +52,14 @@ class AuthController extends BaseController
             }
 
             $userId = (int) $user['id'];
+            $clientId = $this->clientLinker->ensureClientId($user);
 
             session()->set('auth', [
-                'id'       => $userId,
-                'username' => $user['username'] ?? $user['email'],
-                'email'    => $user['email'],
-                'role'     => $user['role'],
+                'id'        => $userId,
+                'username'  => $user['username'] ?? $user['email'],
+                'email'     => $user['email'],
+                'role'      => $user['role'],
+                'client_id' => $clientId,
             ]);
 
             $this->authTokenModel->where('user_id', $userId)->delete();
@@ -92,12 +97,20 @@ class AuthController extends BaseController
                     ->with('errors', $this->validator->getErrors());
             }
 
-            $this->userModel->insert([
+            $userData = [
                 'username' => $this->request->getPost('username'),
                 'email'    => $this->request->getPost('email'),
                 'password' => $this->request->getPost('password'),
                 'role'     => $this->request->getPost('role'),
-            ]);
+            ];
+
+            $insertedId = (int) $this->userModel->insert($userData);
+            if ($insertedId) {
+                $insertedUser = $this->userModel->find($insertedId);
+                if ($insertedUser) {
+                    $this->clientLinker->ensureClientId($insertedUser);
+                }
+            }
 
             return redirect()->to('auth/login')
                 ->with('success', 'Compte créé, vous pouvez maintenant vous connecter.');
