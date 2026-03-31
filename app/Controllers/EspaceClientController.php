@@ -14,9 +14,11 @@ class EspaceClientController extends BaseController
 
         $commandeModel = model(CommandeModel::class);
 
+        $clientId = $auth['client_id'] ?? $auth['id'] ?? 0;
+
         $commandes = $commandeModel
             ->withClient()
-            ->where('commandes.client_id', $auth['id'] ?? 0)
+            ->where('commandes.client_id', (int) $clientId)
             ->orderBy('commandes.id', 'DESC')
             ->findAll();
 
