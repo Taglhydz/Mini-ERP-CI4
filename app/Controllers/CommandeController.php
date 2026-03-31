@@ -75,7 +75,7 @@ class CommandeController extends BaseController
             $row['actions']     = sprintf(
                 '<a href="%s" class="btn btn-sm btn-outline-secondary me-1" title="Voir"><i class="bi bi-eye"></i></a>'
                 . '<a href="%s" class="btn btn-sm btn-outline-primary me-1" title="Modifier"><i class="bi bi-pencil"></i></a>'
-                . '<a href="%s" class="btn btn-sm btn-outline-info me-1" title="PDF"><i class="bi bi-file-pdf"></i></a>'
+                . '<a href="%s" class="btn btn-sm btn-outline-info me-1" title="PDF" target="_blank" rel="noopener noreferrer"><i class="bi bi-file-pdf"></i></a>'
                 . '<button type="button" class="btn btn-sm btn-outline-danger" title="Supprimer"'
                 . ' data-confirm="Supprimer la commande &laquo;%s&raquo; ?"'
                 . ' data-delete-url="%s" data-table="table-commandes"><i class="bi bi-trash"></i></button>',
