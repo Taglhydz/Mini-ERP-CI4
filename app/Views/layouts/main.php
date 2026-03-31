@@ -171,6 +171,11 @@
     </style>
 </head>
 <body class="d-flex flex-column min-vh-100">
+<?php
+$session = session();
+$authUser = $session->get('auth');
+$backOfficeNav = in_array($authUser['role'] ?? '', ['admin', 'user'], true);
+?>
 
 <!-- Barre de navigation -->
 <nav class="navbar navbar-expand-lg navbar-dark navbar-main shadow">
@@ -192,35 +197,62 @@
         </button>
 
         <div class="collapse navbar-collapse" id="navbarMain">
-            <ul class="navbar-nav ms-4 me-auto mb-2 mb-lg-0 gap-1">
-                <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-2
-                               <?= str_starts_with(current_url(true)->getPath(), '/clients') ? 'active' : '' ?>"
-                       href="<?= base_url('clients') ?>">
-                        <i class="bi bi-people-fill"></i>Clients
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-2
-                               <?= str_starts_with(current_url(true)->getPath(), '/produits') ? 'active' : '' ?>"
-                       href="<?= base_url('produits') ?>">
-                        <i class="bi bi-box-fill"></i>Produits
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link d-flex align-items-center gap-2
-                               <?= str_starts_with(current_url(true)->getPath(), '/commandes') ? 'active' : '' ?>"
-                       href="<?= base_url('commandes') ?>">
-                        <i class="bi bi-cart-fill"></i>Commandes
-                    </a>
-                </li>
-            </ul>
+            <?php if ($backOfficeNav): ?>
+                <ul class="navbar-nav ms-4 me-auto mb-2 mb-lg-0 gap-1">
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2
+                                   <?= str_starts_with(current_url(true)->getPath(), '/clients') ? 'active' : '' ?>"
+                           href="<?= base_url('clients') ?>">
+                            <i class="bi bi-people-fill"></i>Clients
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2
+                                   <?= str_starts_with(current_url(true)->getPath(), '/produits') ? 'active' : '' ?>"
+                           href="<?= base_url('produits') ?>">
+                            <i class="bi bi-box-fill"></i>Produits
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2
+                                   <?= str_starts_with(current_url(true)->getPath(), '/commandes') ? 'active' : '' ?>"
+                           href="<?= base_url('commandes') ?>">
+                            <i class="bi bi-cart-fill"></i>Commandes
+                        </a>
+                    </li>
+                </ul>
+            <?php elseif (($authUser['role'] ?? '') === 'client'): ?>
+                <ul class="navbar-nav ms-4 me-auto mb-2 mb-lg-0 gap-1">
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2
+                                   <?= str_starts_with(current_url(true)->getPath(), '/espace-client') ? 'active' : '' ?>"
+                           href="<?= base_url('espace-client') ?>">
+                            <i class="bi bi-person-circle"></i>Mon espace
+                        </a>
+                    </li>
+                </ul>
+            <?php endif; ?>
 
-            <!-- Infos droite -->
-            <div class="d-flex align-items-center gap-3 small text-white-50">
+            <div class="d-flex align-items-center gap-3 small text-white-50 ms-auto">
                 <span class="d-none d-xl-inline">
                     <i class="bi bi-calendar3 me-1"></i><?= date('d/m/Y') ?>
                 </span>
+                <?php if ($authUser): ?>
+                    <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-2">
+                        <span class="fw-semibold text-white"><?= esc($authUser['username']) ?></span>
+                        <span class="badge bg-white text-dark text-capitalize"><?= esc($authUser['role']) ?></span>
+                    </div>
+                    <a href="<?= base_url('auth/logout') ?>" class="btn btn-sm btn-outline-light">
+                        <i class="bi bi-box-arrow-right me-1"></i>Déconnexion
+                    </a>
+                <?php else: ?>
+                    <a href="<?= base_url('auth/login') ?>" class="btn btn-sm btn-outline-light">
+                        <i class="bi bi-door-open me-1"></i>Connexion
+                    </a>
+                    <a href="<?= base_url('auth/register') ?>" class="btn btn-sm btn-outline-light">
+                        <i class="bi bi-pencil-square me-1"></i>Créer un compte
+                    </a>
+                <?php endif; ?>
                 <button id="btn-theme-toggle"
                         class="btn btn-sm border-0 fs-0"
                         title="Basculer thème clair / sombre"

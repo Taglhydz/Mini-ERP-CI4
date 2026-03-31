@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
     {
         echo "\n=== Mini-ERP — Seeding des données de démonstration ===\n\n";
 
+        $this->call(UsersSeeder::class);
         $this->call(ClientSeeder::class);
         $this->call(ProduitSeeder::class);
         $this->call(CommandeSeeder::class);
