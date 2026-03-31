@@ -8,12 +8,21 @@
     <title><?= esc($titre ?? 'Mini-ERP') ?> — Mini-ERP</title>
 
     <!-- Bootstrap 5 -->
-    <link rel="stylesheet" href="<?= base_url('assets/css/bootstrap.min.css') ?>?v=5.3.8">
+    <link rel="preload" href="<?= base_url('assets/css/bootstrap.min.css') ?>?v=5.3.8" as="style" onload="this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="<?= base_url('assets/css/bootstrap.min.css') ?>?v=5.3.8">
+    </noscript>
     <!-- Bootstrap Icons -->
     <link rel="preload" href="<?= base_url('assets/fonts/bootstrap-icons.woff2') ?>" as="font" type="font/woff2" crossorigin>
-    <link rel="stylesheet" href="<?= base_url('assets/css/bootstrap-icons.min.css') ?>?v=1.13.1">
+    <link rel="preload" href="<?= base_url('assets/css/bootstrap-icons.min.css') ?>?v=1.13.1" as="style" onload="this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="<?= base_url('assets/css/bootstrap-icons.min.css') ?>?v=1.13.1">
+    </noscript>
     <!-- DataTables + Bootstrap 5 -->
-    <link rel="stylesheet" href="<?= base_url('assets/css/dataTables.bootstrap5.min.css') ?>?v=2.3.7">
+    <link rel="preload" href="<?= base_url('assets/css/dataTables.bootstrap5.min.css') ?>?v=2.3.7" as="style" onload="this.rel='stylesheet'">
+    <noscript>
+        <link rel="stylesheet" href="<?= base_url('assets/css/dataTables.bootstrap5.min.css') ?>?v=2.3.7">
+    </noscript>
 
     <?= $this->renderSection('styles') ?>
     <style>
@@ -67,12 +76,67 @@
         .footer-divider { border-color: var(--bs-border-color) !important; }
         /* ── Bouton toggle thème ─────────────────────────────────────── */
         #btn-theme-toggle {
-            width: 34px;
+            width: 64px;
             height: 34px;
+            padding: 0;
+            border-radius: 999px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background .18s, color .18s;
+            border: 0;
+            background: transparent;
+            transition: transform .3s ease;
+        }
+
+        #btn-theme-toggle .theme-switch {
+            width: 58px;
+            height: 28px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.15);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 8px;
+            gap: .1rem;
+            font-size: 0;
+        }
+
+        #btn-theme-toggle .theme-icon {
+            font-size: 14px;
+            color: var(--bs-white);
+            opacity: .6;
+            transition: opacity .3s ease;
+        }
+
+        #btn-theme-toggle .theme-switch-thumb {
+            position: absolute;
+            top: 3px;
+            left: 4px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--bs-white);
+            box-shadow: 0 2px 6px rgba(0,0,0,.2);
+            transition: transform .35s cubic-bezier(0.33, 1, 0.68, 1);
+        }
+
+        #btn-theme-toggle[data-theme="dark"] .theme-switch {
+            background: rgba(0,0,0,.4);
+        }
+
+        #btn-theme-toggle[data-theme="dark"] .theme-switch-thumb {
+            transform: translateX(26px);
+        }
+
+        #btn-theme-toggle[data-theme="light"] .theme-icon.sun,
+        #btn-theme-toggle[data-theme="dark"] .theme-icon.moon {
+            opacity: 1;
+        }
+
+        #btn-theme-toggle[data-theme="light"] .theme-icon.moon,
+        #btn-theme-toggle[data-theme="dark"] .theme-icon.sun {
+            opacity: .4;
         }
 
         /* ── Toasts ───────────────────────────────────────────── */
@@ -158,10 +222,15 @@
                     <i class="bi bi-calendar3 me-1"></i><?= date('d/m/Y') ?>
                 </span>
                 <button id="btn-theme-toggle"
-                        class="btn btn-sm btn-outline-light border-0 rounded-3"
+                        class="btn btn-sm border-0 fs-0"
                         title="Basculer thème clair / sombre"
-                        aria-label="Basculer thème">
-                    <i id="icon-theme" class="bi"></i>
+                        aria-label="Basculer thème"
+                        type="button">
+                    <span class="theme-switch" role="presentation">
+                        <i class="bi bi-sun-fill theme-icon sun" aria-hidden="true"></i>
+                        <i class="bi bi-moon-fill theme-icon moon" aria-hidden="true"></i>
+                        <span class="theme-switch-thumb" aria-hidden="true"></span>
+                    </span>
                 </button>
             </div>
         </div>
@@ -267,21 +336,25 @@
 /* ── Toggle thème clair / sombre ─────────────────────────────────────── */
 (function () {
     var root = document.documentElement;
-    var icon = document.getElementById('icon-theme');
+    var toggle = document.getElementById('btn-theme-toggle');
 
-    function applyIcon(theme) {
-        icon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-fill';
+    function applySwitch(theme) {
+        if (!toggle) return;
+        toggle.setAttribute('data-theme', theme);
+        toggle.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
     }
 
-    // Init icône selon le thème déjà appliqué
-    applyIcon(root.getAttribute('data-bs-theme') || 'light');
+    // Init switch according to the already applied theme
+    applySwitch(root.getAttribute('data-bs-theme') || 'light');
 
-    document.getElementById('btn-theme-toggle').addEventListener('click', function () {
+    if (toggle) {
+        toggle.addEventListener('click', function () {
         var next = (root.getAttribute('data-bs-theme') || 'light') === 'dark' ? 'light' : 'dark';
         root.setAttribute('data-bs-theme', next);
         localStorage.setItem('erp-theme', next);
-        applyIcon(next);
+        applySwitch(next);
     });
+    }
 })();
 </script>
 
