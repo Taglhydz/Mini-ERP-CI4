@@ -74,6 +74,36 @@
             justify-content: center;
             transition: background .18s, color .18s;
         }
+
+        /* ── Toasts ───────────────────────────────────────────── */
+        #toast-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: flex-end;
+            gap: .75rem;
+            pointer-events: none;
+        }
+
+        #toast-container .toast {
+            pointer-events: auto;
+            align-self: flex-end;
+            width: min(90vw, 360px);
+            transform: translate(24px, 14px);
+            opacity: 0;
+            transition: transform .35s cubic-bezier(0.33, 1, 0.68, 1), opacity .25s ease;
+            will-change: transform, opacity;
+        }
+
+        #toast-container .toast.toast-entry {
+            transform: translate(0, 0);
+            opacity: 1;
+        }
+
+        #toast-container .toast.toast-exit {
+            transform: translateX(110%) translateY(0);
+            opacity: 0;
+        }
     </style>
 </head>
 <body class="d-flex flex-column min-vh-100">
