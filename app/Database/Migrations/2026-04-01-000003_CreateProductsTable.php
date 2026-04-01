@@ -6,7 +6,7 @@ namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
-class CreateClientsTable extends Migration
+class CreateProductsTable extends Migration
 {
     public function up(): void
     {
@@ -17,33 +17,32 @@ class CreateClientsTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
-            'nom' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 100,
-            ],
-            'email' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 150,
-                'unique'     => true,
-            ],
-            'telephone' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 20,
+            'company_id' => [
+                'type'       => 'INT',
+                'constraint' => 11,
+                'unsigned'   => true,
                 'null'       => true,
             ],
-            'adresse' => [
+            'reference' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 50,
+            ],
+            'name' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 200,
+            ],
+            'description' => [
                 'type' => 'TEXT',
                 'null' => true,
             ],
-            'ville' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 100,
-                'null'       => true,
+            'unit_price' => [
+                'type'       => 'DECIMAL',
+                'constraint' => '10,2',
             ],
-            'code_postal' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 10,
-                'null'       => true,
+            'stock' => [
+                'type'       => 'INT',
+                'constraint' => 11,
+                'default'    => 0,
             ],
             'created_at' => [
                 'type' => 'DATETIME',
@@ -60,11 +59,14 @@ class CreateClientsTable extends Migration
         ]);
 
         $this->forge->addKey('id', true);
-        $this->forge->createTable('clients');
+        // Référence unique par entreprise
+        $this->forge->addUniqueKey(['company_id', 'reference'], 'uq_products_company_reference');
+        $this->forge->addForeignKey('company_id', 'companies', 'id', 'SET NULL', 'CASCADE', 'fk_products_company_id');
+        $this->forge->createTable('products');
     }
 
     public function down(): void
     {
-        $this->forge->dropTable('clients');
+        $this->forge->dropTable('products');
     }
 }

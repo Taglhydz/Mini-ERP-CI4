@@ -6,7 +6,7 @@ namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
-class CreateCommandesTable extends Migration
+class CreateOrdersTable extends Migration
 {
     public function up(): void
     {
@@ -17,38 +17,44 @@ class CreateCommandesTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
-            'numero' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 20,
-                'unique'     => true,
-            ],
-            'client_id' => [
+            'company_id' => [
                 'type'       => 'INT',
                 'constraint' => 11,
                 'unsigned'   => true,
+                'null'       => true,
             ],
-            'statut' => [
+            'user_id' => [
+                'type'       => 'INT',
+                'constraint' => 11,
+                'unsigned'   => true,
+                'null'       => true,
+            ],
+            'number' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 20,
+            ],
+            'status' => [
                 'type'       => 'ENUM',
-                'constraint' => ['brouillon', 'confirmee', 'livree', 'annulee'],
-                'default'    => 'brouillon',
+                'constraint' => ['draft', 'confirmed', 'delivered', 'cancelled'],
+                'default'    => 'draft',
             ],
-            'date_commande' => [
+            'order_date' => [
                 'type' => 'DATE',
             ],
-            'montant_ht' => [
+            'amount_ht' => [
                 'type'       => 'DECIMAL',
-                'constraint' => '12,2',
-                'default'    => '0.00',
+                'constraint' => '10,2',
+                'null'       => true,
             ],
-            'taux_tva' => [
+            'vat_rate' => [
                 'type'       => 'DECIMAL',
                 'constraint' => '5,2',
-                'default'    => '20.00',
+                'null'       => true,
             ],
-            'montant_ttc' => [
+            'amount_ttc' => [
                 'type'       => 'DECIMAL',
-                'constraint' => '12,2',
-                'default'    => '0.00',
+                'constraint' => '10,2',
+                'null'       => true,
             ],
             'notes' => [
                 'type' => 'TEXT',
@@ -69,12 +75,13 @@ class CreateCommandesTable extends Migration
         ]);
 
         $this->forge->addKey('id', true);
-        $this->forge->addForeignKey('client_id', 'clients', 'id', 'RESTRICT', 'RESTRICT');
-        $this->forge->createTable('commandes');
+        $this->forge->addForeignKey('company_id', 'companies', 'id', 'SET NULL', 'CASCADE', 'fk_orders_company_id');
+        $this->forge->addForeignKey('user_id', 'users', 'id', 'SET NULL', 'CASCADE', 'fk_orders_user_id');
+        $this->forge->createTable('orders');
     }
 
     public function down(): void
     {
-        $this->forge->dropTable('commandes');
+        $this->forge->dropTable('orders');
     }
 }

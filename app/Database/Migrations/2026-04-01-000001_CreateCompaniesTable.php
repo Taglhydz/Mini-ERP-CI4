@@ -6,7 +6,7 @@ namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
-class CreateUsersTable extends Migration
+class CreateCompaniesTable extends Migration
 {
     public function up(): void
     {
@@ -17,23 +17,33 @@ class CreateUsersTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
-            'username' => [
+            'name' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 150,
+            ],
+            'slug' => [
                 'type'       => 'VARCHAR',
                 'constraint' => 100,
             ],
             'email' => [
                 'type'       => 'VARCHAR',
                 'constraint' => 150,
-                'unique'     => true,
+                'null'       => true,
             ],
-            'password_hash' => [
-                'type'       => 'VARCHAR',
-                'constraint' => 255,
-            ],
-            'role' => [
+            'phone' => [
                 'type'       => 'VARCHAR',
                 'constraint' => 20,
-                'default'    => 'client',
+                'null'       => true,
+            ],
+            'city' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 100,
+                'null'       => true,
+            ],
+            'postal_code' => [
+                'type'       => 'VARCHAR',
+                'constraint' => 10,
+                'null'       => true,
             ],
             'created_at' => [
                 'type' => 'DATETIME',
@@ -50,11 +60,12 @@ class CreateUsersTable extends Migration
         ]);
 
         $this->forge->addKey('id', true);
-        $this->forge->createTable('users');
+        $this->forge->addUniqueKey('slug');
+        $this->forge->createTable('companies');
     }
 
     public function down(): void
     {
-        $this->forge->dropTable('users');
+        $this->forge->dropTable('companies');
     }
 }

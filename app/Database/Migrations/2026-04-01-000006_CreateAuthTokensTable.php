@@ -43,9 +43,10 @@ class CreateAuthTokensTable extends Migration
                 'null' => true,
             ],
         ]);
+
         $this->forge->addKey('id', true);
         $this->forge->addKey('selector');
-        $this->forge->addForeignKey('user_id', 'users', 'id', 'CASCADE', 'CASCADE');
+        $this->forge->addForeignKey('user_id', 'users', 'id', 'CASCADE', 'CASCADE', 'fk_auth_tokens_user_id');
         $this->forge->createTable('auth_tokens');
     }
 

@@ -6,7 +6,7 @@ namespace App\Database\Migrations;
 
 use CodeIgniter\Database\Migration;
 
-class CreateLignesCommandeTable extends Migration
+class CreateOrderItemsTable extends Migration
 {
     public function up(): void
     {
@@ -17,43 +17,43 @@ class CreateLignesCommandeTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
-            'commande_id' => [
+            'order_id' => [
                 'type'       => 'INT',
                 'constraint' => 11,
                 'unsigned'   => true,
             ],
-            'produit_id' => [
+            'product_id' => [
                 'type'       => 'INT',
                 'constraint' => 11,
                 'unsigned'   => true,
+                'null'       => true,
             ],
-            'designation' => [
+            'name' => [
                 'type'       => 'VARCHAR',
                 'constraint' => 200,
             ],
-            'quantite' => [
+            'quantity' => [
                 'type'       => 'INT',
                 'constraint' => 11,
-                'default'    => 1,
             ],
-            'prix_unitaire' => [
+            'unit_price' => [
                 'type'       => 'DECIMAL',
                 'constraint' => '10,2',
             ],
-            'sous_total' => [
+            'subtotal' => [
                 'type'       => 'DECIMAL',
-                'constraint' => '12,2',
+                'constraint' => '10,2',
             ],
         ]);
 
         $this->forge->addKey('id', true);
-        $this->forge->addForeignKey('commande_id', 'commandes', 'id', 'CASCADE', 'CASCADE');
-        $this->forge->addForeignKey('produit_id', 'produits', 'id', 'RESTRICT', 'RESTRICT');
-        $this->forge->createTable('lignes_commande');
+        $this->forge->addForeignKey('order_id', 'orders', 'id', 'CASCADE', 'CASCADE', 'fk_order_items_order_id');
+        $this->forge->addForeignKey('product_id', 'products', 'id', 'SET NULL', 'CASCADE', 'fk_order_items_product_id');
+        $this->forge->createTable('order_items');
     }
 
     public function down(): void
     {
-        $this->forge->dropTable('lignes_commande');
+        $this->forge->dropTable('order_items');
     }
 }
