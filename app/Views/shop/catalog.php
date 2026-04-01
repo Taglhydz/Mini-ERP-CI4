@@ -92,3 +92,8 @@
 .card:hover { transform: translateY(-3px); box-shadow: 0 .4rem 1.2rem rgba(0,0,0,.1) !important; }
 </style>
 <?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
+<?= view('shop/_cart_overlay', ['company' => $company]) ?>
+<script src="<?= base_url('assets/js/cart.js') ?>?v=1.0"></script>
+<?= $this->endSection() ?>

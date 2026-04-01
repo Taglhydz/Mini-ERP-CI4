@@ -21,6 +21,8 @@ class CompanyModel extends Model
         'phone',
         'city',
         'postal_code',
+        'logo_path',
+        'cover_path',
     ];
 
     protected $useTimestamps = true;

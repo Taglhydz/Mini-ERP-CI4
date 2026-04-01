@@ -12,10 +12,12 @@ $routes->match(['get', 'post'], 'login',  'AuthController::login');
 $routes->get('logout',                    'AuthController::logout');
 $routes->get('shop/(:segment)/catalog',   'ShopController::catalog/$1');
 $routes->match(['get', 'post'], 'shop/(:segment)/register', 'ShopController::register/$1');
-$routes->post('shop/(:segment)/cart/add',        'CartController::add/$1');
-$routes->post('shop/(:segment)/cart/remove',     'CartController::remove/$1');
-$routes->get('shop/(:segment)/cart',             'CartController::index/$1');
-$routes->get('shop/(:segment)/checkout',         'OrderController::checkout/$1');
+$routes->post('shop/(:segment)/cart/add',         'CartController::add/$1');
+$routes->post('shop/(:segment)/cart/update',      'CartController::update/$1');
+$routes->post('shop/(:segment)/cart/remove',      'CartController::remove/$1');
+$routes->get('shop/(:segment)/cart/summary',      'CartController::summary/$1');
+$routes->get('shop/(:segment)/cart',              'CartController::index/$1');
+$routes->get('shop/(:segment)/checkout',          'OrderController::checkout/$1');
 $routes->post('shop/(:segment)/checkout/confirm', 'OrderController::confirm/$1');
 
 // ─── Groupe auth/* (compatibilité backward) ──────────────────────────────────
@@ -38,6 +40,10 @@ $routes->group('', ['filter' => 'auth'], static function (RouteCollection $route
 
     // ─── Back-office (Admin + Manager) ───────────────────────────────────────
     $routes->group('', ['filter' => 'role:manager'], static function (RouteCollection $routes) {
+        // Paramètres boutique
+        $routes->get ('admin/company/settings', 'CompanyController::settings');
+        $routes->post('admin/company/settings', 'CompanyController::updateImages');
+
         // Clients
         $routes->get ('clients',               'ClientController::index');
         $routes->post('clients/ajax',          'ClientController::ajax');

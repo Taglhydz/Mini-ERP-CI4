@@ -172,18 +172,27 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
 <?php
-$session = session();
-$role = $session->get('role');
-$username = $session->get('username');
-$isLoggedIn = (bool) $session->get('isLoggedIn');
+$session      = session();
+$role          = $session->get('role');
+$username      = $session->get('username');
+$isLoggedIn    = (bool) $session->get('isLoggedIn');
+$companySlug   = $session->get('company_slug');
 $backOfficeNav = in_array($role ?? '', ['admin', 'manager'], true);
+
+if (! $isLoggedIn) {
+    $logoHref = base_url('/');
+} elseif ($role === 'client' && $companySlug) {
+    $logoHref = base_url('shop/' . $companySlug . '/catalog');
+} else {
+    $logoHref = base_url('admin/dashboard');
+}
 ?>
 
 <!-- Barre de navigation -->
 <nav class="navbar navbar-expand-lg navbar-dark navbar-main shadow">
     <div class="container-fluid px-4">
         <!-- Brand -->
-        <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="<?= base_url('/') ?>">
+        <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="<?= $logoHref ?>">
             <span class="bg-white bg-opacity-25 rounded-3 d-flex align-items-center justify-content-center"
                   style="width:36px;height:36px;">
                 <i class="bi bi-box-seam text-white fs-5"></i>
@@ -220,6 +229,13 @@ $backOfficeNav = in_array($role ?? '', ['admin', 'manager'], true);
                                    <?= str_starts_with(current_url(true)->getPath(), '/orders') ? 'active' : '' ?>"
                            href="<?= base_url('orders') ?>">
                             <i class="bi bi-cart-fill"></i>Commandes
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2
+                                   <?= str_starts_with(current_url(true)->getPath(), '/admin/company') ? 'active' : '' ?>"
+                           href="<?= base_url('admin/company/settings') ?>">
+                            <i class="bi bi-shop-window"></i>Boutique
                         </a>
                     </li>
                 </ul>

@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-name" content="<?= csrf_token() ?>">
+    <meta name="csrf-token" content="<?= csrf_hash() ?>">
     <script>(function(){var t=localStorage.getItem('erp-theme')||'light';document.documentElement.setAttribute('data-bs-theme',t);})();</script>
     <title><?= esc($titre ?? 'Mini-ERP') ?> — Mini-ERP</title>
 
@@ -39,11 +41,19 @@ $sessionUser  = session()->get('username');
 $companySlug  = session()->get('company_slug');
 $cartSlug     = session()->get('current_company_slug');
 $cartCount    = $cartSlug ? count(session()->get('cart') ?? []) : 0;
+
+if (! $isLoggedIn) {
+    $logoHref = base_url('/');
+} elseif ($sessionRole === 'client' && $companySlug) {
+    $logoHref = base_url('shop/' . $companySlug . '/catalog');
+} else {
+    $logoHref = base_url('admin/dashboard');
+}
 ?>
 
 <nav class="navbar navbar-expand-lg navbar-dark navbar-public shadow">
     <div class="container">
-        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="<?= base_url('/') ?>">
+        <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="<?= $logoHref ?>">
             <span class="bg-white bg-opacity-25 rounded-3 d-flex align-items-center justify-content-center"
                   style="width:34px;height:34px;">
                 <i class="bi bi-box-seam text-white"></i>
@@ -58,7 +68,8 @@ $cartCount    = $cartSlug ? count(session()->get('cart') ?? []) : 0;
         <div class="collapse navbar-collapse" id="navPublic">
             <div class="ms-auto d-flex align-items-center gap-2">
                 <?php if ($cartSlug): ?>
-                <a href="<?= base_url('shop/' . $cartSlug . '/cart') ?>"
+                <a id="nav-cart-btn"
+                   href="<?= base_url('shop/' . $cartSlug . '/cart') ?>"
                    class="btn btn-sm btn-outline-light position-relative"
                    title="Mon panier">
                     <i class="bi bi-cart2"></i>

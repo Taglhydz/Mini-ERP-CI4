@@ -8,12 +8,13 @@ use App\Models\CompanyModel;
 use App\Models\ProductModel;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\HTTP\RedirectResponse;
+use CodeIgniter\HTTP\Response;
 
 class CartController extends BaseController
 {
-    // ─── Ajouter / incrémenter un produit dans le panier ─────────────────────
+    // ─── Ajouter / incrémenter ────────────────────────────────────────────────
 
-    public function add(string $slug): RedirectResponse
+    public function add(string $slug): RedirectResponse|Response
     {
         $productId = (int) $this->request->getPost('product_id');
         $qty       = max(1, (int) ($this->request->getPost('quantity') ?? 1));
@@ -25,6 +26,9 @@ class CartController extends BaseController
             ->first();
 
         if (! $product) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Produit introuvable.']);
+            }
             return redirect()->back()->with('error', 'Produit introuvable ou indisponible.');
         }
 
@@ -42,13 +46,49 @@ class CartController extends BaseController
 
         session()->set('cart', $cart);
 
+        if ($this->request->isAJAX()) {
+            $ttc = $this->calcTtc($cart);
+            return $this->response->setJSON([
+                'success'    => true,
+                'cart_count' => count($cart),
+                'cart_html'  => $this->buildCartHtml($slug, $cart),
+                'total_ttc'  => number_format($ttc, 2, ',', ' ') . ' €',
+            ]);
+        }
+
         return redirect()->back()
             ->with('success', esc($product['name']) . ' ajouté au panier.');
     }
 
-    // ─── Supprimer une ligne du panier ────────────────────────────────────────
+    // ─── Modifier la quantité (AJAX uniquement) ────────────────────────────────
 
-    public function remove(string $slug): RedirectResponse
+    public function update(string $slug): Response
+    {
+        $productId = (int) $this->request->getPost('product_id');
+        $qty       = (int) $this->request->getPost('quantity');
+
+        $cart = session()->get('cart') ?? [];
+
+        if ($qty <= 0) {
+            unset($cart[$productId]);
+        } elseif (isset($cart[$productId])) {
+            $cart[$productId]['qty'] = $qty;
+        }
+
+        session()->set('cart', $cart);
+
+        $ttc = $this->calcTtc($cart);
+        return $this->response->setJSON([
+            'success'    => true,
+            'cart_count' => count($cart),
+            'cart_html'  => $this->buildCartHtml($slug, $cart),
+            'total_ttc'  => number_format($ttc, 2, ',', ' ') . ' €',
+        ]);
+    }
+
+    // ─── Supprimer une ligne ───────────────────────────────────────────────────
+
+    public function remove(string $slug): RedirectResponse|Response
     {
         $productId = (int) $this->request->getPost('product_id');
 
@@ -56,21 +96,44 @@ class CartController extends BaseController
         unset($cart[$productId]);
         session()->set('cart', $cart);
 
+        if ($this->request->isAJAX()) {
+            $ttc = $this->calcTtc($cart);
+            return $this->response->setJSON([
+                'success'    => true,
+                'cart_count' => count($cart),
+                'cart_html'  => $this->buildCartHtml($slug, $cart),
+                'total_ttc'  => number_format($ttc, 2, ',', ' ') . ' €',
+            ]);
+        }
+
         return redirect()->to(base_url('shop/' . $slug . '/cart'));
     }
 
-    // ─── Afficher le panier ───────────────────────────────────────────────────
+    // ─── Résumé panier (GET AJAX) ─────────────────────────────────────────────
+
+    public function summary(string $slug): Response
+    {
+        $cart = session()->get('cart') ?? [];
+        $ttc  = $this->calcTtc($cart);
+
+        return $this->response->setJSON([
+            'cart_count' => count($cart),
+            'cart_html'  => $this->buildCartHtml($slug, $cart),
+            'total_ttc'  => number_format($ttc, 2, ',', ' ') . ' €',
+        ]);
+    }
+
+    // ─── Afficher la page panier ──────────────────────────────────────────────
 
     public function index(string $slug): string
     {
         $company = $this->findCompanyOrFail($slug);
 
-        // Maintenir le contexte boutique en session (nécessaire pour le login)
         session()->set('current_company_id',   $company['id']);
         session()->set('current_company_slug', $company['slug']);
 
-        $cart      = session()->get('cart') ?? [];
-        $amountHt  = 0.0;
+        $cart     = session()->get('cart') ?? [];
+        $amountHt = 0.0;
 
         foreach ($cart as $item) {
             $amountHt += (float) $item['qty'] * (float) $item['price'];
@@ -93,7 +156,21 @@ class CartController extends BaseController
         ]);
     }
 
-    // ─── Helper ──────────────────────────────────────────────────────────────
+    // ─── Helpers privés ───────────────────────────────────────────────────────
+
+    private function buildCartHtml(string $slug, array $cart): string
+    {
+        return view('shop/_cart_items', ['cart' => $cart, 'slug' => $slug]);
+    }
+
+    private function calcTtc(array $cart): float
+    {
+        $ht = 0.0;
+        foreach ($cart as $item) {
+            $ht += (float) $item['qty'] * (float) $item['price'];
+        }
+        return round($ht * 1.20, 2);
+    }
 
     private function findCompanyOrFail(string $slug): array
     {
