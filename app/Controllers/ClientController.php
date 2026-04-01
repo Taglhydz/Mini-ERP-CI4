@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Models\ClientModel;
+use App\Models\UserModel;
 use CodeIgniter\HTTP\RedirectResponse;
 use CodeIgniter\HTTP\ResponseInterface;
 
 class ClientController extends BaseController
 {
-    protected ClientModel $clientModel;
+    protected UserModel $userModel;
 
     public function __construct()
     {
-        $this->clientModel = model(ClientModel::class);
+        $this->userModel = model(UserModel::class);
     }
 
     // ─── Liste (vue + DataTables Ajax) ──────────────────────────────────────
@@ -24,38 +24,34 @@ class ClientController extends BaseController
         return view('clients/index', ['titre' => 'Clients']);
     }
 
-    /**
-     * Point d'entrée Ajax pour DataTables (POST, server-side).
-     */
     public function ajax(): ResponseInterface
     {
-        $request = $this->request;
+        $draw   = (int) $this->request->getPost('draw');
+        $start  = (int) $this->request->getPost('start');
+        $length = (int) $this->request->getPost('length');
+        $search = $this->request->getPost('search')['value'] ?? '';
 
-        $draw    = (int) $request->getPost('draw');
-        $start   = (int) $request->getPost('start');
-        $length  = (int) $request->getPost('length');
-        $search  = $request->getPost('search')['value'] ?? '';
+        $columns = ['id', 'last_name', 'email', 'phone', 'city'];
 
-        $columns = ['id', 'nom', 'email', 'telephone', 'ville'];
-
-        $orderColIndex = (int) ($request->getPost('order')[0]['column'] ?? 0);
-        $orderDir      = strtoupper($request->getPost('order')[0]['dir'] ?? 'ASC');
+        $orderColIndex = (int) ($this->request->getPost('order')[0]['column'] ?? 0);
+        $orderDir      = strtoupper($this->request->getPost('order')[0]['dir'] ?? 'ASC');
         $orderDir      = in_array($orderDir, ['ASC', 'DESC']) ? $orderDir : 'ASC';
         $orderCol      = $columns[$orderColIndex] ?? 'id';
 
-        $builder = $this->clientModel->builder();
-        $builder->where('deleted_at', null);
+        $builder = $this->userModel->builder();
+        $builder->where('deleted_at', null)
+                ->where('role', 'client');
 
         if ($search !== '') {
             $builder->groupStart()
-                ->like('nom', $search)
-                ->orLike('prenom', $search)
+                ->like('last_name', $search)
+                ->orLike('first_name', $search)
                 ->orLike('email', $search)
-                ->orLike('ville', $search)
+                ->orLike('city', $search)
                 ->groupEnd();
         }
 
-        $total    = $this->clientModel->countAllResults(false);
+        $total    = $this->userModel->where('role', 'client')->countAllResults();
         $filtered = $builder->countAllResults(false);
 
         $rows = $builder->orderBy($orderCol, $orderDir)
@@ -64,16 +60,15 @@ class ClientController extends BaseController
             ->getResultArray();
 
         $data = array_map(function (array $row): array {
-            // Formater le téléphone en XX XX XX XX XX pour l'affichage
-            if (! empty($row['telephone'])) {
-                $digits = preg_replace('/\D/', '', $row['telephone']);
+            if (! empty($row['phone'])) {
+                $digits = preg_replace('/\D/', '', $row['phone']);
                 if (strlen($digits) === 10) {
-                    $row['telephone'] = implode(' ', str_split($digits, 2));
+                    $row['phone'] = implode(' ', str_split($digits, 2));
                 }
             }
 
-            // Nom complet Prénom + Nom
-            $row['nom_complet'] = trim(($row['prenom'] ?? '') . ' ' . $row['nom']);
+            $fullName = trim(($row['first_name'] ?? '') . ' ' . ($row['last_name'] ?? ''));
+            $row['nom_complet'] = $fullName !== '' ? $fullName : $row['username'];
 
             $row['actions'] = sprintf(
                 '<a href="%s" class="btn btn-sm btn-outline-primary me-1" title="Modifier"><i class="bi bi-pencil"></i></a>'
@@ -105,12 +100,37 @@ class ClientController extends BaseController
 
     public function store(): RedirectResponse
     {
-        $data = $this->request->getPost(['prenom', 'nom', 'email', 'telephone', 'adresse_numero', 'adresse_type_voie', 'adresse_nom_voie', 'ville', 'code_postal']);
+        $data = $this->request->getPost([
+            'first_name', 'last_name', 'email', 'phone',
+            'street_number', 'street_type', 'street_name',
+            'city', 'postal_code', 'password',
+        ]);
 
-        $data = $this->normalizeClientData($data);
+        $rules = [
+            'last_name'  => 'required|min_length[2]|max_length[100]',
+            'first_name' => 'required|min_length[2]|max_length[100]',
+            'email'      => 'required|valid_email|max_length[150]',
+            'password'   => 'required|min_length[8]',
+            'phone'      => 'permit_empty|max_length[14]',
+        ];
 
-        if (! $this->clientModel->save($data)) {
-            return redirect()->back()->withInput()->with('errors', $this->clientModel->errors());
+        if (! $this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        // Unicité email (globale pour l'instant)
+        if ($this->userModel->where('email', $data['email'])->first()) {
+            return redirect()->back()->withInput()
+                ->with('errors', ['email' => 'Cet email est déjà utilisé.']);
+        }
+
+        $data = $this->normalizeUserData($data);
+        $data['role']     = 'client';
+        $data['username'] = trim(($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? ''))
+                            ?: $data['email'];
+
+        if (! $this->userModel->save($data)) {
+            return redirect()->back()->withInput()->with('errors', $this->userModel->errors());
         }
 
         return redirect()->to(base_url('clients'))->with('success', 'Client créé avec succès.');
@@ -120,8 +140,8 @@ class ClientController extends BaseController
 
     public function edit(int $id): string
     {
-        $client = $this->clientModel->find($id);
-        if (! $client) {
+        $client = $this->userModel->find($id);
+        if (! $client || $client['role'] !== 'client') {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
@@ -130,36 +150,78 @@ class ClientController extends BaseController
 
     public function update(int $id): RedirectResponse
     {
-        $client = $this->clientModel->find($id);
-        if (! $client) {
+        $client = $this->userModel->find($id);
+        if (! $client || $client['role'] !== 'client') {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
-        $data = $this->request->getPost(['prenom', 'nom', 'email', 'telephone', 'adresse_numero', 'adresse_type_voie', 'adresse_nom_voie', 'ville', 'code_postal']);
 
-        $data = $this->normalizeClientData($data);
+        $data = $this->request->getPost([
+            'first_name', 'last_name', 'email', 'phone',
+            'street_number', 'street_type', 'street_name',
+            'city', 'postal_code', 'password',
+        ]);
 
-        $this->clientModel->setValidationRule('email',
-            "required|valid_email|max_length[150]|is_unique[clients.email,id,{$id}]");
+        $rules = [
+            'last_name'  => 'required|min_length[2]|max_length[100]',
+            'first_name' => 'required|min_length[2]|max_length[100]',
+            'email'      => 'required|valid_email|max_length[150]',
+            'phone'      => 'permit_empty|max_length[14]',
+        ];
 
-        if (! $this->clientModel->update($client['id'], $data)) {
-            return redirect()->back()->withInput()->with('errors', $this->clientModel->errors());
+        if (! $this->validate($rules)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        // Unicité email (exclure l'utilisateur courant)
+        $existing = $this->userModel
+            ->where('email', $data['email'])
+            ->where('id !=', $id)
+            ->first();
+
+        if ($existing) {
+            return redirect()->back()->withInput()
+                ->with('errors', ['email' => 'Cet email est déjà utilisé.']);
+        }
+
+        // Ne pas écraser le mot de passe si le champ est vide
+        if (empty($data['password'])) {
+            unset($data['password']);
+        }
+
+        $data = $this->normalizeUserData($data);
+        $data['username'] = trim(($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? ''))
+                            ?: $data['email'];
+
+        if (! $this->userModel->update($id, $data)) {
+            return redirect()->back()->withInput()->with('errors', $this->userModel->errors());
         }
 
         return redirect()->to(base_url('clients'))->with('success', 'Client mis à jour.');
     }
 
+    // ─── Suppression ─────────────────────────────────────────────────────────
+
+    public function delete(int $id): ResponseInterface
+    {
+        $client = $this->userModel->find($id);
+        if (! $client || $client['role'] !== 'client') {
+            return $this->response->setStatusCode(404)
+                ->setJSON(['success' => false, 'message' => 'Client introuvable.']);
+        }
+        $this->userModel->delete($id);
+
+        return $this->response->setJSON(['success' => true, 'message' => 'Client supprimé.']);
+    }
+
     // ─── Helpers privés ──────────────────────────────────────────────────────
 
-    /**
-     * Normalise le téléphone (chiffres seuls) et capitalise nom/ville.
-     */
-    private function normalizeClientData(array $data): array
+    private function normalizeUserData(array $data): array
     {
-        if (! empty($data['telephone'])) {
-            $data['telephone'] = substr(preg_replace('/\D/', '', $data['telephone']), 0, 10);
+        if (! empty($data['phone'])) {
+            $data['phone'] = substr(preg_replace('/\D/', '', $data['phone']), 0, 10);
         }
 
-        foreach (['nom', 'prenom', 'ville', 'adresse_type_voie', 'adresse_nom_voie'] as $field) {
+        foreach (['last_name', 'first_name', 'city', 'street_type', 'street_name'] as $field) {
             if (! empty($data[$field])) {
                 $data[$field] = $this->capitalizeWords($data[$field]);
             }
@@ -168,9 +230,6 @@ class ClientController extends BaseController
         return $data;
     }
 
-    /**
-     * Capitalise la première lettre de chaque mot (espaces et tirets).
-     */
     private function capitalizeWords(string $str): string
     {
         $lower = mb_strtolower(trim($str), 'UTF-8');
@@ -181,17 +240,5 @@ class ClientController extends BaseController
             $lower
         );
     }
-
-    // ─── Suppression ─────────────────────────────────────────────────────────
-
-    public function delete(int $id): ResponseInterface
-    {
-        if (! $this->clientModel->find($id)) {
-            return $this->response->setStatusCode(404)
-                ->setJSON(['success' => false, 'message' => 'Client introuvable.']);
-        }
-        $this->clientModel->delete($id);
-
-        return $this->response->setJSON(['success' => true, 'message' => 'Client supprimé.']);
-    }
 }
+
