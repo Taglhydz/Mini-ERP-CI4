@@ -89,8 +89,16 @@ class AuthController extends BaseController
             $tokenValue = $this->createToken($userId);
             $this->response->setCookie($this->buildTokenCookie($tokenValue));
 
+            $successMsg    = 'Connexion réussie. Bienvenue, ' . esc($user['username']) . ' !';
+            $redirectAfter = session()->get('redirect_after_login');
+
+            if ($redirectAfter) {
+                session()->remove('redirect_after_login');
+                return redirect()->to($redirectAfter)->with('success', $successMsg);
+            }
+
             return redirect()->to($this->redirectByRole($user['role'], $company['slug'] ?? null))
-                ->with('success', 'Connexion réussie. Bienvenue, ' . esc($user['username']) . ' !');
+                ->with('success', $successMsg);
         }
 
         return view('auth/login', [

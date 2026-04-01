@@ -18,6 +18,7 @@
                     </p>
                 <?php endif; ?>
             </div>
+            <?php if (! $isLoggedIn): ?>
             <div class="ms-auto d-none d-sm-block">
                 <a href="<?= base_url('shop/' . esc($company['slug']) . '/register') ?>"
                    class="btn btn-sm btn-light text-primary fw-semibold">
@@ -27,6 +28,7 @@
                     <i class="bi bi-door-open me-1"></i>Connexion
                 </a>
             </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>
@@ -56,13 +58,24 @@
                             <p class="card-text text-muted small"><?= esc($product['description']) ?></p>
                         <?php endif; ?>
                     </div>
-                    <div class="card-footer bg-transparent d-flex justify-content-between align-items-center">
-                        <span class="fw-bold text-primary fs-5">
-                            <?= number_format((float)$product['unit_price'], 2, ',', ' ') ?> €
-                        </span>
-                        <span class="badge bg-success bg-opacity-10 text-success small">
-                            <i class="bi bi-check-circle me-1"></i>En stock
-                        </span>
+                    <div class="card-footer bg-transparent">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold text-primary fs-5">
+                                <?= number_format((float)$product['unit_price'], 2, ',', ' ') ?> €
+                            </span>
+                            <span class="badge bg-success bg-opacity-10 text-success small">
+                                <i class="bi bi-check-circle me-1"></i>En stock
+                            </span>
+                        </div>
+                        <form method="post"
+                              action="<?= base_url('shop/' . esc($company['slug']) . '/cart/add') ?>">
+                            <?= csrf_field() ?>
+                            <input type="hidden" name="product_id" value="<?= (int) $product['id'] ?>">
+                            <input type="hidden" name="quantity" value="1">
+                            <button type="submit" class="btn btn-primary btn-sm w-100">
+                                <i class="bi bi-cart-plus me-1"></i>Ajouter au panier
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>

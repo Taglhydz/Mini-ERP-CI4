@@ -30,9 +30,13 @@ class ShopController extends BaseController
             ->findAll();
 
         return view('shop/catalog', [
-            'titre'   => esc($company['name']) . ' — Catalogue',
-            'company' => $company,
-            'products' => $products,
+            'titre'      => esc($company['name']) . ' — Catalogue',
+            'company'    => $company,
+            'products'   => $products,
+            'isLoggedIn' => (bool) session()->get('isLoggedIn'),
+            'username'   => session()->get('username'),
+            'role'       => session()->get('role'),
+            'cartCount'  => count(session()->get('cart') ?? []),
         ]);
     }
 
@@ -85,14 +89,17 @@ class ShopController extends BaseController
                 'company_id' => (int) $company['id'],
             ]);
 
-            return redirect()->to('login')
-                ->with('success', 'Compte créé ! Vous pouvez maintenant vous connecter.');
+            return redirect()->to('shop/' . $slug . '/catalog')
+                ->with('success', 'Compte créé avec succès ! Vous pouvez maintenant vous connecter.');
         }
 
         return view('shop/register', [
-            'titre'   => 'Créer un compte — ' . esc($company['name']),
-            'company' => $company,
-            'errors'  => session()->getFlashdata('errors') ?? [],
+            'titre'      => 'Créer un compte — ' . esc($company['name']),
+            'company'    => $company,
+            'errors'     => session()->getFlashdata('errors') ?? [],
+            'isLoggedIn' => false,
+            'username'   => null,
+            'role'       => null,
         ]);
     }
 

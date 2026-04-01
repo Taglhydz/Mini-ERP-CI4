@@ -7,6 +7,7 @@ namespace App\Controllers;
 use App\Models\OrderItemModel;
 use App\Models\OrderModel;
 use App\Models\ProductModel;
+use App\Models\CompanyModel;
 use App\Models\UserModel;
 use CodeIgniter\HTTP\RedirectResponse;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -250,6 +251,129 @@ class OrderController extends BaseController
             ->setHeader('Content-Type', 'application/pdf')
             ->setHeader('Content-Disposition', 'inline; filename="' . $filename . '"')
             ->setBody($output);
+    }
+
+    // ─── Checkout boutique (front client) ────────────────────────────────────
+
+    public function checkout(string $slug): string|RedirectResponse
+    {
+        $isLoggedIn = (bool) session()->get('isLoggedIn');
+
+        if (! $isLoggedIn) {
+            // Mémoriser la destination pour la reprendre après connexion
+            session()->set('redirect_after_login', base_url('shop/' . $slug . '/checkout'));
+            return redirect()->to(base_url('login'))
+                ->with('info', 'Veuillez vous connecter pour finaliser votre commande.');
+        }
+
+        $company = model(CompanyModel::class)
+            ->where('slug', $slug)
+            ->where('deleted_at', null)
+            ->first();
+
+        if (! $company) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Boutique introuvable.');
+        }
+
+        $cart = session()->get('cart') ?? [];
+        if (empty($cart)) {
+            return redirect()->to(base_url('shop/' . $slug . '/catalog'))
+                ->with('info', 'Votre panier est vide.');
+        }
+
+        $amountHt = 0.0;
+        foreach ($cart as $item) {
+            $amountHt += (float) $item['qty'] * (float) $item['price'];
+        }
+        $vatRate   = 20;
+        $amountTtc = round($amountHt * (1 + $vatRate / 100), 2);
+
+        return view('shop/checkout', [
+            'titre'      => 'Finaliser la commande — ' . esc($company['name']),
+            'company'    => $company,
+            'cart'       => $cart,
+            'amountHt'   => $amountHt,
+            'vatRate'    => $vatRate,
+            'amountTtc'  => $amountTtc,
+            'isLoggedIn' => true,
+            'username'   => session()->get('username'),
+            'role'       => session()->get('role'),
+        ]);
+    }
+
+    public function confirm(string $slug): RedirectResponse
+    {
+        $isLoggedIn = (bool) session()->get('isLoggedIn');
+        if (! $isLoggedIn) {
+            return redirect()->to(base_url('login'));
+        }
+
+        $company = model(CompanyModel::class)
+            ->where('slug', $slug)
+            ->where('deleted_at', null)
+            ->first();
+
+        if (! $company) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Boutique introuvable.');
+        }
+
+        // Vérifier que l'utilisateur appartient à cette boutique
+        $userId         = (int) session()->get('user_id');
+        $sessionCompany = (int) session()->get('company_id');
+
+        if ((int) $company['id'] !== $sessionCompany) {
+            return redirect()->to(base_url('shop/' . $slug . '/catalog'))
+                ->with('error', 'Vous n\'avez pas accès à cette boutique.');
+        }
+
+        $cart = session()->get('cart') ?? [];
+        if (empty($cart)) {
+            return redirect()->to(base_url('shop/' . $slug . '/catalog'))
+                ->with('info', 'Votre panier est vide.');
+        }
+
+        $amountHt = 0.0;
+        foreach ($cart as $item) {
+            $amountHt += (float) $item['qty'] * (float) $item['price'];
+        }
+        $vatRate   = 20.0;
+        $amountTtc = round($amountHt * (1 + $vatRate / 100), 2);
+
+        $orderData = [
+            'company_id' => $sessionCompany,
+            'user_id'    => $userId,
+            'number'     => $this->orderModel->generateNumber(),
+            'status'     => 'confirmed',
+            'order_date' => date('Y-m-d'),
+            'amount_ht'  => round($amountHt, 2),
+            'vat_rate'   => $vatRate,
+            'amount_ttc' => $amountTtc,
+        ];
+
+        if (! $this->orderModel->save($orderData)) {
+            return redirect()->back()->with('error', 'Erreur lors de la création de la commande.');
+        }
+
+        $orderId = $this->orderModel->getInsertID();
+        $items   = [];
+
+        foreach ($cart as $productId => $item) {
+            $items[] = [
+                'order_id'   => $orderId,
+                'product_id' => (int) $productId,
+                'name'       => $item['name'],
+                'quantity'   => (int) $item['qty'],
+                'unit_price' => (float) $item['price'],
+                'subtotal'   => round((float) $item['qty'] * (float) $item['price'], 2),
+            ];
+        }
+
+        $this->itemModel->insertBatch($items);
+
+        session()->remove('cart');
+
+        return redirect()->to(base_url('espace-client'))
+            ->with('success', 'Votre commande a été enregistrée avec succès !');
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────

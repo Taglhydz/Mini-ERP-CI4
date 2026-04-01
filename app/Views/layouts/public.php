@@ -37,6 +37,8 @@ $isLoggedIn   = session()->get('isLoggedIn');
 $sessionRole  = session()->get('role');
 $sessionUser  = session()->get('username');
 $companySlug  = session()->get('company_slug');
+$cartSlug     = session()->get('current_company_slug');
+$cartCount    = $cartSlug ? count(session()->get('cart') ?? []) : 0;
 ?>
 
 <nav class="navbar navbar-expand-lg navbar-dark navbar-public shadow">
@@ -55,6 +57,19 @@ $companySlug  = session()->get('company_slug');
 
         <div class="collapse navbar-collapse" id="navPublic">
             <div class="ms-auto d-flex align-items-center gap-2">
+                <?php if ($cartSlug): ?>
+                <a href="<?= base_url('shop/' . $cartSlug . '/cart') ?>"
+                   class="btn btn-sm btn-outline-light position-relative"
+                   title="Mon panier">
+                    <i class="bi bi-cart2"></i>
+                    <?php if ($cartCount > 0): ?>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                          style="font-size:.6rem;min-width:1.2em;padding:.2em .4em;">
+                        <?= $cartCount ?>
+                    </span>
+                    <?php endif; ?>
+                </a>
+                <?php endif; ?>
                 <?php if (! $isLoggedIn): ?>
                     <a href="<?= base_url('login') ?>" class="btn btn-sm btn-outline-light">
                         <i class="bi bi-door-open me-1"></i>Connexion
