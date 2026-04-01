@@ -7,16 +7,17 @@ namespace App\Database\Seeds;
 use CodeIgniter\Database\Seeder;
 
 /**
- * Seeder principal — à lancer via :
- *   php spark db:seed DatabaseSeeder
- *   ou : php spark migrate:refresh --seed
+ * Seeder principal — exécuté par défaut.
  *
- * Insère les données initiales (entreprise + admin + manager).
+ * Utilisation :
+ *   php spark db:seed                  → données minimales (production)
+ *   php spark db:seed DemoSeeder       → données de démonstration complètes
+ *   php spark migrate:refresh --seed   → repart de zéro + données initiales
  */
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $this->call(InitialDataSeeder::class);
+        $this->call(InitialSeeder::class);
     }
 }
