@@ -12,8 +12,7 @@ class RoleFilter implements FilterInterface
 {
     public function before(RequestInterface $request, $arguments = null)
     {
-        $user = session()->get('auth');
-        $role = $user['role'] ?? null;
+        $role = session()->get('role');
 
         // Admin bypass : accès complet à toutes les zones protégées
         if ($role === 'admin') {

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Filters;
 
-use App\Libraries\ClientLinker;
 use App\Models\AuthTokenModel;
 use App\Models\UserModel;
 use CodeIgniter\Filters\FilterInterface;
@@ -13,20 +12,22 @@ use CodeIgniter\HTTP\ResponseInterface;
 
 class AuthFilter implements FilterInterface
 {
+    public const LOGIN_REQUIRED_MESSAGE = 'Veuillez vous connecter pour continuer.';
+
     public function before(RequestInterface $request, $arguments = null)
     {
-        if (! session()->has('auth')) {
+        if (! session()->get('isLoggedIn')) {
             $token = $request->getCookie('auth_token');
             if ($token) {
                 $userData = $this->resolveToken($token);
                 if ($userData) {
-                    session()->set('auth', $userData);
+                    session()->set($userData);
                     return null;
                 }
             }
 
-            session()->setFlashdata('error', 'Veuillez vous connecter pour continuer.');
-            return redirect()->to('auth/login');
+            session()->setFlashdata('error', self::LOGIN_REQUIRED_MESSAGE);
+            return redirect()->to('login');
         }
 
         return null;
@@ -68,15 +69,18 @@ class AuthFilter implements FilterInterface
             return null;
         }
 
-        $clientLinker = new ClientLinker();
-        $clientId = $clientLinker->ensureClientId($user);
+        $company = $user['company_id']
+            ? model(\App\Models\CompanyModel::class)->find($user['company_id'])
+            : null;
 
         return [
-            'id' => $user['id'],
-            'username' => $user['username'] ?? $user['email'],
-            'email' => $user['email'],
-            'role' => $user['role'],
-            'client_id' => $clientId,
+            'isLoggedIn'   => true,
+            'user_id'      => $user['id'],
+            'username'     => $user['username'],
+            'email'        => $user['email'],
+            'role'         => $user['role'],
+            'company_id'   => $user['company_id'],
+            'company_slug' => $company['slug'] ?? null,
         ];
     }
 }

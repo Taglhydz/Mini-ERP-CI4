@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
-use App\Libraries\ClientLinker;
 use App\Models\AuthTokenModel;
+use App\Models\CompanyModel;
 use App\Models\UserModel;
 use CodeIgniter\HTTP\RedirectResponse;
 
@@ -13,18 +13,16 @@ class AuthController extends BaseController
 {
     protected UserModel $userModel;
     protected AuthTokenModel $authTokenModel;
-    protected ClientLinker $clientLinker;
 
     public function __construct()
     {
-        $this->userModel = model(UserModel::class);
+        $this->userModel      = model(UserModel::class);
         $this->authTokenModel = model(AuthTokenModel::class);
-        $this->clientLinker = new ClientLinker();
     }
 
     public function login()
     {
-        if (session()->has('auth')) {
+        if (session()->get('isLoggedIn')) {
             return redirect()->to('/');
         }
 
@@ -40,10 +38,26 @@ class AuthController extends BaseController
                     ->with('errors', $this->validator->getErrors());
             }
 
-            $email    = (string) $this->request->getPost('email');
-            $password = (string) $this->request->getPost('password');
+            $email     = (string) $this->request->getPost('email');
+            $password  = (string) $this->request->getPost('password');
+            $companyId = session()->get('current_company_id');
 
-            $user = $this->userModel->where('email', $email)->first();
+            if ($companyId) {
+                // Chemin client : email + entreprise
+                $user = $this->userModel
+                    ->where('email', $email)
+                    ->where('company_id', (int) $companyId)
+                    ->first();
+            } else {
+                // Chemin admin / manager : pas de contexte boutique
+                $user = $this->userModel
+                    ->where('email', $email)
+                    ->groupStart()
+                        ->where('company_id', null)
+                        ->orWhereIn('role', ['admin', 'manager'])
+                    ->groupEnd()
+                    ->first();
+            }
 
             if (! $user || ! password_verify($password, $user['password_hash'])) {
                 return redirect()->back()
@@ -51,22 +65,31 @@ class AuthController extends BaseController
                     ->with('errors', ['login' => 'Email ou mot de passe invalide.']);
             }
 
-            $userId = (int) $user['id'];
-            $clientId = $this->clientLinker->ensureClientId($user);
+            // Un client ne peut pas se connecter sans contexte boutique
+            if ($user['role'] === 'client' && ! $companyId) {
+                return redirect()->to('/')
+                    ->with('error', 'Veuillez d\'abord choisir une boutique pour vous connecter.');
+            }
 
-            session()->set('auth', [
-                'id'        => $userId,
-                'username'  => $user['username'] ?? $user['email'],
-                'email'     => $user['email'],
-                'role'      => $user['role'],
-                'client_id' => $clientId,
+            $userId  = (int) $user['id'];
+            $company = $user['company_id']
+                ? model(CompanyModel::class)->find($user['company_id'])
+                : null;
+
+            session()->set([
+                'isLoggedIn'   => true,
+                'user_id'      => $userId,
+                'username'     => $user['username'],
+                'role'         => $user['role'],
+                'company_id'   => $user['company_id'],
+                'company_slug' => $company['slug'] ?? null,
             ]);
 
             $this->authTokenModel->where('user_id', $userId)->delete();
             $tokenValue = $this->createToken($userId);
             $this->response->setCookie($this->buildTokenCookie($tokenValue));
 
-            return redirect()->to($this->redirectByRole($user['role']))
+            return redirect()->to($this->redirectByRole($user['role'], $company['slug'] ?? null))
                 ->with('success', 'Connexion réussie. Bienvenue, ' . esc($user['username']) . ' !');
         }
 
@@ -78,48 +101,9 @@ class AuthController extends BaseController
 
     public function register()
     {
-        if (session()->has('auth')) {
-            return redirect()->to('/');
-        }
-
-        if ($this->request->is('post')) {
-            $rules = [
-                'username'         => 'required|min_length[3]|max_length[60]',
-                'email'            => 'required|valid_email|is_unique[users.email]',
-                'password'         => 'required|min_length[8]',
-                'password_confirm' => 'required|matches[password]',
-                'role'             => 'required|in_list[client,user]',
-            ];
-
-            if (! $this->validate($rules)) {
-                return redirect()->back()
-                    ->withInput()
-                    ->with('errors', $this->validator->getErrors());
-            }
-
-            $userData = [
-                'username' => $this->request->getPost('username'),
-                'email'    => $this->request->getPost('email'),
-                'password' => $this->request->getPost('password'),
-                'role'     => $this->request->getPost('role'),
-            ];
-
-            $insertedId = (int) $this->userModel->insert($userData);
-            if ($insertedId) {
-                $insertedUser = $this->userModel->find($insertedId);
-                if ($insertedUser) {
-                    $this->clientLinker->ensureClientId($insertedUser);
-                }
-            }
-
-            return redirect()->to('auth/login')
-                ->with('success', 'Compte créé, vous pouvez maintenant vous connecter.');
-        }
-
-        return view('auth/register', [
-            'titre'  => 'Créer un compte',
-            'errors' => session()->getFlashdata('errors') ?? [],
-        ]);
+        // L'inscription clients se fait via /shop/{slug}/register
+        return redirect()->to('/')
+            ->with('info', 'Pour créer un compte client, choisissez d\'abord une boutique.');
     }
 
     public function logout(): RedirectResponse
@@ -130,22 +114,22 @@ class AuthController extends BaseController
             $this->authTokenModel->where('selector', $selector)->delete();
         }
         $this->response->deleteCookie('auth_token');
-        session()->remove('auth');
+        session()->destroy();
 
-        return redirect()->to('auth/login')->with('success', 'Déconnexion effectuée.');
+        return redirect()->to('/')->with('success', 'Déconnexion effectuée.');
     }
 
     private function createToken(int $userId): string
     {
-        $selector = bin2hex(random_bytes(9));
+        $selector  = bin2hex(random_bytes(9));
         $validator = bin2hex(random_bytes(32));
-        $expires = date('Y-m-d H:i:s', time() + $this->getTokenLifetime());
+        $expires   = date('Y-m-d H:i:s', time() + $this->getTokenLifetime());
 
         $this->authTokenModel->insert([
-            'user_id' => $userId,
-            'selector' => $selector,
+            'user_id'        => $userId,
+            'selector'       => $selector,
             'validator_hash' => password_hash($validator, PASSWORD_DEFAULT),
-            'expires_at' => $expires,
+            'expires_at'     => $expires,
         ]);
 
         return $selector . ':' . $validator;
@@ -167,11 +151,12 @@ class AuthController extends BaseController
         return 60 * 60 * 24 * 7; // 7 jours
     }
 
-    private function redirectByRole(string $role): string
+    private function redirectByRole(string $role, ?string $slug = null): string
     {
         return match ($role) {
-            'client' => 'espace-client',
-            default  => '/',   // admin & user → back-office
+            'client' => 'shop/' . ($slug ?? '') . '/catalog',
+            default  => 'admin/dashboard',
         };
     }
 }
+
