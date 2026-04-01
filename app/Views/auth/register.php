@@ -40,7 +40,7 @@
                         <label for="role" class="form-label">Rôle</label>
                         <select class="form-select" id="role" name="role" required>
                             <option value="client" <?= old('role', 'client') === 'client' ? 'selected' : '' ?>>Client</option>
-                            <option value="user"   <?= old('role') === 'user'   ? 'selected' : '' ?>>User (back-office)</option>
+                            <option value="manager" <?= old('role') === 'manager' ? 'selected' : '' ?>>Manager (back-office)</option>
                         </select>
                         <small class="text-muted">Les comptes Admin sont gérés par l'administrateur.</small>
                     </div>

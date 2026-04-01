@@ -7,14 +7,14 @@
         <h1 class="h3 mb-0"><i class="bi bi-box me-2 text-success"></i>Produits</h1>
         <p class="text-muted small mb-0">Catalogue produits et stocks</p>
     </div>
-    <a href="<?= base_url('produits/create') ?>" class="btn btn-success">
+    <a href="<?= base_url('products/create') ?>" class="btn btn-success">
         <i class="bi bi-plus-lg me-1"></i>Nouveau produit
     </a>
 </div>
 
 <div class="card border-0 shadow-sm">
     <div class="card-body">
-        <table id="table-produits" class="table table-hover w-100">
+        <table id="table-products" class="table table-hover w-100">
             <thead>
                 <tr>
                     <th>Réf.</th>
@@ -33,19 +33,19 @@
 <?= $this->section('scripts') ?>
 <script>
 $(function () {
-    $('#table-produits').DataTable({
+    $('#table-products').DataTable({
         serverSide: true,
         processing: true,
         ajax: {
-            url: '<?= base_url('produits/ajax') ?>',
+            url: '<?= base_url('products/ajax') ?>',
             type: 'POST',
         },
         columns: [
             { data: 'reference' },
-            { data: 'designation' },
-            { data: 'prix_unitaire', className: 'text-end' },
-            { data: 'stock',        className: 'text-center' },
-            { data: 'actions',      orderable: false, className: 'text-center' },
+            { data: 'name' },
+            { data: 'unit_price_formatted', className: 'text-end' },
+            { data: 'stock',                className: 'text-center' },
+            { data: 'actions',              orderable: false, className: 'text-center' },
         ],
         language: {
             url: '<?= base_url("assets/js/i18n/fr-FR.json") ?>',

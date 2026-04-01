@@ -4,34 +4,36 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h1 class="h3 mb-0"><i class="bi bi-receipt me-2 text-warning"></i><?= esc($commande['numero']) ?></h1>
-        <p class="text-muted small mb-0"><?= view('partials/badge_statut', ['statut' => $commande['statut']]) ?>
-            &mdash; <?= date('d/m/Y', strtotime($commande['date_commande'])) ?></p>
+        <h1 class="h3 mb-0"><i class="bi bi-receipt me-2 text-warning"></i><?= esc($order['number']) ?></h1>
+        <p class="text-muted small mb-0">
+            <?= view('partials/badge_status', ['status' => $order['status']]) ?>
+            &mdash; <?= date('d/m/Y', strtotime($order['order_date'])) ?>
+        </p>
     </div>
     <div class="d-flex gap-2">
-        <a href="<?= base_url('commandes/' . $commande['id'] . '/pdf') ?>"
+        <a href="<?= base_url('orders/' . $order['id'] . '/pdf') ?>"
            class="btn btn-outline-danger" target="_blank">
             <i class="bi bi-file-pdf me-1"></i>Télécharger PDF
         </a>
-        <a href="<?= base_url('commandes/' . $commande['id'] . '/edit') ?>" class="btn btn-primary">
+        <a href="<?= base_url('orders/' . $order['id'] . '/edit') ?>" class="btn btn-primary">
             <i class="bi bi-pencil me-1"></i>Modifier
         </a>
-        <a href="<?= base_url('commandes') ?>" class="btn btn-outline-secondary">
+        <a href="<?= base_url('orders') ?>" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left me-1"></i>Retour
         </a>
     </div>
 </div>
 
 <div class="row g-4">
-    <!-- Infos commande -->
+    <!-- Infos client -->
     <div class="col-md-4">
         <div class="card border-0 shadow-sm h-100">
             <div class="card-header border-bottom fw-semibold">
                 <i class="bi bi-person me-2 text-primary"></i>Client
             </div>
             <div class="card-body">
-                <div class="fw-bold fs-5"><?= esc($commande['client_nom']) ?></div>
-                <div class="text-muted small"><?= esc($commande['client_email']) ?></div>
+                <div class="fw-bold fs-5"><?= esc($order['user_name']) ?></div>
+                <div class="text-muted small"><?= esc($order['user_email']) ?></div>
             </div>
         </div>
     </div>
@@ -44,13 +46,13 @@
             <div class="card-body">
                 <dl class="row mb-0">
                     <dt class="col-sm-4 text-muted">Numéro</dt>
-                    <dd class="col-sm-8"><?= esc($commande['numero']) ?></dd>
+                    <dd class="col-sm-8"><?= esc($order['number']) ?></dd>
                     <dt class="col-sm-4 text-muted">Date</dt>
-                    <dd class="col-sm-8"><?= date('d/m/Y', strtotime($commande['date_commande'])) ?></dd>
+                    <dd class="col-sm-8"><?= date('d/m/Y', strtotime($order['order_date'])) ?></dd>
                     <dt class="col-sm-4 text-muted">Statut</dt>
-                    <dd class="col-sm-8"><?= view('partials/badge_statut', ['statut' => $commande['statut']]) ?></dd>
+                    <dd class="col-sm-8"><?= view('partials/badge_status', ['status' => $order['status']]) ?></dd>
                     <dt class="col-sm-4 text-muted">TVA</dt>
-                    <dd class="col-sm-8"><?= esc($commande['taux_tva']) ?> %</dd>
+                    <dd class="col-sm-8"><?= esc($order['vat_rate']) ?> %</dd>
                 </dl>
             </div>
         </div>
@@ -74,29 +76,29 @@
                             </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($lignes as $ligne): ?>
+                        <?php foreach ($items as $item): ?>
                             <tr>
-                                <td><?= esc($ligne['designation']) ?></td>
-                                <td class="text-center"><?= esc($ligne['quantite']) ?></td>
-                                <td class="text-end"><?= number_format((float)$ligne['prix_unitaire'], 2, ',', ' ') ?> €</td>
-                                <td class="text-end"><?= number_format((float)$ligne['sous_total'], 2, ',', ' ') ?> €</td>
+                                <td><?= esc($item['name']) ?></td>
+                                <td class="text-center"><?= esc($item['quantity']) ?></td>
+                                <td class="text-end"><?= number_format((float)$item['unit_price'], 2, ',', ' ') ?> €</td>
+                                <td class="text-end"><?= number_format((float)$item['subtotal'], 2, ',', ' ') ?> €</td>
                             </tr>
                         <?php endforeach; ?>
                         </tbody>
                         <tfoot class="fw-bold">
                             <tr>
                                 <td colspan="3" class="text-end">Total HT</td>
-                                <td class="text-end"><?= number_format((float)$commande['montant_ht'], 2, ',', ' ') ?> €</td>
+                                <td class="text-end"><?= number_format((float)$order['amount_ht'], 2, ',', ' ') ?> €</td>
                             </tr>
                             <tr>
-                                <td colspan="3" class="text-end">TVA (<?= esc($commande['taux_tva']) ?>%)</td>
+                                <td colspan="3" class="text-end">TVA (<?= esc($order['vat_rate']) ?>%)</td>
                                 <td class="text-end">
-                                    <?= number_format((float)$commande['montant_ttc'] - (float)$commande['montant_ht'], 2, ',', ' ') ?> €
+                                    <?= number_format((float)$order['amount_ttc'] - (float)$order['amount_ht'], 2, ',', ' ') ?> €
                                 </td>
                             </tr>
                             <tr class="table-active">
                                 <td colspan="3" class="text-end fs-5">Total TTC</td>
-                                <td class="text-end fs-5"><?= number_format((float)$commande['montant_ttc'], 2, ',', ' ') ?> €</td>
+                                <td class="text-end fs-5"><?= number_format((float)$order['amount_ttc'], 2, ',', ' ') ?> €</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -105,12 +107,12 @@
         </div>
     </div>
 
-    <?php if (! empty($commande['notes'])): ?>
+    <?php if (! empty($order['notes'])): ?>
     <div class="col-12">
         <div class="card border-0 shadow-sm border-start border-warning border-3">
             <div class="card-body">
                 <strong><i class="bi bi-sticky me-1 text-warning"></i>Notes :</strong>
-                <p class="mb-0 mt-1"><?= nl2br(esc($commande['notes'])) ?></p>
+                <p class="mb-0 mt-1"><?= nl2br(esc($order['notes'])) ?></p>
             </div>
         </div>
     </div>

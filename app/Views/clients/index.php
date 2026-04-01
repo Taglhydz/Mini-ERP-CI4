@@ -45,8 +45,8 @@ $(function () {
             { data: 'id',           width: '60px' },
             { data: 'nom_complet' },
             { data: 'email' },
-            { data: 'telephone',   defaultContent: '—' },
-            { data: 'ville',       defaultContent: '—' },
+            { data: 'phone',    defaultContent: '—' },
+            { data: 'city',     defaultContent: '—' },
             { data: 'actions',     orderable: false, className: 'text-center' },
         ],
         language: {

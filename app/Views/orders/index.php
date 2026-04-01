@@ -7,14 +7,14 @@
         <h1 class="h3 mb-0"><i class="bi bi-cart me-2 text-warning"></i>Commandes</h1>
         <p class="text-muted small mb-0">Suivi et gestion des commandes</p>
     </div>
-    <a href="<?= base_url('commandes/create') ?>" class="btn btn-warning text-white">
+    <a href="<?= base_url('orders/create') ?>" class="btn btn-warning text-white">
         <i class="bi bi-plus-lg me-1"></i>Nouvelle commande
     </a>
 </div>
 
 <div class="card border-0 shadow-sm">
     <div class="card-body">
-        <table id="table-commandes" class="table table-hover w-100">
+        <table id="table-orders" class="table table-hover w-100">
             <thead>
                 <tr>
                     <th>Numéro</th>
@@ -35,21 +35,21 @@
 <?= $this->section('scripts') ?>
 <script>
 $(function () {
-    $('#table-commandes').DataTable({
+    $('#table-orders').DataTable({
         serverSide: true,
         processing: true,
         ajax: {
-            url: '<?= base_url('commandes/ajax') ?>',
+            url: '<?= base_url('orders/ajax') ?>',
             type: 'POST',
         },
         columns: [
-            { data: 'numero' },
-            { data: 'client_nom' },
-            { data: 'date_commande' },
-            { data: 'montant_ht',  className: 'text-end' },
-            { data: 'montant_ttc', className: 'text-end' },
-            { data: 'statut' },
-            { data: 'actions',     orderable: false, className: 'text-center' },
+            { data: 'number' },
+            { data: 'user_name' },
+            { data: 'order_date' },
+            { data: 'amount_ht_fmt',  className: 'text-end' },
+            { data: 'amount_ttc_fmt', className: 'text-end' },
+            { data: 'status_badge' },
+            { data: 'actions',        orderable: false, className: 'text-center' },
         ],
         language: {
             url: '<?= base_url("assets/js/i18n/fr-FR.json") ?>',

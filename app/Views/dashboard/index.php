@@ -37,12 +37,12 @@
                     <i class="bi bi-box fs-3 text-success"></i>
                 </div>
                 <div>
-                    <div class="fs-2 fw-bold"><?= esc($stats['produits']) ?></div>
+                    <div class="fs-2 fw-bold"><?= esc($stats['products']) ?></div>
                     <div class="text-muted small">Produits</div>
                 </div>
             </div>
             <div class="card-footer bg-transparent border-0 pt-0">
-                <a href="<?= base_url('produits') ?>" class="btn btn-sm btn-outline-success w-100">
+                <a href="<?= base_url('products') ?>" class="btn btn-sm btn-outline-success w-100">
                     Gérer <i class="bi bi-arrow-right ms-1"></i>
                 </a>
             </div>
@@ -56,12 +56,12 @@
                     <i class="bi bi-cart fs-3 text-warning"></i>
                 </div>
                 <div>
-                    <div class="fs-2 fw-bold"><?= esc($stats['commandes']) ?></div>
+                    <div class="fs-2 fw-bold"><?= esc($stats['orders']) ?></div>
                     <div class="text-muted small">Commandes</div>
                 </div>
             </div>
             <div class="card-footer bg-transparent border-0 pt-0">
-                <a href="<?= base_url('commandes') ?>" class="btn btn-sm btn-outline-warning w-100">
+                <a href="<?= base_url('orders') ?>" class="btn btn-sm btn-outline-warning w-100">
                     Gérer <i class="bi bi-arrow-right ms-1"></i>
                 </a>
             </div>
@@ -80,7 +80,7 @@
                 </div>
             </div>
             <div class="card-footer bg-transparent border-0 pt-0">
-                <a href="<?= base_url('commandes') ?>" class="btn btn-sm btn-outline-info w-100">
+                <a href="<?= base_url('orders') ?>" class="btn btn-sm btn-outline-info w-100">
                     Détails <i class="bi bi-arrow-right ms-1"></i>
                 </a>
             </div>
@@ -92,7 +92,7 @@
 <div class="card border-0 shadow-sm">
     <div class="card-header border-bottom d-flex justify-content-between align-items-center">
         <h5 class="mb-0"><i class="bi bi-clock-history me-2 text-primary"></i>Dernières commandes</h5>
-        <a href="<?= base_url('commandes/create') ?>" class="btn btn-sm btn-primary">
+        <a href="<?= base_url('orders/create') ?>" class="btn btn-sm btn-primary">
             <i class="bi bi-plus-lg me-1"></i>Nouvelle commande
         </a>
     </div>
@@ -110,22 +110,22 @@
                     </tr>
                 </thead>
                 <tbody>
-                <?php if (empty($dernieres_commandes)): ?>
+                <?php if (empty($latest_orders)): ?>
                     <tr>
                         <td colspan="6" class="text-center text-muted py-4">
                             <i class="bi bi-inbox fs-4 d-block mb-2"></i>Aucune commande pour l'instant.
                         </td>
                     </tr>
                 <?php else: ?>
-                    <?php foreach ($dernieres_commandes as $cmd): ?>
+                    <?php foreach ($latest_orders as $cmd): ?>
                     <tr>
-                        <td class="fw-semibold"><?= esc($cmd['numero']) ?></td>
-                        <td><?= esc($cmd['client_nom']) ?></td>
-                        <td><?= date('d/m/Y', strtotime($cmd['date_commande'])) ?></td>
-                        <td><?= number_format($cmd['montant_ttc'], 2, ',', ' ') ?> €</td>
-                        <td><?= view('partials/badge_statut', ['statut' => $cmd['statut']]) ?></td>
+                        <td class="fw-semibold"><?= esc($cmd['number']) ?></td>
+                        <td><?= esc($cmd['user_name']) ?></td>
+                        <td><?= date('d/m/Y', strtotime($cmd['order_date'])) ?></td>
+                        <td><?= number_format($cmd['amount_ttc'], 2, ',', ' ') ?> €</td>
+                        <td><?= view('partials/badge_status', ['status' => $cmd['status']]) ?></td>
                         <td class="text-center">
-                            <a href="<?= base_url('commandes/' . $cmd['id']) ?>"
+                            <a href="<?= base_url('orders/' . $cmd['id']) ?>"
                                class="btn btn-sm btn-outline-secondary" title="Voir">
                                 <i class="bi bi-eye"></i>
                             </a>

@@ -13,7 +13,7 @@
         <h5 class="mb-0"><i class="bi bi-cart-fill me-2 text-primary"></i>Mes commandes</h5>
     </div>
     <div class="card-body p-0">
-        <?php if (empty($commandes)): ?>
+        <?php if (empty($orders)): ?>
             <div class="p-4 text-center text-muted">
                 <i class="bi bi-inbox fs-1 d-block mb-2 opacity-50"></i>
                 Aucune commande pour l'instant.
@@ -30,12 +30,12 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($commandes as $cmd): ?>
+                        <?php foreach ($orders as $cmd): ?>
                             <tr>
-                                <td class="fw-semibold"><?= esc($cmd['id']) ?></td>
-                                <td><?= esc(date('d/m/Y', strtotime($cmd['date_commande'] ?? $cmd['created_at']))) ?></td>
-                                <td><?= $this->include('partials/badge_statut', ['statut' => $cmd['statut'] ?? 'en_attente']) ?></td>
-                                <td class="text-end fw-semibold"><?= number_format((float) ($cmd['montant_ttc'] ?? 0), 2, ',', ' ') ?> €</td>
+                                <td class="fw-semibold"><?= esc($cmd['number'] ?? $cmd['id']) ?></td>
+                                <td><?= esc(date('d/m/Y', strtotime($cmd['order_date'] ?? $cmd['created_at']))) ?></td>
+                                <td><?= view('partials/badge_status', ['status' => $cmd['status'] ?? 'draft']) ?></td>
+                                <td class="text-end fw-semibold"><?= number_format((float) ($cmd['amount_ttc'] ?? 0), 2, ',', ' ') ?> €</td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

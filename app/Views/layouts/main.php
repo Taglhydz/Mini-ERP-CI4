@@ -173,8 +173,10 @@
 <body class="d-flex flex-column min-vh-100">
 <?php
 $session = session();
-$authUser = $session->get('auth');
-$backOfficeNav = in_array($authUser['role'] ?? '', ['admin', 'user'], true);
+$role = $session->get('role');
+$username = $session->get('username');
+$isLoggedIn = (bool) $session->get('isLoggedIn');
+$backOfficeNav = in_array($role ?? '', ['admin', 'manager'], true);
 ?>
 
 <!-- Barre de navigation -->
@@ -208,20 +210,20 @@ $backOfficeNav = in_array($authUser['role'] ?? '', ['admin', 'user'], true);
                     </li>
                     <li class="nav-item">
                         <a class="nav-link d-flex align-items-center gap-2
-                                   <?= str_starts_with(current_url(true)->getPath(), '/produits') ? 'active' : '' ?>"
-                           href="<?= base_url('produits') ?>">
+                                   <?= str_starts_with(current_url(true)->getPath(), '/products') ? 'active' : '' ?>"
+                           href="<?= base_url('products') ?>">
                             <i class="bi bi-box-fill"></i>Produits
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link d-flex align-items-center gap-2
-                                   <?= str_starts_with(current_url(true)->getPath(), '/commandes') ? 'active' : '' ?>"
-                           href="<?= base_url('commandes') ?>">
+                                   <?= str_starts_with(current_url(true)->getPath(), '/orders') ? 'active' : '' ?>"
+                           href="<?= base_url('orders') ?>">
                             <i class="bi bi-cart-fill"></i>Commandes
                         </a>
                     </li>
                 </ul>
-            <?php elseif (($authUser['role'] ?? '') === 'client'): ?>
+            <?php elseif ($role === 'client'): ?>
                 <ul class="navbar-nav ms-4 me-auto mb-2 mb-lg-0 gap-1">
                     <li class="nav-item">
                         <a class="nav-link d-flex align-items-center gap-2
@@ -237,19 +239,19 @@ $backOfficeNav = in_array($authUser['role'] ?? '', ['admin', 'user'], true);
                 <span class="d-none d-xl-inline">
                     <i class="bi bi-calendar3 me-1"></i><?= date('d/m/Y') ?>
                 </span>
-                <?php if ($authUser): ?>
+                <?php if ($isLoggedIn): ?>
                     <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-2">
-                        <span class="fw-semibold text-white"><?= esc($authUser['username']) ?></span>
-                        <span class="badge bg-white text-dark text-capitalize"><?= esc($authUser['role']) ?></span>
+                        <span class="fw-semibold text-white"><?= esc($username) ?></span>
+                        <span class="badge bg-white text-dark text-capitalize"><?= esc($role) ?></span>
                     </div>
-                    <a href="<?= base_url('auth/logout') ?>" class="btn btn-sm btn-outline-light">
+                    <a href="<?= base_url('logout') ?>" class="btn btn-sm btn-outline-light">
                         <i class="bi bi-box-arrow-right me-1"></i>Déconnexion
                     </a>
                 <?php else: ?>
-                    <a href="<?= base_url('auth/login') ?>" class="btn btn-sm btn-outline-light">
+                    <a href="<?= base_url('login') ?>" class="btn btn-sm btn-outline-light">
                         <i class="bi bi-door-open me-1"></i>Connexion
                     </a>
-                    <a href="<?= base_url('auth/register') ?>" class="btn btn-sm btn-outline-light">
+                    <a href="<?= base_url('/') ?>" class="btn btn-sm btn-outline-light">
                         <i class="bi bi-pencil-square me-1"></i>Créer un compte
                     </a>
                 <?php endif; ?>
@@ -316,8 +318,8 @@ $backOfficeNav = in_array($authUser['role'] ?? '', ['admin', 'user'], true);
                 <p class="footer-title mb-2">Navigation</p>
                 <ul class="list-unstyled mb-0">
                     <li><a href="<?= base_url('clients') ?>"><i class="bi bi-people me-1"></i>Clients</a></li>
-                    <li class="mt-1"><a href="<?= base_url('produits') ?>"><i class="bi bi-box me-1"></i>Produits</a></li>
-                    <li class="mt-1"><a href="<?= base_url('commandes') ?>"><i class="bi bi-cart me-1"></i>Commandes</a></li>
+                    <li class="mt-1"><a href="<?= base_url('products') ?>"><i class="bi bi-box me-1"></i>Produits</a></li>
+                    <li class="mt-1"><a href="<?= base_url('orders') ?>"><i class="bi bi-cart me-1"></i>Commandes</a></li>
                 </ul>
             </div>
 
@@ -392,6 +394,9 @@ $backOfficeNav = in_array($authUser['role'] ?? '', ['admin', 'user'], true);
 
 <?php $flashSuccess = session()->getFlashdata('success'); ?>
 <?php $flashError   = session()->getFlashdata('error');   ?>
+<?php if ($flashError === \App\Filters\AuthFilter::LOGIN_REQUIRED_MESSAGE): ?>
+    <?php $flashError = ''; ?>
+<?php endif; ?>
 <?php if ($flashSuccess): ?>
 <script>showToast('<?= esc($flashSuccess, 'js') ?>', 'success');</script>
 <?php endif; ?>
