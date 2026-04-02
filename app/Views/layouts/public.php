@@ -16,8 +16,11 @@
 
     <?= $this->renderSection('styles') ?>
     <style>
-        /* ── Variable hauteur header (mise à jour par header.js) ── */
-        :root { --header-height: 64px; }
+        /* ── Variables hauteur header/footer (mises à jour par header.js) ── */
+        :root {
+            --header-height: 64px;
+            --footer-visible-h: 0px;
+        }
 
         .navbar-public {
             background: linear-gradient(135deg, #0d6efd 0%, #0a4fb4 100%);

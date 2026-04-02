@@ -32,34 +32,39 @@
             <div class="col-sm-6 col-lg-4 col-xl-3">
                 <a href="<?= base_url('shop/' . esc($company['slug']) . '/catalog') ?>"
                    class="text-decoration-none shop-card-link">
-                    <div class="shop-card rounded-4 overflow-hidden shadow"
+                    <div class="shop-card rounded-4 overflow-hidden shadow d-flex flex-column"
                          style="<?= $coverStyle ?>">
 
-                        <!-- Corps de la card -->
+                        <!-- Corps de la card — hauteur fixe identique pour toutes -->
                         <div class="shop-card-body d-flex flex-column align-items-center justify-content-center p-4"
-                             style="min-height:190px;">
+                             style="height:190px;flex-shrink:0;">
                             <?php if ($hasLogo): ?>
                                 <img src="<?= base_url(esc($company['logo_path'])) ?>"
                                      alt="<?= esc($company['name']) ?>"
-                                     class="shop-logo rounded-circle bg-white shadow"
-                                     style="width:80px;height:80px;object-fit:contain;padding:6px;">
+                                     class="shop-logo"
+                                     style="max-width:120px;max-height:80px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(0,0,0,.35));">
                             <?php else: ?>
-                                <div class="shop-logo-placeholder rounded-circle bg-white bg-opacity-90 shadow
-                                            d-flex align-items-center justify-content-center"
+                                <div class="shop-logo-placeholder d-flex align-items-center justify-content-center"
                                      style="width:80px;height:80px;">
-                                    <i class="bi bi-shop fs-2 text-primary"></i>
+                                    <i class="bi bi-shop fs-1 text-white opacity-75"></i>
                                 </div>
                             <?php endif; ?>
                         </div>
 
-                        <!-- Pied de card avec nom -->
+                        <!-- Pied de card — toujours rendu, même hauteur fixe -->
                         <div class="shop-card-footer px-3 py-2"
-                             style="background:rgba(0,0,0,.45);backdrop-filter:blur(4px);">
-                            <p class="text-white fw-bold mb-0 text-truncate"><?= esc($company['name']) ?></p>
+                             style="height:58px;flex-shrink:0;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);overflow:hidden;">
+                            <?php if (! empty($company['show_name'])): ?>
+                                <p class="text-white fw-bold mb-0 text-truncate"><?= esc($company['name']) ?></p>
+                            <?php else: ?>
+                                <p class="mb-0" style="visibility:hidden;line-height:1.4;">&nbsp;</p>
+                            <?php endif; ?>
                             <?php if (! empty($company['city'])): ?>
-                                <p class="text-white-50 small mb-0">
+                                <p class="text-white-50 small mb-0 text-truncate">
                                     <i class="bi bi-geo-alt me-1"></i><?= esc($company['city']) ?>
                                 </p>
+                            <?php else: ?>
+                                <p class="mb-0" style="visibility:hidden;line-height:1.2;font-size:.875rem;">&nbsp;</p>
                             <?php endif; ?>
                         </div>
                     </div>

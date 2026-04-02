@@ -2,36 +2,97 @@
 
 <?= $this->section('content') ?>
 
+<?php
+// ── Variables thème entreprise ─────────────────────────────────────────────
+$hasCover     = ! empty($company['cover_path']);
+$hasLogo      = ! empty($company['logo_path']);
+$showName     = isset($company['show_name']) ? (bool) $company['show_name'] : true;
+$colorPrimary = (! empty($company['color_primary']) && preg_match('/^#[0-9a-fA-F]{6}$/', $company['color_primary']))
+    ? $company['color_primary']
+    : '#0d6efd';
+?>
+
+<style>
+    :root { --company-primary: <?= esc($colorPrimary) ?>; }
+    .catalog-content .btn-primary,
+    .catalog-content .btn-primary:focus {
+        background-color: var(--company-primary);
+        border-color: var(--company-primary);
+    }
+    .catalog-content .btn-primary:hover {
+        background-color: color-mix(in srgb, var(--company-primary) 85%, #000);
+        border-color: color-mix(in srgb, var(--company-primary) 85%, #000);
+    }
+    .catalog-content .text-primary     { color: var(--company-primary) !important; }
+    .catalog-content .badge.bg-primary  { background-color: var(--company-primary) !important; }
+
+    /* ── Cards produits : fond atténué avec color_primary ─────────────────── */
+    .catalog-content .card {
+        background-color: color-mix(in srgb, var(--company-primary) 10%, var(--bs-body-bg));
+        border: 1px solid color-mix(in srgb, var(--company-primary) 30%, transparent) !important;
+        transition: transform .18s, box-shadow .18s, border-color .18s;
+    }
+    .catalog-content .card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 .5rem 1.5rem color-mix(in srgb, var(--company-primary) 25%, transparent) !important;
+        border-color: color-mix(in srgb, var(--company-primary) 60%, transparent) !important;
+    }
+</style>
+
 <div class="catalog-wrapper">
 
     <!-- ── Contenu principal (rétrécit quand le panier est ouvert) ─────────── -->
     <div class="catalog-content">
 
-        <!-- Bannière boutique -->
-        <div class="py-4" style="background:linear-gradient(135deg,#0d6efd 0%,#0a4fb4 100%);">
-            <div class="container text-white">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="rounded-3 bg-white bg-opacity-25 d-flex align-items-center justify-content-center"
-                         style="width:52px;height:52px;flex-shrink:0;">
-                        <i class="bi bi-shop fs-4"></i>
+        <!-- ── Bannière boutique (cover + logo overlay) ────────────────────── -->
+        <div class="catalog-hero position-relative overflow-hidden"
+             style="min-height:220px;<?= $hasCover
+                ? 'background:url(' . base_url(esc($company['cover_path'])) . ') center/cover no-repeat;'
+                : 'background:linear-gradient(135deg,var(--company-primary) 0%,color-mix(in srgb,var(--company-primary) 75%,#000) 100%);' ?>">
+
+            <!-- Overlay obscur -->
+            <div style="position:absolute;inset:0;background:rgba(0,0,0,<?= $hasCover ? '.50' : '.12' ?>);backdrop-filter:<?= $hasCover ? 'blur(1px)' : 'none' ?>;"></div>
+
+            <!-- Contenu centré -->
+            <div class="position-relative d-flex flex-column align-items-center justify-content-center text-center py-5 px-3"
+                 style="min-height:220px;">
+
+                <?php if ($hasLogo): ?>
+                    <img src="<?= base_url(esc($company['logo_path'])) ?>"
+                         alt="<?= esc($company['name']) ?>"
+                         class="mb-3"
+                         style="max-width:140px;max-height:90px;object-fit:contain;
+                                filter:drop-shadow(0 2px 12px rgba(0,0,0,.55));">
+                <?php else: ?>
+                    <div class="mb-3 d-flex align-items-center justify-content-center"
+                         style="width:72px;height:72px;border-radius:1rem;
+                                background:rgba(255,255,255,.18);backdrop-filter:blur(4px);">
+                        <i class="bi bi-shop fs-2 text-white"></i>
                     </div>
-                    <div>
-                        <h1 class="h3 fw-bold mb-0"><?= esc($company['name']) ?></h1>
-                        <?php if (! empty($company['city'])): ?>
-                            <p class="mb-0 opacity-75 small">
-                                <i class="bi bi-geo-alt me-1"></i><?= esc($company['city']) ?>
-                            </p>
-                        <?php endif; ?>
-                    </div>
-                    <?php if (! $isLoggedIn): ?>
-                    <div class="ms-auto d-none d-sm-block">
+                <?php endif; ?>
+
+                <?php if ($showName): ?>
+                    <h1 class="text-white fw-bold mb-1"
+                        style="font-size:clamp(1.4rem,4vw,2.2rem);text-shadow:0 2px 8px rgba(0,0,0,.5);">
+                        <?= esc($company['name']) ?>
+                    </h1>
+                <?php endif; ?>
+
+                <?php if (! empty($company['city'])): ?>
+                    <p class="mb-0 small" style="color:rgba(255,255,255,.8);">
+                        <i class="bi bi-geo-alt me-1"></i><?= esc($company['city']) ?>
+                    </p>
+                <?php endif; ?>
+
+                <?php if (! $isLoggedIn): ?>
+                    <div class="mt-3 d-flex gap-2 flex-wrap justify-content-center">
                         <a href="<?= base_url('shop/' . esc($company['slug']) . '/register') ?>"
-                           class="btn btn-sm btn-light text-primary fw-semibold">
+                           class="btn btn-sm btn-light fw-semibold"
+                           style="color:var(--company-primary);">
                             <i class="bi bi-person-plus me-1"></i>Créer un compte
                         </a>
                     </div>
-                    <?php endif; ?>
-                </div>
+                <?php endif; ?>
             </div>
         </div>
 
@@ -122,12 +183,9 @@
     min-width: 0;
 }
 
-/* ── @property pour animation de --header-height (Chrome 85+, FF 128+, Safari 16.4+) */
-@property --header-height {
-    syntax: '<length>';
-    inherits: true;
-    initial-value: 64px;
-}
+/* ── @property pour animation des variables de hauteur ─────────────────────── */
+@property --header-height    { syntax: '<length>'; inherits: true; initial-value: 64px; }
+@property --footer-visible-h { syntax: '<length>'; inherits: true; initial-value: 0px; }
 
 /* ── Panneau panier ──────────────────────────────────────────────────────────── */
 .cart-panel {
@@ -136,7 +194,7 @@
     flex-shrink: 0;
     position: sticky;
     top: var(--header-height);
-    height: calc(100vh - var(--header-height));
+    height: calc(100vh - var(--header-height) - var(--footer-visible-h));
     transition: width .3s ease, top .3s ease, height .3s ease;
     border-left: 0 solid var(--bs-border-color);
     background: var(--bs-body-bg);
@@ -156,7 +214,7 @@
     transform: translateY(-50%);
     z-index: 200;
     border: none;
-    background: #0d6efd;
+    background: var(--company-primary, #0d6efd);
     color: #fff;
     padding: .55rem .6rem .55rem .75rem;
     border-radius: .5rem 0 0 .5rem;
@@ -164,11 +222,10 @@
     cursor: pointer;
     transition: background .15s;
 }
-.cart-tab:hover { background: #0b5ed7; }
+.cart-tab:hover { filter: brightness(.88); }
 
 /* ── Cards produit ───────────────────────────────────────────────────────────── */
-.card { transition: transform .18s, box-shadow .18s; }
-.card:hover { transform: translateY(-3px); box-shadow: 0 .4rem 1.2rem rgba(0,0,0,.1) !important; }
+/* Les transitions sont gérées dans le bloc <style> injecté en tête de page */
 </style>
 <?= $this->endSection() ?>
 

@@ -9,7 +9,7 @@ use CodeIgniter\HTTP\RedirectResponse;
 
 class CompanyController extends BaseController
 {
-    // ─── Paramètres boutique (logo + couverture) ──────────────────────────────
+    // ─── Paramètres boutique (images + thème) ────────────────────────────────
 
     public function settings(): string
     {
@@ -28,7 +28,7 @@ class CompanyController extends BaseController
         ]);
     }
 
-    public function updateImages(): RedirectResponse
+    public function updateSettings(): RedirectResponse
     {
         $companyId = (int) session()->get('company_id');
         $company   = model(CompanyModel::class)->find($companyId);
@@ -49,18 +49,14 @@ class CompanyController extends BaseController
         if ($logo && $logo->isValid() && ! $logo->hasMoved()) {
             $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
             if (! in_array($logo->getMimeType(), $allowedTypes, true)) {
-                return redirect()->back()
-                    ->with('errors', ['logo' => 'Format invalide. Utilisez JPG, PNG ou WebP.']);
+                return redirect()->back()->with('errors', ['logo' => 'Format invalide. Utilisez JPG, PNG ou WebP.']);
             }
             if ($logo->getSize() > 2 * 1024 * 1024) {
-                return redirect()->back()
-                    ->with('errors', ['logo' => 'Le logo ne doit pas dépasser 2 Mo.']);
+                return redirect()->back()->with('errors', ['logo' => 'Le logo ne doit pas dépasser 2 Mo.']);
             }
-
-            $ext = $logo->getExtension();
             $this->deleteOldFiles($uploadDir, 'logo');
-            $logo->move($uploadDir, 'logo.' . $ext);
-            $updateData['logo_path'] = 'uploads/companies/' . $companyId . '/logo.' . $ext;
+            $logo->move($uploadDir, 'logo.' . $logo->getExtension());
+            $updateData['logo_path'] = 'uploads/companies/' . $companyId . '/logo.' . $logo->getExtension();
         }
 
         // ── Couverture ────────────────────────────────────────────────────────
@@ -68,28 +64,28 @@ class CompanyController extends BaseController
         if ($cover && $cover->isValid() && ! $cover->hasMoved()) {
             $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
             if (! in_array($cover->getMimeType(), $allowedTypes, true)) {
-                return redirect()->back()
-                    ->with('errors', ['cover' => 'Format invalide. Utilisez JPG, PNG ou WebP.']);
+                return redirect()->back()->with('errors', ['cover' => 'Format invalide. Utilisez JPG, PNG ou WebP.']);
             }
             if ($cover->getSize() > 5 * 1024 * 1024) {
-                return redirect()->back()
-                    ->with('errors', ['cover' => 'L\'image de fond ne doit pas dépasser 5 Mo.']);
+                return redirect()->back()->with('errors', ['cover' => 'L\'image de fond ne doit pas dépasser 5 Mo.']);
             }
-
-            $ext = $cover->getExtension();
             $this->deleteOldFiles($uploadDir, 'cover');
-            $cover->move($uploadDir, 'cover.' . $ext);
-            $updateData['cover_path'] = 'uploads/companies/' . $companyId . '/cover.' . $ext;
+            $cover->move($uploadDir, 'cover.' . $cover->getExtension());
+            $updateData['cover_path'] = 'uploads/companies/' . $companyId . '/cover.' . $cover->getExtension();
         }
 
-        if (! empty($updateData)) {
-            model(CompanyModel::class)->update($companyId, $updateData);
-            return redirect()->to(base_url('admin/company/settings'))
-                ->with('success', 'Images mises à jour avec succès.');
+        // ── Thème : show_name + color_primary ─────────────────────────────────
+        $updateData['show_name'] = $this->request->getPost('show_name') === '1' ? 1 : 0;
+
+        $colorPrimary = (string) $this->request->getPost('color_primary');
+        if (preg_match('/^#[0-9a-fA-F]{6}$/', $colorPrimary)) {
+            $updateData['color_primary'] = $colorPrimary;
         }
+
+        model(CompanyModel::class)->update($companyId, $updateData);
 
         return redirect()->to(base_url('admin/company/settings'))
-            ->with('info', 'Aucune image sélectionnée.');
+            ->with('success', 'Paramètres mis à jour avec succès.');
     }
 
     // ─── Supprime les anciens fichiers d'un type (logo.* ou cover.*) ──────────

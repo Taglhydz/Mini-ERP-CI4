@@ -23,6 +23,8 @@ class CompanyModel extends Model
         'postal_code',
         'logo_path',
         'cover_path',
+        'show_name',
+        'color_primary',
     ];
 
     protected $useTimestamps = true;

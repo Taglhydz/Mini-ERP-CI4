@@ -42,7 +42,7 @@ $routes->group('', ['filter' => 'auth'], static function (RouteCollection $route
     $routes->group('', ['filter' => 'role:manager'], static function (RouteCollection $routes) {
         // Paramètres boutique
         $routes->get ('admin/company/settings', 'CompanyController::settings');
-        $routes->post('admin/company/settings', 'CompanyController::updateImages');
+        $routes->post('admin/company/settings', 'CompanyController::updateSettings');
 
         // Clients
         $routes->get ('clients',               'ClientController::index');
