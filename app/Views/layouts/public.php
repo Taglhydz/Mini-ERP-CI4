@@ -16,13 +16,30 @@
 
     <?= $this->renderSection('styles') ?>
     <style>
+        /* ── Variable hauteur header (mise à jour par header.js) ── */
+        :root { --header-height: 64px; }
+
         .navbar-public {
             background: linear-gradient(135deg, #0d6efd 0%, #0a4fb4 100%);
             border-bottom: 3px solid rgba(255,255,255,.15);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1030;
+            transform: translateY(0);
+            transition: transform .3s ease;
+        }
+        .navbar-public.navbar-hidden {
+            transform: translateY(-100%);
         }
         .navbar-public .navbar-brand {
             font-size: 1.2rem;
             letter-spacing: .03em;
+        }
+        body > main {
+            /* Compense la navbar fixe — mis à jour dynamiquement par header.js */
+            padding-top: var(--header-height);
         }
         .footer-public {
             background: var(--bs-secondary-bg);
@@ -51,7 +68,7 @@ if (! $isLoggedIn) {
 }
 ?>
 
-<nav class="navbar navbar-expand-lg navbar-dark navbar-public shadow">
+<nav id="site-navbar" class="navbar navbar-expand-lg navbar-dark navbar-public shadow">
     <div class="container">
         <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="<?= $logoHref ?>">
             <span class="bg-white bg-opacity-25 rounded-3 d-flex align-items-center justify-content-center"
@@ -136,6 +153,7 @@ if (! $isLoggedIn) {
 <script src="<?= base_url('assets/js/jquery.min.js') ?>?v=4.0.0"></script>
 <script src="<?= base_url('assets/js/bootstrap.bundle.min.js') ?>?v=5.3.8"></script>
 <script src="<?= base_url('assets/js/toasts.js') ?>?v=1.0"></script>
+<script src="<?= base_url('assets/js/header.js') ?>?v=1.0"></script>
 
 <?= $this->renderSection('scripts') ?>
 

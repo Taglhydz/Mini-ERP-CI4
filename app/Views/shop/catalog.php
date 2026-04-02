@@ -29,9 +29,6 @@
                            class="btn btn-sm btn-light text-primary fw-semibold">
                             <i class="bi bi-person-plus me-1"></i>Créer un compte
                         </a>
-                        <a href="<?= base_url('login') ?>" class="btn btn-sm btn-outline-light ms-1">
-                            <i class="bi bi-door-open me-1"></i>Connexion
-                        </a>
                     </div>
                     <?php endif; ?>
                 </div>
@@ -125,15 +122,22 @@
     min-width: 0;
 }
 
+/* ── @property pour animation de --header-height (Chrome 85+, FF 128+, Safari 16.4+) */
+@property --header-height {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 64px;
+}
+
 /* ── Panneau panier ──────────────────────────────────────────────────────────── */
 .cart-panel {
     width: 0;
     overflow: hidden;
     flex-shrink: 0;
-    transition: width .3s ease;
     position: sticky;
-    top: 0;
-    height: 100vh;
+    top: var(--header-height);
+    height: calc(100vh - var(--header-height));
+    transition: width .3s ease, top .3s ease, height .3s ease;
     border-left: 0 solid var(--bs-border-color);
     background: var(--bs-body-bg);
 }

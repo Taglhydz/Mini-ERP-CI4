@@ -31,3 +31,6 @@ Thumbs.db
 .vscode/
 *.sublime-project
 *.sublime-workspace
+
+# Fichiers uploadés
+/public/uploads/
