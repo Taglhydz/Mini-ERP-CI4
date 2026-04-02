@@ -29,9 +29,8 @@ $companySlug    = $company['slug'] ?? session('company_slug') ?? '';
     .espace-client .btn-primary:focus {
         background-color: var(--company-primary);
         border-color: var(--company-primary);
-        color: var(--company-secondary);
+        color: #fff;
     }
-    .espace-client .btn-primary:hover {
         background-color: color-mix(in srgb, var(--company-primary) 85%, #000);
         border-color: color-mix(in srgb, var(--company-primary) 85%, #000);
     }
@@ -42,36 +41,30 @@ $companySlug    = $company['slug'] ?? session('company_slug') ?? '';
     .espace-client .btn-outline-primary:hover {
         background-color: var(--company-primary);
         border-color: var(--company-primary);
-        color: var(--company-secondary);
+        color: #fff;
     }
     .espace-client .text-primary { color: var(--company-primary) !important; }
 
     /* ── Card commandes ─────────────────────────────────────────────────── */
     .orders-card {
-        background-color: color-mix(in srgb, var(--company-primary) 6%, var(--bs-body-bg));
+        background-color: var(--bs-body-bg);
         border: 1px solid color-mix(in srgb, var(--company-primary) 30%, transparent) !important;
     }
     .orders-card .card-header {
         background-color: var(--company-primary);
-        color: var(--company-secondary);
-        border-bottom: 1px solid color-mix(in srgb, var(--company-primary) 70%, #000);
-    }
-    .orders-card .card-header .text-primary { color: var(--company-secondary) !important; }
-
-    /* ── Bannière : texte sur fond color_primary ─────────────────────────── */
-    .espace-client > .position-relative.overflow-hidden .text-white {
-        color: var(--company-secondary) !important;
+        color: #fff;
+        border-bottom: none;
     }
 
     /* ── Fil d'Ariane ───────────────────────────────────────────────────── */
     .breadcrumb-item a { color: var(--company-primary); }
-    .breadcrumb-item.active { color: color-mix(in srgb, var(--company-primary) 70%, var(--bs-body-color)); }
-    .breadcrumb-item + .breadcrumb-item::before { color: color-mix(in srgb, var(--company-primary) 60%, transparent); }
+    .breadcrumb-item.active { color: var(--bs-secondary-color, #6c757d); }
+    .breadcrumb-item + .breadcrumb-item::before { color: var(--bs-border-color, #dee2e6); }
 
     /* ── DataTables overrides ────────────────────────────────────────────── */
     #table-client-orders thead th {
         background: var(--company-primary) !important;
-        color: var(--company-secondary) !important;
+        color: #fff !important;
         border-color: color-mix(in srgb, var(--company-primary) 70%, #000) !important;
     }
     #table-client-orders tbody tr:nth-child(even) td {
@@ -86,11 +79,44 @@ $companySlug    = $company['slug'] ?? session('company_slug') ?? '';
     .dt-paging .dt-paging-button.current,
     .dt-paging .dt-paging-button.current:hover {
         background: var(--company-primary) !important;
-        color: var(--company-secondary) !important;
+        color: #fff !important;
         border-color: var(--company-primary) !important;
     }
-    /* Champ de recherche focus */
-    .dt-input:focus { border-color: var(--company-primary) !important; box-shadow: 0 0 0 .2rem color-mix(in srgb, var(--company-primary) 25%, transparent) !important; }
+    /* Focus : bord primary + box-shadow secondary atténué */
+    .dt-input:focus {
+        border-color: var(--company-primary) !important;
+        box-shadow: 0 0 0 .2rem color-mix(in srgb, var(--company-secondary) 10%, transparent) !important;
+    }
+
+    /* Zone sous bannière : fond color_secondary */
+    .ec-subheader {
+        background-color: color-mix(in srgb, var(--company-secondary) 25%, var(--bs-body-bg));
+        border-bottom: 1px solid color-mix(in srgb, var(--company-secondary) 55%, var(--bs-border-color));
+        padding: .6rem 0;
+    }
+
+    /* Sidebar navigation : fond color_secondary, item actif primary */
+    .ec-sidebar {
+        background-color: color-mix(in srgb, var(--company-secondary) 40%, var(--bs-body-bg));
+        border: 1px solid color-mix(in srgb, var(--company-secondary) 60%, var(--bs-border-color));
+        border-radius: .5rem;
+        padding: .75rem .5rem;
+    }
+    .ec-sidebar .nav-link {
+        color: var(--bs-body-color);
+        border-radius: .375rem;
+        padding: .45rem .75rem;
+        font-size: .875rem;
+        transition: background .12s;
+    }
+    .ec-sidebar .nav-link:hover:not(.active) {
+        background-color: color-mix(in srgb, var(--company-primary) 12%, transparent);
+    }
+    .ec-sidebar .nav-link.active {
+        background-color: var(--company-primary);
+        color: #fff;
+        font-weight: 600;
+    }
 </style>
 
 <div class="espace-client">
@@ -130,26 +156,47 @@ $companySlug    = $company['slug'] ?? session('company_slug') ?? '';
         </div>
     </div>
 
-    <!-- ── Fil d'Ariane ───────────────────────────────────────────────────── -->
-    <div class="container pt-4">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb small">
-                <li class="breadcrumb-item">
-                    <?php if (! empty($companySlug)): ?>
-                        <a href="<?= base_url('shop/' . esc($companySlug) . '/catalog') ?>">Catalogue</a>
-                    <?php else: ?>
-                        <a href="<?= base_url('/') ?>">Accueil</a>
-                    <?php endif; ?>
-                </li>
-                <li class="breadcrumb-item active" aria-current="page">Mon espace</li>
-            </ol>
-        </nav>
+    <!-- Zone sous bannière : fond color_secondary ─────────────────────── -->
+    <div class="ec-subheader">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb small mb-0">
+                    <li class="breadcrumb-item">
+                        <?php if (! empty($companySlug)): ?>
+                            <a href="<?= base_url('shop/' . esc($companySlug) . '/catalog') ?>">Catalogue</a>
+                        <?php else: ?>
+                            <a href="<?= base_url('/') ?>">Accueil</a>
+                        <?php endif; ?>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Mon espace</li>
+                </ol>
+            </nav>
+        </div>
     </div>
 
-    <!-- ── Contenu principal ─────────────────────────────────────────────── -->
-    <div class="container pb-5">
-        <div class="row g-4 justify-content-center">
-            <div class="col-xl-10">
+    <!-- Contenu principal ───────────────────────────────────────────────── -->
+    <div class="container py-4">
+        <div class="row g-4">
+
+            <!-- Sidebar : fond color_secondary, item actif color_primary ── -->
+            <div class="col-md-3 col-lg-2 d-none d-md-block">
+                <div class="ec-sidebar sticky-top" style="top:calc(var(--header-height,64px) + 1rem);">
+                    <p style="font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;opacity:.5;padding:.25rem .75rem .5rem;font-weight:600;margin:0;">Navigation</p>
+                    <nav class="nav flex-column gap-1">
+                        <a href="#" class="nav-link active">
+                            <i class="bi bi-bag-heart me-2"></i>Mes commandes
+                        </a>
+                        <?php if (! empty($companySlug)): ?>
+                        <a href="<?= base_url('shop/' . esc($companySlug) . '/catalog') ?>" class="nav-link">
+                            <i class="bi bi-grid me-2"></i>Catalogue
+                        </a>
+                        <?php endif; ?>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Zone principale ─────────────────────────────────────────── -->
+            <div class="col-md-9 col-lg-10">
 
                 <!-- Bienvenue + info utilisateur -->
                 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
@@ -201,7 +248,7 @@ $companySlug    = $company['slug'] ?? session('company_slug') ?? '';
                                         <tbody>
                                             <?php foreach ($orders as $cmd): ?>
                                                 <tr>
-                                                    <td class="fw-semibold text-primary"><?= esc($cmd['number'] ?? ('#' . $cmd['id'])) ?></td>
+                                                    <td class="fw-semibold"><?= esc($cmd['number'] ?? ('#' . $cmd['id'])) ?></td>
                                                     <td><?= esc(date('d/m/Y', strtotime($cmd['order_date'] ?? $cmd['created_at']))) ?></td>
                                                     <td><?= view('partials/badge_status', ['status' => $cmd['status'] ?? 'draft']) ?></td>
                                                     <td class="text-end fw-semibold"><?= number_format((float) ($cmd['amount_ttc'] ?? 0), 2, ',', ' ') ?>&nbsp;€</td>
@@ -216,9 +263,9 @@ $companySlug    = $company['slug'] ?? session('company_slug') ?? '';
                     </div>
                 </div>
 
-            </div>
-        </div>
-    </div>
+            </div><!-- /.col principal -->
+        </div><!-- /.row -->
+    </div><!-- /.container -->
 
 </div>
 

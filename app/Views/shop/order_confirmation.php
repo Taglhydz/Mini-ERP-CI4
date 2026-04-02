@@ -32,10 +32,26 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
 
     /* Bandeau de confirmation */
     .confirm-banner {
-        background: color-mix(in srgb, var(--company-primary) 15%, var(--bs-body-bg));
-        border: 1px solid color-mix(in srgb, var(--company-primary) 35%, transparent);
-        border-left: 4px solid var(--company-primary);
-        border-radius: .5rem;
+        background: #ecfdf5;
+        border: 1px solid #6ee7b7;
+        border-radius: .75rem;
+        overflow: hidden;
+        position: relative;
+    }
+    .confirm-banner::before {
+        content: '';
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 5px;
+        background: #059669;
+        border-radius: .75rem 0 0 .75rem;
+    }
+    .confirm-icon {
+        width: 52px; height: 52px; border-radius: 50%;
+        background: #059669;
+        flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 0 0 6px rgba(5,150,105,.12);
     }
 
     /* Card détails commande */
@@ -67,20 +83,20 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
         background: color-mix(in srgb, var(--company-primary) 10%, var(--bs-body-bg));
     }
 
-    /* Card résumé financier */
+    /* Card résumé financier — fond color_secondary (zone totaux) */
     .summary-card {
-        background: color-mix(in srgb, var(--company-primary) 9%, var(--bs-body-bg));
+        background: color-mix(in srgb, var(--company-secondary) 20%, var(--bs-body-bg));
         border: 1px solid color-mix(in srgb, var(--company-primary) 35%, transparent) !important;
     }
     .summary-card .card-header {
-        background: color-mix(in srgb, var(--company-primary) 20%, var(--bs-body-bg));
-        border-bottom: 1px solid color-mix(in srgb, var(--company-primary) 28%, transparent);
+        background: color-mix(in srgb, var(--company-secondary) 35%, var(--bs-body-bg));
+        border-bottom: 1px solid color-mix(in srgb, var(--company-secondary) 55%, var(--bs-border-color));
         font-weight: 600;
     }
-    .summary-ttc { color: var(--company-primary); font-size: 1.6rem; font-weight: 700; }
-    .summary-divider { border-color: color-mix(in srgb, var(--company-primary) 30%, transparent); }
-    /* Texte bannière sur fond color_primary */
-    .order-confirm-page > .position-relative.overflow-hidden .text-white { color: var(--company-secondary) !important; }
+    /* Total TTC : texte neutre fort, sans coloration de marque */
+    .summary-ttc { font-size: 1.6rem; font-weight: 700; color: var(--bs-body-color); }
+    /* Séparateur horizontal — color_secondary */
+    .summary-divider { border-color: var(--company-secondary); }
 </style>
 
 <div class="order-confirm-page">
@@ -119,14 +135,13 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
             <div class="col-xl-9">
 
                 <!-- ── Bandeau confirmation "Commande validée" ─────────────── -->
-                <div class="confirm-banner d-flex align-items-center gap-3 p-4 mb-4">
-                    <div style="width:48px;height:48px;border-radius:50%;background:var(--company-primary);
-                                flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+                <div class="confirm-banner d-flex align-items-center gap-4 p-4 mb-4">
+                    <div class="confirm-icon">
                         <i class="bi bi-check-lg text-white fs-4"></i>
                     </div>
                     <div>
-                        <p class="fw-bold fs-5 mb-0">Commande validée !</p>
-                        <p class="text-muted small mb-0">
+                        <p class="fw-bold fs-5 mb-1" style="color:#065f46;">Commande validée !</p>
+                        <p class="mb-0 small" style="color:#047857;">
                             Votre commande <strong><?= esc($order['number']) ?></strong>
                             a été enregistrée le <?= date('d/m/Y', strtotime($order['order_date'])) ?>.
                         </p>

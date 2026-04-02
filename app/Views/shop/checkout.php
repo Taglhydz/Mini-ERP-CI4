@@ -27,17 +27,17 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
         border-color: color-mix(in srgb, var(--company-primary) 85%, #000);
     }
     .checkout-page .text-primary { color: var(--company-primary) !important; }
+    /* Récapitulatif — fond color_secondary (zone totaux) */
     .checkout-recap-card {
-        background: color-mix(in srgb, var(--company-primary) 8%, var(--bs-body-bg));
+        background: color-mix(in srgb, var(--company-secondary) 20%, var(--bs-body-bg));
         border: 1px solid color-mix(in srgb, var(--company-primary) 30%, transparent) !important;
     }
     .checkout-recap-card .card-header {
-        background: color-mix(in srgb, var(--company-primary) 15%, var(--bs-body-bg));
-        border-bottom: 1px solid color-mix(in srgb, var(--company-primary) 25%, transparent);
+        background: color-mix(in srgb, var(--company-secondary) 35%, var(--bs-body-bg));
+        border-bottom: 1px solid color-mix(in srgb, var(--company-secondary) 55%, var(--bs-border-color));
     }
-    .checkout-recap-card tfoot tr:last-child td { color: var(--company-primary); }
-    /* Texte bannière sur fond color_primary */
-    .checkout-page > .position-relative.overflow-hidden .text-white { color: var(--company-secondary) !important; }
+    /* Séparateur en pied de tableau — remplacé par accent primary (bordure gauche, pas texte) */
+    .checkout-recap-card tfoot tr:last-child td { font-weight: 700; }
 </style>
 
 <div class="checkout-page">

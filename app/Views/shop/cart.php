@@ -44,26 +44,24 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
         border-color: color-mix(in srgb, var(--company-primary) 55%, transparent) !important;
     }
 
-    /* Encart récapitulatif */
+    /* Encart récapitulatif — fond color_secondary (zone totaux/résumé) */
     .cart-summary-card {
-        background-color: color-mix(in srgb, var(--company-primary) 8%, var(--bs-body-bg));
+        background-color: color-mix(in srgb, var(--company-secondary) 20%, var(--bs-body-bg));
         border: 1px solid color-mix(in srgb, var(--company-primary) 35%, transparent) !important;
     }
     .cart-summary-card .card-header {
-        background-color: color-mix(in srgb, var(--company-primary) 18%, var(--bs-body-bg));
-        border-bottom: 1px solid color-mix(in srgb, var(--company-primary) 30%, transparent);
+        background-color: color-mix(in srgb, var(--company-secondary) 35%, var(--bs-body-bg));
+        border-bottom: 1px solid color-mix(in srgb, var(--company-secondary) 55%, var(--bs-border-color));
     }
-    .cart-total-amount {
-        color: var(--company-primary);
-    }
+    /* Séparateur horizontal — color_secondary */
+    .cart-summary-card hr { border-color: color-mix(in srgb, var(--company-secondary) 60%, var(--bs-border-color)); }
+    .cart-total-amount { font-weight: 700; }
 
-    /* Badge quantité */
+    /* Badge quantité — élément décoratif : color_secondary */
     .qty-badge {
-        background-color: var(--company-primary) !important;
+        background-color: var(--company-secondary) !important;
+        color: var(--bs-body-color) !important;
     }
-    /* Texte bannière sur fond color_primary */
-    .cart-page > .position-relative.overflow-hidden .text-white { color: var(--company-secondary) !important; }
-    .cart-page > .position-relative.overflow-hidden h1.text-white { text-shadow: 0 2px 8px rgba(0,0,0,.4); }
 </style>
 
 <div class="cart-page">

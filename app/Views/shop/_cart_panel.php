@@ -108,15 +108,8 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
 .cart-panel-inner .btn-panel-primary {
     background: var(--company-primary);
     border-color: var(--company-primary);
-    color: var(--company-secondary);
+    color: #fff;
     transition: filter .15s;
-}
-/* Textes sur fond color_primary dans l'en-tête du panneau */
-.panel-header-content .fw-bold,
-.panel-header-content .badge,
-.panel-header-content .btn,
-.panel-header-content p {
-    color: var(--company-secondary) !important;
 }
 .cart-panel-inner .btn-panel-primary:hover { filter: brightness(.88); }
 </style>

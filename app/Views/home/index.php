@@ -52,9 +52,8 @@
                         </div>
 
                         <!-- Pied de card — toujours rendu, hauteur identique pour toutes -->
-                        <div class="shop-card-footer px-3"
-                             style="height:66px;flex-shrink:0;
-                                    background:rgba(0,0,0,.45);backdrop-filter:blur(4px);
+                        <div class="shop-card-footer px-3<?= empty($company['show_name']) ? ' shop-card-footer--nameless' : '' ?>"
+                             style="height:66px;flex-shrink:0;backdrop-filter:blur(4px);
                                     display:flex;flex-direction:column;justify-content:center;
                                     gap:2px;overflow:hidden;">
                             <!-- Ligne nom : invisible si show_name = false, mais occupe toujours sa place -->
@@ -97,6 +96,12 @@
 }
 .shop-logo {
     transition: transform .2s ease;
+}
+.shop-card-footer {
+    background: rgba(0,0,0,.05) !important;
+}
+.shop-card-footer--nameless {
+    background: rgba(0,0,0,.12) !important;
 }
 .shop-card-link:hover .shop-logo {
     transform: scale(1.08);

@@ -51,7 +51,10 @@
         if (itemsEl)  itemsEl.innerHTML    = data.cart_html  || '';
         if (totalEl)  totalEl.textContent  = data.total_ttc  || '0,00 \u20ac';
         if (countEl)  countEl.textContent  = count;
-        if (tabCount) tabCount.textContent = count;
+        if (tabCount) {
+            tabCount.textContent = count;
+            tabCount.classList.toggle('empty', count === 0);
+        }
 
         // Mettre à jour le badge navbar si présent
         var navBadge = document.querySelector('#nav-cart-btn .badge');

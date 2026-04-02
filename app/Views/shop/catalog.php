@@ -44,11 +44,28 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
         box-shadow: 0 .5rem 1.5rem color-mix(in srgb, var(--company-primary) 25%, transparent) !important;
         border-color: color-mix(in srgb, var(--company-primary) 60%, transparent) !important;
     }
-    /* Texte bannière sur fond color_primary */
-    .catalog-hero .text-white { color: var(--company-secondary) !important; }
-    .catalog-hero .btn-light  { background-color: var(--company-secondary) !important;
-                                 color: var(--company-primary) !important;
-                                 border-color: var(--company-secondary) !important; }
+    /* Bouton sur bannière : fond blanc semi-opaque, texte primary via style inline */
+    .catalog-hero .btn-light {
+        background-color: rgba(255,255,255,.92) !important;
+        border-color: transparent !important;
+    }
+
+    /* Bande de section sous le hero — fond color_secondary */
+    .catalog-section-header {
+        background: color-mix(in srgb, var(--company-secondary) 22%, var(--bs-body-bg));
+        border-bottom: 1px solid color-mix(in srgb, var(--company-secondary) 55%, var(--bs-border-color));
+        padding: .9rem 0;
+    }
+
+    /* Badge référence produit — fond color_secondary (petit élément décoratif) */
+    .product-ref-badge {
+        background-color: color-mix(in srgb, var(--company-secondary) 35%, var(--bs-body-bg)) !important;
+        color: var(--bs-body-color) !important;
+        border: 1px solid color-mix(in srgb, var(--company-secondary) 60%, var(--bs-border-color));
+        font-weight: 500;
+    }
+
+
 </style>
 
 <div class="catalog-wrapper">
@@ -109,10 +126,15 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
         </div>
 
         <!-- Catalogue produits -->
-        <div class="container py-5">
-            <h2 class="h4 fw-bold mb-4">
-                <i class="bi bi-grid me-2 text-primary"></i>Catalogue
-            </h2>
+        <div class="catalog-section-header">
+            <div class="container">
+                <h2 class="h5 fw-bold mb-0">
+                    <i class="bi bi-grid me-2 text-primary"></i>Catalogue
+                </h2>
+            </div>
+        </div>
+
+        <div class="container py-4">
 
             <?php if (empty($products)): ?>
                 <div class="text-center text-muted py-5">
@@ -125,7 +147,7 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
                     <div class="col-sm-6 col-lg-4 col-xl-3">
                         <div class="card border-0 shadow-sm h-100">
                             <div class="card-body">
-                                <span class="badge bg-secondary bg-opacity-10 text-secondary small mb-2">
+                                <span class="badge product-ref-badge small mb-2">
                                     <?= esc($product['reference']) ?>
                                 </span>
                                 <h5 class="card-title fw-semibold"><?= esc($product['name']) ?></h5>
@@ -177,8 +199,9 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
         id="cart-tab"
         title="Ouvrir le panier"
         aria-label="Ouvrir le panier">
-    <i class="bi bi-cart3"></i>
-    <span class="badge bg-danger rounded-pill ms-1" id="cart-tab-count"><?= (int) $cartCount ?></span>
+    <span class="cart-tab-badge<?= $cartCount === 0 ? ' empty' : '' ?>" id="cart-tab-count"><?= (int) $cartCount ?></span>
+    <i class="bi bi-cart3 cart-tab-icon"></i>
+    <span class="cart-tab-label">Panier</span>
 </button>
 
 <?= $this->endSection() ?>
@@ -217,24 +240,62 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
     box-shadow: -4px 0 16px rgba(0, 0, 0, .07);
 }
 
-/* ── Languette d'accès (tab fixe) ────────────────────────────────────────────── */
+/* ── Languette d'accès (tab fixe) ─────────────────────────────────────────── */
 .cart-tab {
     position: fixed;
-    height: 10rem;
     right: 0;
     top: 50%;
-    transform: translateY(-50%);
+    transform: translateY(-50%) translateX(0);
     z-index: 200;
     border: none;
     background: var(--company-primary, #0d6efd);
     color: #fff;
-    padding: .55rem .6rem .55rem .75rem;
-    border-radius: .5rem 0 0 .5rem;
-    box-shadow: -2px 2px 8px rgba(0, 0, 0, .18);
+    width: 52px;
+    padding: 1.1rem .6rem;
+    border-radius: .75rem 0 0 .75rem;
+    box-shadow: -3px 0 18px color-mix(in srgb, var(--company-primary, #0d6efd) 45%, transparent),
+                0 4px 12px rgba(0,0,0,.18);
     cursor: pointer;
-    transition: background .15s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .55rem;
+    transition: width .2s ease, box-shadow .2s ease, transform .2s ease;
 }
-.cart-tab:hover { filter: brightness(.88); }
+.cart-tab:hover {
+    width: 60px;
+    transform: translateY(-50%) translateX(-2px);
+    box-shadow: -5px 0 24px color-mix(in srgb, var(--company-primary, #0d6efd) 60%, transparent),
+                0 6px 18px rgba(0,0,0,.22);
+}
+.cart-tab:hover { filter: none; }
+.cart-tab .cart-tab-icon {
+    font-size: 1.35rem;
+    line-height: 1;
+    transition: transform .2s ease;
+}
+.cart-tab:hover .cart-tab-icon { transform: scale(1.12); }
+.cart-tab .cart-tab-label {
+    font-size: .6rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    opacity: .85;
+    line-height: 1;
+}
+.cart-tab .cart-tab-badge {
+    background: #fff;
+    color: var(--company-primary, #0d6efd);
+    border-radius: 999px;
+    font-size: .65rem;
+    font-weight: 700;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    line-height: 1.25rem;
+    text-align: center;
+    padding: 0 .3rem;
+}
+.cart-tab .cart-tab-badge.empty { opacity: 0; pointer-events: none; }
 
 /* ── Cards produit ───────────────────────────────────────────────────────────── */
 /* Les transitions sont gérées dans le bloc <style> injecté en tête de page */
