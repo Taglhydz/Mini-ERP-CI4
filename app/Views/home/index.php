@@ -51,20 +51,24 @@
                             <?php endif; ?>
                         </div>
 
-                        <!-- Pied de card — toujours rendu, même hauteur fixe -->
-                        <div class="shop-card-footer px-3 py-2"
-                             style="height:58px;flex-shrink:0;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);overflow:hidden;">
-                            <?php if (! empty($company['show_name'])): ?>
-                                <p class="text-white fw-bold mb-0 text-truncate"><?= esc($company['name']) ?></p>
-                            <?php else: ?>
-                                <p class="mb-0" style="visibility:hidden;line-height:1.4;">&nbsp;</p>
-                            <?php endif; ?>
+                        <!-- Pied de card — toujours rendu, hauteur identique pour toutes -->
+                        <div class="shop-card-footer px-3"
+                             style="height:66px;flex-shrink:0;
+                                    background:rgba(0,0,0,.45);backdrop-filter:blur(4px);
+                                    display:flex;flex-direction:column;justify-content:center;
+                                    gap:2px;overflow:hidden;">
+                            <!-- Ligne nom : invisible si show_name = false, mais occupe toujours sa place -->
+                            <p class="text-white fw-bold mb-0 text-truncate"
+                               style="<?= empty($company['show_name']) ? 'visibility:hidden;' : '' ?>line-height:1.4;">
+                                <?= esc($company['name']) ?>
+                            </p>
+                            <!-- Ligne ville : toujours visible si elle existe, invisible placeholder sinon -->
                             <?php if (! empty($company['city'])): ?>
-                                <p class="text-white-50 small mb-0 text-truncate">
+                                <p class="text-white-50 small mb-0 text-truncate" style="line-height:1.3;">
                                     <i class="bi bi-geo-alt me-1"></i><?= esc($company['city']) ?>
                                 </p>
                             <?php else: ?>
-                                <p class="mb-0" style="visibility:hidden;line-height:1.2;font-size:.875rem;">&nbsp;</p>
+                                <p class="mb-0 small" style="visibility:hidden;line-height:1.3;">&nbsp;</p>
                             <?php endif; ?>
                         </div>
                     </div>

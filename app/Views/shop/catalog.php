@@ -13,7 +13,10 @@ $colorPrimary = (! empty($company['color_primary']) && preg_match('/^#[0-9a-fA-F
 ?>
 
 <style>
-    :root { --company-primary: <?= esc($colorPrimary) ?>; }
+    :root {
+        --company-primary: <?= esc($colorPrimary) ?>;
+        --company-cover: <?= $hasCover ? "url('" . base_url(esc($company['cover_path'])) . "')" : 'none' ?>;
+    }
     .catalog-content .btn-primary,
     .catalog-content .btn-primary:focus {
         background-color: var(--company-primary);

@@ -301,7 +301,7 @@ class OrderController extends BaseController
         ]);
     }
 
-    public function confirm(string $slug): RedirectResponse
+    public function confirm(string $slug): string|RedirectResponse
     {
         $isLoggedIn = (bool) session()->get('isLoggedIn');
         if (! $isLoggedIn) {
@@ -372,8 +372,17 @@ class OrderController extends BaseController
 
         session()->remove('cart');
 
-        return redirect()->to(base_url('espace-client'))
-            ->with('success', 'Votre commande a été enregistrée avec succès !');
+        $orderRow = $this->orderModel->find($orderId);
+
+        return view('shop/order_confirmation', [
+            'titre'      => 'Commande confirmée — ' . esc($company['name']),
+            'company'    => $company,
+            'order'      => $orderRow,
+            'items'      => $items,
+            'isLoggedIn' => true,
+            'username'   => session()->get('username'),
+            'role'       => session()->get('role'),
+        ]);
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
