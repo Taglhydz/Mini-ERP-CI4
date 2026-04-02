@@ -10,11 +10,15 @@ $showName     = isset($company['show_name']) ? (bool) $company['show_name'] : tr
 $colorPrimary = (! empty($company['color_primary']) && preg_match('/^#[0-9a-fA-F]{6}$/', $company['color_primary']))
     ? $company['color_primary']
     : '#0d6efd';
+$colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-fA-F]{6}$/', $company['color_secondary']))
+    ? $company['color_secondary']
+    : '#ffffff';
 ?>
 
 <style>
     :root {
-        --company-primary: <?= esc($colorPrimary) ?>;
+        --company-primary:   <?= esc($colorPrimary) ?>;
+        --company-secondary: <?= esc($colorSecondary) ?>;
         --company-cover: <?= $hasCover ? "url('" . base_url(esc($company['cover_path'])) . "')" : 'none' ?>;
     }
     .catalog-content .btn-primary,
@@ -40,6 +44,11 @@ $colorPrimary = (! empty($company['color_primary']) && preg_match('/^#[0-9a-fA-F
         box-shadow: 0 .5rem 1.5rem color-mix(in srgb, var(--company-primary) 25%, transparent) !important;
         border-color: color-mix(in srgb, var(--company-primary) 60%, transparent) !important;
     }
+    /* Texte bannière sur fond color_primary */
+    .catalog-hero .text-white { color: var(--company-secondary) !important; }
+    .catalog-hero .btn-light  { background-color: var(--company-secondary) !important;
+                                 color: var(--company-primary) !important;
+                                 border-color: var(--company-secondary) !important; }
 </style>
 
 <div class="catalog-wrapper">

@@ -25,6 +25,7 @@ class CompanyModel extends Model
         'cover_path',
         'show_name',
         'color_primary',
+        'color_secondary',
     ];
 
     protected $useTimestamps = true;

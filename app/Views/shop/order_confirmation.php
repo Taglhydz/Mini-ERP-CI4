@@ -8,10 +8,15 @@ $hasLogo      = ! empty($company['logo_path']);
 $showName     = isset($company['show_name']) ? (bool) $company['show_name'] : true;
 $colorPrimary = (! empty($company['color_primary']) && preg_match('/^#[0-9a-fA-F]{6}$/', $company['color_primary']))
     ? $company['color_primary'] : '#0d6efd';
+$colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-fA-F]{6}$/', $company['color_secondary']))
+    ? $company['color_secondary'] : '#ffffff';
 ?>
 
 <style>
-    :root { --company-primary: <?= esc($colorPrimary) ?>; }
+    :root {
+        --company-primary:   <?= esc($colorPrimary) ?>;
+        --company-secondary: <?= esc($colorSecondary) ?>;
+    }
 
     /* Boutons */
     .order-confirm-page .btn-primary,
@@ -74,6 +79,8 @@ $colorPrimary = (! empty($company['color_primary']) && preg_match('/^#[0-9a-fA-F
     }
     .summary-ttc { color: var(--company-primary); font-size: 1.6rem; font-weight: 700; }
     .summary-divider { border-color: color-mix(in srgb, var(--company-primary) 30%, transparent); }
+    /* Texte bannière sur fond color_primary */
+    .order-confirm-page > .position-relative.overflow-hidden .text-white { color: var(--company-secondary) !important; }
 </style>
 
 <div class="order-confirm-page">

@@ -82,6 +82,11 @@ class CompanyController extends BaseController
             $updateData['color_primary'] = $colorPrimary;
         }
 
+        $colorSecondary = (string) $this->request->getPost('color_secondary');
+        if (preg_match('/^#[0-9a-fA-F]{6}$/', $colorSecondary)) {
+            $updateData['color_secondary'] = $colorSecondary;
+        }
+
         model(CompanyModel::class)->update($companyId, $updateData);
 
         return redirect()->to(base_url('admin/company/settings'))

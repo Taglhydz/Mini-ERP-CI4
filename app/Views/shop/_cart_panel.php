@@ -4,9 +4,11 @@
  * Rendu à l'intérieur du div#cart-panel dans catalog.php.
  * Variables : $company (array), $isLoggedIn (bool)
  */
-$hasCover = ! empty($company['cover_path']);
-$hasLogo  = ! empty($company['logo_path']);
-$showName = isset($company['show_name']) ? (bool) $company['show_name'] : true;
+$hasCover       = ! empty($company['cover_path']);
+$hasLogo        = ! empty($company['logo_path']);
+$showName       = isset($company['show_name']) ? (bool) $company['show_name'] : true;
+$colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-fA-F]{6}$/', $company['color_secondary']))
+    ? $company['color_secondary'] : '#ffffff';
 ?>
 
 <style>
@@ -106,8 +108,15 @@ $showName = isset($company['show_name']) ? (bool) $company['show_name'] : true;
 .cart-panel-inner .btn-panel-primary {
     background: var(--company-primary);
     border-color: var(--company-primary);
-    color: #fff;
+    color: var(--company-secondary);
     transition: filter .15s;
+}
+/* Textes sur fond color_primary dans l'en-tête du panneau */
+.panel-header-content .fw-bold,
+.panel-header-content .badge,
+.panel-header-content .btn,
+.panel-header-content p {
+    color: var(--company-secondary) !important;
 }
 .cart-panel-inner .btn-panel-primary:hover { filter: brightness(.88); }
 </style>

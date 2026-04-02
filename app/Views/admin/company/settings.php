@@ -171,6 +171,30 @@
             </div>
         </div>
 
+        <!-- ── Couleur secondaire ────────────────────────────────────── -->
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-transparent fw-semibold">
+                    <i class="bi bi-palette2 me-2 text-primary"></i>Couleur secondaire
+                </div>
+                <div class="card-body d-flex flex-column gap-2">
+                    <p class="text-muted small mb-2">
+                        Couleur des textes et icônes sur les fonds <strong>color_primary</strong> :
+                        titres dans la bannière, badges, boutons. Blanc par défaut.
+                    </p>
+                    <div class="d-flex align-items-center gap-3">
+                        <input type="color" name="color_secondary" id="input-color-secondary"
+                               class="form-control form-control-color"
+                               value="<?= esc($company['color_secondary'] ?? '#ffffff') ?>"
+                               title="Couleur secondaire">
+                        <label for="input-color-secondary" class="form-label mb-0 fw-semibold">
+                            Couleur secondaire
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- ── Aperçu live ──────────────────────────────────────────────────── -->
         <div class="col-12">
             <div class="card border-0 shadow-sm">
@@ -221,7 +245,8 @@
                                     <?php endif; ?>
                                     <a href="#" class="btn btn-sm w-100 preview-btn-primary"
                                        style="background:var(--preview-color,#0d6efd);
-                                              border-color:var(--preview-color,#0d6efd);color:#fff;">
+                                              border-color:var(--preview-color,#0d6efd);
+                                              color:var(--preview-color2,#fff);">
                                         <i class="bi bi-shop me-1"></i>Visiter la boutique
                                     </a>
                                 </div>
@@ -281,7 +306,10 @@
 
 <?= $this->section('scripts') ?>
 <style>
-    :root { --preview-color: <?= esc($company['color_primary'] ?? '#0d6efd') ?>; }
+    :root {
+        --preview-color: <?= esc($company['color_primary'] ?? '#0d6efd') ?>;
+        --preview-color2: <?= esc($company['color_secondary'] ?? '#ffffff') ?>;
+    }
 </style>
 <script>
 (function () {
@@ -383,6 +411,14 @@
         if (hero && ! hero.style.backgroundImage.startsWith('url')) {
             hero.style.background = grad;
         }
+    });
+
+    // ── Couleur secondaire ────────────────────────────────────────────
+    document.getElementById('input-color-secondary').addEventListener('input', function () {
+        document.documentElement.style.setProperty('--preview-color2', this.value);
+        document.querySelectorAll('.preview-btn-primary').forEach(function (btn) {
+            btn.style.color = this.value;
+        }.bind(this));
     });
 
 })();

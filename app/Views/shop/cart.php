@@ -10,10 +10,16 @@ $showName     = isset($company['show_name']) ? (bool) $company['show_name'] : tr
 $colorPrimary = (! empty($company['color_primary']) && preg_match('/^#[0-9a-fA-F]{6}$/', $company['color_primary']))
     ? $company['color_primary']
     : '#0d6efd';
+$colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-fA-F]{6}$/', $company['color_secondary']))
+    ? $company['color_secondary']
+    : '#ffffff';
 ?>
 
 <style>
-    :root { --company-primary: <?= esc($colorPrimary) ?>; }
+    :root {
+        --company-primary:   <?= esc($colorPrimary) ?>;
+        --company-secondary: <?= esc($colorSecondary) ?>;
+    }
 
     /* Boutons primary */
     .cart-page .btn-primary,
@@ -55,6 +61,9 @@ $colorPrimary = (! empty($company['color_primary']) && preg_match('/^#[0-9a-fA-F
     .qty-badge {
         background-color: var(--company-primary) !important;
     }
+    /* Texte bannière sur fond color_primary */
+    .cart-page > .position-relative.overflow-hidden .text-white { color: var(--company-secondary) !important; }
+    .cart-page > .position-relative.overflow-hidden h1.text-white { text-shadow: 0 2px 8px rgba(0,0,0,.4); }
 </style>
 
 <div class="cart-page">
