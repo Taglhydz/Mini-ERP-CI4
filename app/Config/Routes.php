@@ -73,5 +73,16 @@ $routes->group('', ['filter' => 'auth'], static function (RouteCollection $route
         $routes->post('orders/(:num)/delete', 'OrderController::delete/$1');
         $routes->get ('orders/(:num)/pdf',    'OrderController::pdf/$1');
     });
+
+    // ─── Boutiques (Admin uniquement) ─────────────────────────────────────────
+    $routes->group('', ['filter' => 'role:admin'], static function (RouteCollection $routes) {
+        $routes->get ('admin/companies',                 'AdminCompanyController::index');
+        $routes->get ('admin/companies/create',          'AdminCompanyController::create');
+        $routes->post('admin/companies/store',           'AdminCompanyController::store');
+        $routes->get ('admin/companies/(:num)/edit',     'AdminCompanyController::edit/$1');
+        $routes->post('admin/companies/(:num)/update',   'AdminCompanyController::update/$1');
+        $routes->post('admin/companies/(:num)/delete',   'AdminCompanyController::delete/$1');
+        $routes->post('admin/companies/(:num)/toggle',   'AdminCompanyController::toggle/$1');
+    });
 });
 

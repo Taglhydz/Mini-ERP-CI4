@@ -168,6 +168,143 @@
             transform: translateX(110%) translateY(0);
             opacity: 0;
         }
+
+        /* ── Sidebar (back-office) ────────────────────────────────── */
+        .sidebar-main {
+            width: 240px;
+            background: #1e2530;
+            color: rgba(255,255,255,.75);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 200;
+        }
+        .sidebar-brand {
+            padding: 1.25rem 1.25rem 1rem;
+            border-bottom: 1px solid rgba(255,255,255,.08);
+        }
+        .sidebar-brand a { text-decoration: none; }
+        .sidebar-brand-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: .5rem;
+            background: rgba(255,255,255,.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            color: #fff;
+        }
+        .sidebar-brand-text {
+            font-weight: 700;
+            font-size: 1.05rem;
+            line-height: 1.1;
+            color: #fff;
+        }
+        .sidebar-brand-text small {
+            display: block;
+            font-size: .65rem;
+            font-weight: 400;
+            opacity: .6;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            margin-top: 2px;
+        }
+        .sidebar-nav { padding: .75rem 0; }
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            padding: .65rem 1.25rem;
+            color: rgba(255,255,255,.65);
+            text-decoration: none;
+            font-size: .9rem;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+            transition: background .15s, color .15s, border-color .15s;
+            white-space: nowrap;
+        }
+        .sidebar-link i { font-size: 1rem; flex-shrink: 0; }
+        .sidebar-link:hover { background: rgba(255,255,255,.07); color: #fff; }
+        .sidebar-link.active {
+            background: rgba(255,255,255,.1);
+            color: #fff;
+            border-left-color: #fff;
+            font-weight: 600;
+        }
+        .sidebar-sep {
+            height: 1px;
+            background: rgba(255,255,255,.08);
+            margin: .5rem 1.25rem;
+        }
+        .sidebar-footer {
+            padding: 1rem 1.25rem;
+            border-top: 1px solid rgba(255,255,255,.08);
+            font-size: .82rem;
+            color: rgba(255,255,255,.5);
+        }
+
+        /* ── Header top-bar (back-office) ────────────────────────── */
+        .header-main {
+            height: 56px;
+            background: var(--bs-body-bg);
+            border-bottom: 1px solid var(--bs-border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            flex-shrink: 0;
+        }
+
+        /* ── Sidebar content wrapper ─────────────────────────────── */
+        .sidebar-content { min-width: 0; }
+
+        /* ── Mobile sidebar ──────────────────────────────────────── */
+        @media (max-width: 1199.98px) {
+            .sidebar-main {
+                position: fixed;
+                left: 0;
+                top: 0;
+                transform: translateX(-100%);
+                transition: transform .3s ease;
+            }
+            .sidebar-main.sidebar-open {
+                transform: translateX(0);
+                box-shadow: 4px 0 24px rgba(0,0,0,.3);
+            }
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,.5);
+                z-index: 199;
+            }
+            .sidebar-overlay.active { display: block; }
+        }
+
+        /* ── Cards globales ──────────────────────────────────────── */
+        .card { border-radius: .5rem !important; }
+        .card.border-0 { box-shadow: 0 1px 6px rgba(0,0,0,.08) !important; }
+        [data-bs-theme="dark"] .card.border-0 { box-shadow: 0 1px 8px rgba(0,0,0,.25) !important; }
+
+        /* ── Table dark header (back-office uniquement) ──────────── */
+        .sidebar-content .table thead th {
+            background: #343a40;
+            color: #fff;
+            border-color: #4a5157;
+            font-size: .82rem;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        [data-bs-theme="dark"] .sidebar-content .table thead th {
+            background: #212529;
+            border-color: #3a3f45;
+        }
     </style>
 </head>
 <body class="d-flex flex-column min-vh-100">
@@ -177,6 +314,7 @@ $role          = $session->get('role');
 $username      = $session->get('username');
 $isLoggedIn    = (bool) $session->get('isLoggedIn');
 $companySlug   = $session->get('company_slug');
+$companyName   = $session->get('company_name');
 $backOfficeNav = in_array($role ?? '', ['admin', 'manager'], true);
 
 if (! $isLoggedIn) {
@@ -186,9 +324,144 @@ if (! $isLoggedIn) {
 } else {
     $logoHref = base_url('admin/dashboard');
 }
+
+$currentPath = current_url(true)->getPath();
 ?>
 
-<!-- Barre de navigation -->
+<?php if ($backOfficeNav): ?>
+<!-- ═══ Mise en page back-office : sidebar + contenu ═══════════════════════ -->
+<div class="d-flex min-vh-100">
+
+    <!-- Overlay mobile -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <!-- ── Sidebar ── -->
+    <aside class="sidebar-main" id="sidebar-main">
+
+        <!-- Brand -->
+        <div class="sidebar-brand">
+            <a href="<?= $logoHref ?>" class="d-flex align-items-center gap-2">
+                <span class="sidebar-brand-icon">
+                    <i class="bi bi-box-seam"></i>
+                </span>
+                <span class="sidebar-brand-text">
+                    Mini-ERP
+                    <small>Gestion simplifiée</small>
+                </span>
+            </a>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="sidebar-nav flex-grow-1">
+            <ul class="list-unstyled mb-0">
+                <li>
+                    <a href="<?= base_url('admin/dashboard') ?>"
+                       class="sidebar-link <?= str_starts_with($currentPath, '/admin/dashboard') ? 'active' : '' ?>">
+                        <i class="bi bi-speedometer2"></i><span>Tableau de bord</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="<?= base_url('clients') ?>"
+                       class="sidebar-link <?= str_starts_with($currentPath, '/clients') ? 'active' : '' ?>">
+                        <i class="bi bi-people-fill"></i><span>Clients</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="<?= base_url('products') ?>"
+                       class="sidebar-link <?= str_starts_with($currentPath, '/products') ? 'active' : '' ?>">
+                        <i class="bi bi-box-fill"></i><span>Produits</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="<?= base_url('orders') ?>"
+                       class="sidebar-link <?= str_starts_with($currentPath, '/orders') ? 'active' : '' ?>">
+                        <i class="bi bi-cart-fill"></i><span>Commandes</span>
+                    </a>
+                </li>
+
+                <div class="sidebar-sep"></div>
+
+                <?php if ($role === 'admin'): ?>
+                <li>
+                    <a href="<?= base_url('admin/companies') ?>"
+                       class="sidebar-link <?= str_starts_with($currentPath, '/admin/compan') ? 'active' : '' ?>">
+                        <i class="bi bi-buildings-fill"></i><span>Boutiques</span>
+                    </a>
+                </li>
+                <?php else: ?>
+                <li>
+                    <a href="<?= base_url('admin/company/settings') ?>"
+                       class="sidebar-link <?= str_starts_with($currentPath, '/admin/company') ? 'active' : '' ?>">
+                        <i class="bi bi-shop-window"></i><span>Ma boutique</span>
+                    </a>
+                </li>
+                <?php endif; ?>
+            </ul>
+        </nav>
+
+        <!-- Bas de sidebar : entreprise du manager -->
+        <?php if ($role === 'manager' && $companyName): ?>
+        <div class="sidebar-footer">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-building"></i>
+                <span class="text-truncate" style="max-width:160px;" title="<?= esc($companyName) ?>">
+                    <?= esc($companyName) ?>
+                </span>
+            </div>
+        </div>
+        <?php endif; ?>
+    </aside><!-- /.sidebar-main -->
+
+    <!-- ── Zone de contenu ── -->
+    <div class="sidebar-content d-flex flex-column flex-grow-1">
+
+        <!-- Barre d'entête -->
+        <header class="header-main d-flex align-items-center px-4 gap-3">
+
+            <!-- Bouton toggle (mobile uniquement) -->
+            <button class="btn btn-sm border-0 d-xl-none text-body p-1" id="sidebar-toggle-btn" type="button"
+                    aria-label="Ouvrir le menu">
+                <i class="bi bi-list fs-4"></i>
+            </button>
+
+            <!-- Espace flexible -->
+            <div class="flex-grow-1"></div>
+
+            <!-- Badge entreprise (manager) -->
+            <?php if ($role === 'manager' && $companyName): ?>
+            <span class="d-none d-sm-inline-flex align-items-center gap-1 badge fw-normal px-3 py-2 rounded-pill
+                         bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25">
+                <i class="bi bi-building"></i><?= esc($companyName) ?>
+            </span>
+            <?php endif; ?>
+
+            <!-- Utilisateur + rôle -->
+            <div class="d-flex align-items-center gap-2">
+                <span class="fw-semibold small"><?= esc($username) ?></span>
+                <span class="badge bg-secondary text-capitalize"><?= esc($role) ?></span>
+            </div>
+
+            <!-- Déconnexion -->
+            <a href="<?= base_url('logout') ?>" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-box-arrow-right me-1"></i>Déconnexion
+            </a>
+
+            <!-- Toggle thème -->
+            <button id="btn-theme-toggle"
+                    class="btn btn-sm border-0 fs-0"
+                    title="Basculer thème clair / sombre"
+                    aria-label="Basculer thème"
+                    type="button">
+                <span class="theme-switch" role="presentation">
+                    <i class="bi bi-sun-fill theme-icon sun" aria-hidden="true"></i>
+                    <i class="bi bi-moon-fill theme-icon moon" aria-hidden="true"></i>
+                    <span class="theme-switch-thumb" aria-hidden="true"></span>
+                </span>
+            </button>
+        </header><!-- /.header-main -->
+
+<?php else: ?>
+<!-- ═══ Mise en page publique / client : navbar ═══════════════════════════ -->
 <nav class="navbar navbar-expand-lg navbar-dark navbar-main shadow">
     <div class="container-fluid px-4">
         <!-- Brand -->
@@ -208,53 +481,21 @@ if (! $isLoggedIn) {
         </button>
 
         <div class="collapse navbar-collapse" id="navbarMain">
-            <?php if ($backOfficeNav): ?>
+            <?php if ($role === 'client'): ?>
                 <ul class="navbar-nav ms-4 me-auto mb-2 mb-lg-0 gap-1">
                     <li class="nav-item">
                         <a class="nav-link d-flex align-items-center gap-2
-                                   <?= str_starts_with(current_url(true)->getPath(), '/clients') ? 'active' : '' ?>"
-                           href="<?= base_url('clients') ?>">
-                            <i class="bi bi-people-fill"></i>Clients
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link d-flex align-items-center gap-2
-                                   <?= str_starts_with(current_url(true)->getPath(), '/products') ? 'active' : '' ?>"
-                           href="<?= base_url('products') ?>">
-                            <i class="bi bi-box-fill"></i>Produits
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link d-flex align-items-center gap-2
-                                   <?= str_starts_with(current_url(true)->getPath(), '/orders') ? 'active' : '' ?>"
-                           href="<?= base_url('orders') ?>">
-                            <i class="bi bi-cart-fill"></i>Commandes
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link d-flex align-items-center gap-2
-                                   <?= str_starts_with(current_url(true)->getPath(), '/admin/company') ? 'active' : '' ?>"
-                           href="<?= base_url('admin/company/settings') ?>">
-                            <i class="bi bi-shop-window"></i>Boutique
-                        </a>
-                    </li>
-                </ul>
-            <?php elseif ($role === 'client'): ?>
-                <ul class="navbar-nav ms-4 me-auto mb-2 mb-lg-0 gap-1">
-                    <li class="nav-item">
-                        <a class="nav-link d-flex align-items-center gap-2
-                                   <?= str_starts_with(current_url(true)->getPath(), '/espace-client') ? 'active' : '' ?>"
+                                   <?= str_starts_with($currentPath, '/espace-client') ? 'active' : '' ?>"
                            href="<?= base_url('espace-client') ?>">
                             <i class="bi bi-person-circle"></i>Mon espace
                         </a>
                     </li>
                 </ul>
+            <?php else: ?>
+                <ul class="navbar-nav ms-4 me-auto mb-2 mb-lg-0"></ul>
             <?php endif; ?>
 
             <div class="d-flex align-items-center gap-3 small text-white-50 ms-auto">
-                <span class="d-none d-xl-inline">
-                    <i class="bi bi-calendar3 me-1"></i><?= date('d/m/Y') ?>
-                </span>
                 <?php if ($isLoggedIn): ?>
                     <div class="d-flex flex-column flex-sm-row align-items-sm-center gap-2">
                         <span class="fw-semibold text-white"><?= esc($username) ?></span>
@@ -286,6 +527,7 @@ if (! $isLoggedIn) {
         </div>
     </div>
 </nav>
+<?php endif; ?>
 
 <!-- Conteneur de toasts (bas droite) -->
 <div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:1100;"></div>
@@ -318,6 +560,14 @@ if (! $isLoggedIn) {
 </main>
 
 <!-- Footer -->
+<?php if ($backOfficeNav): ?>
+<footer class="py-2 px-4 border-top small text-muted d-flex justify-content-between align-items-center flex-shrink-0">
+    <span>&copy; <?= date('Y') ?> Mini-ERP</span>
+    <span>PHP <?= PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION ?> &bull; CI&nbsp;<?= \CodeIgniter\CodeIgniter::CI_VERSION ?></span>
+</footer>
+    </div><!-- /.sidebar-content -->
+</div><!-- /.layout-wrapper -->
+<?php else: ?>
 <footer class="footer-main mt-auto py-4">
     <div class="container-fluid px-4">
         <div class="row gx-4 gy-3">
@@ -369,6 +619,7 @@ if (! $isLoggedIn) {
         </div>
     </div>
 </footer>
+<?php endif; ?>
 
 <!-- jQuery -->
 <script src="<?= base_url('assets/js/jquery.min.js') ?>?v=4.0.0"></script>
@@ -404,6 +655,32 @@ if (! $isLoggedIn) {
         localStorage.setItem('erp-theme', next);
         applySwitch(next);
     });
+    }
+})();
+</script>
+
+<script>
+/* ── Toggle sidebar (mobile) ─────────────────────────────────────── */
+(function () {
+    var toggleBtn = document.getElementById('sidebar-toggle-btn');
+    var sidebar   = document.getElementById('sidebar-main');
+    var overlay   = document.getElementById('sidebar-overlay');
+    if (! toggleBtn || ! sidebar) return;
+
+    function openSidebar() {
+        sidebar.classList.add('sidebar-open');
+        if (overlay) overlay.classList.add('active');
+    }
+    function closeSidebar() {
+        sidebar.classList.remove('sidebar-open');
+        if (overlay) overlay.classList.remove('active');
+    }
+
+    toggleBtn.addEventListener('click', function () {
+        sidebar.classList.contains('sidebar-open') ? closeSidebar() : openSidebar();
+    });
+    if (overlay) {
+        overlay.addEventListener('click', closeSidebar);
     }
 })();
 </script>

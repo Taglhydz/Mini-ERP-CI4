@@ -17,17 +17,33 @@ class DashboardController extends BaseController
         $productModel = model(ProductModel::class);
         $orderModel   = model(OrderModel::class);
 
+        $companyId = $this->getCompanyId();
+
+        // ── Statistiques filtrées par company_id pour un manager ─────────────
+        $clientsB  = $userModel->builder()->where('role', 'client');
+        $productsB = $productModel->builder();
+        $ordersB   = $orderModel->builder();
+        $caB       = $orderModel->builder();
+
+        if ($companyId !== null) {
+            $clientsB->where('company_id', $companyId);
+            $productsB->where('company_id', $companyId);
+            $ordersB->where('company_id', $companyId);
+            $caB->where('company_id', $companyId);
+        }
+
         $stats = [
-            'clients'  => $userModel->where('role', 'client')->countAllResults(),
-            'products' => $productModel->countAllResults(),
-            'orders'   => $orderModel->countAllResults(),
-            'ca_total' => (float) ($orderModel->selectSum('amount_ht')->get()->getRow()->amount_ht ?? 0),
+            'clients'  => $clientsB->countAllResults(),
+            'products' => $productsB->countAllResults(),
+            'orders'   => $ordersB->countAllResults(),
+            'ca_total' => (float) ($caB->selectSum('amount_ht')->get()->getRow()->amount_ht ?? 0),
         ];
 
-        $latest_orders = $orderModel->withUser()
-            ->orderBy('orders.id', 'DESC')
-            ->limit(5)
-            ->findAll();
+        $latestQ = $orderModel->withUser()->orderBy('orders.id', 'DESC');
+        if ($companyId !== null) {
+            $latestQ->where('orders.company_id', $companyId);
+        }
+        $latest_orders = $latestQ->limit(5)->findAll();
 
         return view('dashboard/index', [
             'titre'         => 'Tableau de bord',

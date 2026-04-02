@@ -83,6 +83,7 @@ class AuthController extends BaseController
                 'role'         => $user['role'],
                 'company_id'   => $user['company_id'],
                 'company_slug' => $company['slug'] ?? null,
+                'company_name' => $company['name'] ?? null,
             ]);
 
             $this->authTokenModel->where('user_id', $userId)->delete();

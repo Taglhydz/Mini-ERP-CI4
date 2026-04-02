@@ -205,7 +205,7 @@
                     <div class="row g-4 align-items-start">
 
                         <!-- Card boutique (accueil) -->
-                        <div class="col-md-5">
+                        <div class="col-md-4">
                             <p class="text-muted small mb-2 fw-semibold">Card d’accueil</p>
                             <div class="card border-0 shadow overflow-hidden" id="preview-shop-card"
                                  style="max-width:320px;">
@@ -254,7 +254,7 @@
                         </div>
 
                         <!-- Bannière catalogue -->
-                        <div class="col-md-7">
+                        <div class="col-md-4">
                             <p class="text-muted small mb-2 fw-semibold">Bannière catalogue</p>
                             <div class="rounded shadow overflow-hidden position-relative"
                                  id="preview-hero"
@@ -284,6 +284,36 @@
                                        style="font-size:1.1rem;text-shadow:0 2px 6px rgba(0,0,0,.5);">
                                         <?= esc($company['name']) ?>
                                     </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fiche produit (colonne catalogue) -->
+                        <div class="col-md-4">
+                            <p class="text-muted small mb-2 fw-semibold">Fiche produit</p>
+                            <div class="card border-0 shadow overflow-hidden" style="max-width:240px;">
+                                <!-- Image placeholder -->
+                                <div style="height:85px;background:var(--bs-secondary-bg);
+                                            display:flex;align-items:center;justify-content:center;
+                                            border-bottom:1px solid var(--bs-border-color);">
+                                    <i class="bi bi-image text-muted opacity-40 fs-2"></i>
+                                </div>
+                                <div class="card-body p-3">
+                                    <div class="mb-2">
+                                        <span class="preview-badge-secondary badge px-2 py-1"
+                                              style="background:var(--preview-color2,#6c757d);
+                                                     color:#fff;font-size:.7rem;">
+                                            <i class="bi bi-upc me-1"></i>PROD-001
+                                        </span>
+                                    </div>
+                                    <div class="fw-semibold small mb-1">Produit exemple</div>
+                                    <div class="text-muted small mb-3">19,90 € HT</div>
+                                    <button type="button" class="btn btn-sm w-100 preview-btn-primary"
+                                            style="background:var(--preview-color,#0d6efd);
+                                                   border-color:var(--preview-color,#0d6efd);
+                                                   color:#fff;">
+                                        <i class="bi bi-cart-plus me-1"></i>Ajouter au panier
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -415,10 +445,16 @@
 
     // ── Couleur secondaire ────────────────────────────────────────────
     document.getElementById('input-color-secondary').addEventListener('input', function () {
-        document.documentElement.style.setProperty('--preview-color2', this.value);
+        var color = this.value;
+        document.documentElement.style.setProperty('--preview-color2', color);
+        // Bouton sur fond primaire → couleur secondaire (texte)
         document.querySelectorAll('.preview-btn-primary').forEach(function (btn) {
-            btn.style.color = this.value;
-        }.bind(this));
+            btn.style.color = '#fff'; // toujours blanc pour lisibilité bouton
+        });
+        // Badge référence produit → fond secondaire
+        document.querySelectorAll('.preview-badge-secondary').forEach(function (badge) {
+            badge.style.background = color;
+        });
     });
 
 })();

@@ -49,10 +49,16 @@ class OrderController extends BaseController
         $orderDir      = in_array($orderDir, ['ASC', 'DESC']) ? $orderDir : 'DESC';
         $orderCol      = $columns[$orderColIndex] ?? 'orders.id';
 
+        $companyId = $this->getCompanyId();
+
         $builder = $this->orderModel->db->table('orders')
             ->select("orders.*, CONCAT(COALESCE(users.first_name, ''), ' ', COALESCE(users.last_name, '')) AS user_name")
             ->join('users', 'users.id = orders.user_id', 'left')
             ->where('orders.deleted_at', null);
+
+        if ($companyId !== null) {
+            $builder->where('orders.company_id', $companyId);
+        }
 
         if ($search !== '') {
             $builder->groupStart()
@@ -108,6 +114,8 @@ class OrderController extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
+        $this->assertCompanyAccess((int) ($order['company_id'] ?? 0));
+
         $items = $this->itemModel->getByOrder($id);
 
         return view('orders/show', [
@@ -121,10 +129,22 @@ class OrderController extends BaseController
 
     public function create(): string
     {
+        $companyId = $this->getCompanyId();
+
+        $clientsQ = model(UserModel::class)->where('role', 'client');
+        if ($companyId !== null) {
+            $clientsQ->where('company_id', $companyId);
+        }
+
+        $productsQ = model(ProductModel::class);
+        if ($companyId !== null) {
+            $productsQ->where('company_id', $companyId);
+        }
+
         return view('orders/form', [
             'titre'    => 'Nouvelle commande',
-            'users'    => model(UserModel::class)->where('role', 'client')->findAll(),
-            'products' => model(ProductModel::class)->findAll(),
+            'users'    => $clientsQ->findAll(),
+            'products' => $productsQ->findAll(),
         ]);
     }
 
@@ -147,6 +167,11 @@ class OrderController extends BaseController
             'notes'      => $post['notes'] ?? null,
         ];
 
+        $companyId = $this->getCompanyId();
+        if ($companyId !== null) {
+            $data['company_id'] = $companyId;
+        }
+
         if (! $this->orderModel->save($data)) {
             return redirect()->back()->withInput()->with('errors', $this->orderModel->errors());
         }
@@ -167,22 +192,39 @@ class OrderController extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
+        $this->assertCompanyAccess((int) ($order['company_id'] ?? 0));
+
         $items = $this->itemModel->getByOrder($id);
+
+        $companyId = $this->getCompanyId();
+
+        $clientsQ = model(UserModel::class)->where('role', 'client');
+        if ($companyId !== null) {
+            $clientsQ->where('company_id', $companyId);
+        }
+
+        $productsQ = model(ProductModel::class);
+        if ($companyId !== null) {
+            $productsQ->where('company_id', $companyId);
+        }
 
         return view('orders/form', [
             'titre'    => 'Modifier la commande',
             'order'    => $order,
             'items'    => $items,
-            'users'    => model(UserModel::class)->where('role', 'client')->findAll(),
-            'products' => model(ProductModel::class)->findAll(),
+            'users'    => $clientsQ->findAll(),
+            'products' => $productsQ->findAll(),
         ]);
     }
 
     public function update(int $id): RedirectResponse
     {
-        if (! $this->orderModel->find($id)) {
+        $order = $this->orderModel->find($id);
+        if (! $order) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
+
+        $this->assertCompanyAccess((int) ($order['company_id'] ?? 0));
 
         $post      = $this->request->getPost();
         $items     = $this->parseItems($post);
@@ -214,10 +256,17 @@ class OrderController extends BaseController
 
     public function delete(int $id): ResponseInterface
     {
-        if (! $this->orderModel->find($id)) {
+        $order = $this->orderModel->find($id);
+        if (! $order) {
             return $this->response->setStatusCode(404)
                 ->setJSON(['success' => false, 'message' => 'Commande introuvable.']);
         }
+
+        if (! $this->isAdmin() && $this->getCompanyId() !== (int) ($order['company_id'] ?? 0)) {
+            return $this->response->setStatusCode(403)
+                ->setJSON(['success' => false, 'message' => 'Accès refusé.']);
+        }
+
         $this->orderModel->delete($id);
 
         return $this->response->setJSON(['success' => true, 'message' => 'Commande supprimée.']);
@@ -231,6 +280,8 @@ class OrderController extends BaseController
         if (! $order) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
+
+        $this->assertCompanyAccess((int) ($order['company_id'] ?? 0));
 
         $items = $this->itemModel->getByOrder($id);
         $html  = view('orders/pdf_invoice', ['order' => $order, 'items' => $items]);

@@ -38,8 +38,14 @@ class ProductController extends BaseController
         $orderDir      = in_array($orderDir, ['ASC', 'DESC']) ? $orderDir : 'ASC';
         $orderCol      = $columns[$orderColIndex] ?? 'name';
 
+        $companyId = $this->getCompanyId();
+
         $builder = $this->productModel->builder();
         $builder->where('deleted_at', null);
+
+        if ($companyId !== null) {
+            $builder->where('company_id', $companyId);
+        }
 
         if ($search !== '') {
             $builder->groupStart()
@@ -48,7 +54,11 @@ class ProductController extends BaseController
                 ->groupEnd();
         }
 
-        $total    = $this->productModel->countAllResults(false);
+        $totalB = $this->productModel->builder()->where('deleted_at', null);
+        if ($companyId !== null) {
+            $totalB->where('company_id', $companyId);
+        }
+        $total    = $totalB->countAllResults();
         $filtered = $builder->countAllResults(false);
 
         $rows = $builder->orderBy($orderCol, $orderDir)
@@ -90,6 +100,16 @@ class ProductController extends BaseController
     {
         $data = $this->request->getPost(['reference', 'name', 'description', 'unit_price', 'stock']);
 
+        $companyId = $this->getCompanyId();
+        if ($companyId !== null) {
+            $data['company_id'] = $companyId;
+        }
+
+        if (! $this->productModel->isReferenceUnique($data['reference'], $companyId)) {
+            return redirect()->back()->withInput()
+                ->with('errors', ['reference' => 'Cette référence est déjà utilisée.']);
+        }
+
         if (! $this->productModel->save($data)) {
             return redirect()->back()->withInput()->with('errors', $this->productModel->errors());
         }
@@ -106,6 +126,8 @@ class ProductController extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
+        $this->assertCompanyAccess((int) ($product['company_id'] ?? 0));
+
         return view('products/form', ['titre' => 'Modifier le produit', 'product' => $product]);
     }
 
@@ -115,6 +137,8 @@ class ProductController extends BaseController
         if (! $product) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
+
+        $this->assertCompanyAccess((int) ($product['company_id'] ?? 0));
 
         $data = $this->request->getPost(['reference', 'name', 'description', 'unit_price', 'stock']);
 
@@ -135,10 +159,17 @@ class ProductController extends BaseController
 
     public function delete(int $id): ResponseInterface
     {
-        if (! $this->productModel->find($id)) {
+        $product = $this->productModel->find($id);
+        if (! $product) {
             return $this->response->setStatusCode(404)
                 ->setJSON(['success' => false, 'message' => 'Produit introuvable.']);
         }
+
+        if (! $this->isAdmin() && $this->getCompanyId() !== (int) ($product['company_id'] ?? 0)) {
+            return $this->response->setStatusCode(403)
+                ->setJSON(['success' => false, 'message' => 'Accès refusé.']);
+        }
+
         $this->productModel->delete($id);
 
         return $this->response->setJSON(['success' => true, 'message' => 'Produit supprimé.']);

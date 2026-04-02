@@ -38,9 +38,15 @@ class ClientController extends BaseController
         $orderDir      = in_array($orderDir, ['ASC', 'DESC']) ? $orderDir : 'ASC';
         $orderCol      = $columns[$orderColIndex] ?? 'id';
 
+        $companyId = $this->getCompanyId();
+
         $builder = $this->userModel->builder();
         $builder->where('deleted_at', null)
                 ->where('role', 'client');
+
+        if ($companyId !== null) {
+            $builder->where('company_id', $companyId);
+        }
 
         if ($search !== '') {
             $builder->groupStart()
@@ -51,7 +57,11 @@ class ClientController extends BaseController
                 ->groupEnd();
         }
 
-        $total    = $this->userModel->where('role', 'client')->countAllResults();
+        $totalB = $this->userModel->builder()->where('deleted_at', null)->where('role', 'client');
+        if ($companyId !== null) {
+            $totalB->where('company_id', $companyId);
+        }
+        $total    = $totalB->countAllResults();
         $filtered = $builder->countAllResults(false);
 
         $rows = $builder->orderBy($orderCol, $orderDir)
@@ -125,8 +135,9 @@ class ClientController extends BaseController
         }
 
         $data = $this->normalizeUserData($data);
-        $data['role']     = 'client';
-        $data['username'] = trim(($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? ''))
+        $data['role']       = 'client';
+        $data['company_id'] = $this->getCompanyId();
+        $data['username']   = trim(($data['first_name'] ?? '') . ' ' . ($data['last_name'] ?? ''))
                             ?: $data['email'];
 
         if (! $this->userModel->save($data)) {
@@ -145,6 +156,8 @@ class ClientController extends BaseController
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
+        $this->assertCompanyAccess((int) ($client['company_id'] ?? 0));
+
         return view('clients/form', ['titre' => 'Modifier le client', 'client' => $client]);
     }
 
@@ -154,6 +167,8 @@ class ClientController extends BaseController
         if (! $client || $client['role'] !== 'client') {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
+
+        $this->assertCompanyAccess((int) ($client['company_id'] ?? 0));
 
         $data = $this->request->getPost([
             'first_name', 'last_name', 'email', 'phone',
@@ -208,6 +223,12 @@ class ClientController extends BaseController
             return $this->response->setStatusCode(404)
                 ->setJSON(['success' => false, 'message' => 'Client introuvable.']);
         }
+
+        if (! $this->isAdmin() && $this->getCompanyId() !== (int) ($client['company_id'] ?? 0)) {
+            return $this->response->setStatusCode(403)
+                ->setJSON(['success' => false, 'message' => 'Accès refusé.']);
+        }
+
         $this->userModel->delete($id);
 
         return $this->response->setJSON(['success' => true, 'message' => 'Client supprimé.']);
