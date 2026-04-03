@@ -60,6 +60,13 @@
         var navBadge = document.querySelector('#nav-cart-btn .badge');
         if (navBadge) navBadge.textContent = count;
 
+        // Bloquer le bouton commande si un article est en rupture de stock
+        if (checkoutBtn) {
+            var hasWarning = itemsEl && itemsEl.querySelector('.stock-warning') !== null;
+            checkoutBtn.disabled = hasWarning;
+            checkoutBtn.title    = hasWarning ? 'Un ou plusieurs articles sont en rupture ou stock insuffisant.' : '';
+        }
+
         syncPanel(count);
         bindItemEvents();
         storeCsrf(data);
@@ -90,8 +97,16 @@
             product_id: productId,
             quantity:   1,
         }).then(function (data) {
-            if (data.success) applyData(data);
-        }).catch(function (e) { console.error('Cart add error:', e); });
+            if (data.success) {
+                applyData(data);
+            } else {
+                showToast(data.message || 'Erreur lors de l\'ajout au panier.', 'danger');
+            }
+            return data;
+        }).catch(function (e) {
+            console.error('Cart add error:', e);
+            return { success: false };
+        });
     }
 
     function updateItem(productId, qty) {
@@ -151,13 +166,16 @@
                 btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span>Ajout...';
             }
 
-            addItem(pid).then(function () {
-                if (btn) {
-                    btn.disabled  = false;
-                    btn.innerHTML = '<i class="bi bi-cart-check me-1"></i>Ajouté\u00a0!';
+            addItem(pid).then(function (data) {
+                if (! btn) return;
+                btn.disabled = false;
+                if (data && data.success) {
+                    btn.innerHTML = '<i class="bi bi-cart-check me-1"></i>Ajout\u00e9\u00a0!';
                     setTimeout(function () {
                         btn.innerHTML = '<i class="bi bi-cart-plus me-1"></i>Ajouter au panier';
                     }, 1600);
+                } else {
+                    btn.innerHTML = '<i class="bi bi-cart-plus me-1"></i>Ajouter au panier';
                 }
             });
         });

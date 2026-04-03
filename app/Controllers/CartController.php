@@ -22,7 +22,6 @@ class CartController extends BaseController
         $product = model(ProductModel::class)
             ->where('id', $productId)
             ->where('deleted_at', null)
-            ->where('stock >', 0)
             ->first();
 
         if (! $product) {
@@ -32,7 +31,28 @@ class CartController extends BaseController
             return redirect()->back()->with('error', 'Produit introuvable ou indisponible.');
         }
 
-        $cart = session()->get('cart') ?? [];
+        $stock = (int) $product['stock'];
+
+        if ($stock === 0) {
+            $message = esc($product['name']) . ' est en rupture de stock.';
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['success' => false, 'message' => $message]);
+            }
+            return redirect()->back()->with('error', $message);
+        }
+
+        $cart       = session()->get('cart') ?? [];
+        $currentQty = isset($cart[$productId]) ? (int) $cart[$productId]['qty'] : 0;
+
+        if ($currentQty + $qty > $stock) {
+            $message = 'Stock insuffisant pour ' . esc($product['name'])
+                . '. Stock disponible\u00a0: ' . $stock
+                . ($currentQty > 0 ? ' (dont ' . $currentQty . ' déjà au panier)' : '') . '.';
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['success' => false, 'message' => $message]);
+            }
+            return redirect()->back()->with('error', $message);
+        }
 
         if (isset($cart[$productId])) {
             $cart[$productId]['qty'] += $qty;
@@ -72,7 +92,19 @@ class CartController extends BaseController
         if ($qty <= 0) {
             unset($cart[$productId]);
         } elseif (isset($cart[$productId])) {
-            $cart[$productId]['qty'] = $qty;
+            // Vérifier le stock disponible
+            $product = model(ProductModel::class)
+                ->where('id', $productId)
+                ->where('deleted_at', null)
+                ->first();
+            if ($product) {
+                $qty = min($qty, (int) $product['stock']);
+            }
+            if ($qty > 0) {
+                $cart[$productId]['qty'] = $qty;
+            } else {
+                unset($cart[$productId]);
+            }
         }
 
         session()->set('cart', $cart);
@@ -142,17 +174,32 @@ class CartController extends BaseController
         $vatRate   = 20;
         $amountTtc = round($amountHt * (1 + $vatRate / 100), 2);
 
+        // Récupérer les stocks actuels
+        $stocks = $this->fetchStocks($cart);
+
+        // Détecter si un article est en rupture/stock insuffisant
+        $hasStockIssue = false;
+        foreach ($cart as $productId => $item) {
+            $currentStock = $stocks[(int)$productId] ?? PHP_INT_MAX;
+            if ($currentStock < (int) $item['qty']) {
+                $hasStockIssue = true;
+                break;
+            }
+        }
+
         return view('shop/cart', [
-            'titre'      => 'Mon panier — ' . esc($company['name']),
-            'company'    => $company,
-            'cart'       => $cart,
-            'amountHt'   => $amountHt,
-            'vatRate'    => $vatRate,
-            'amountTtc'  => $amountTtc,
-            'cartCount'  => count($cart),
-            'isLoggedIn' => (bool) session()->get('isLoggedIn'),
-            'username'   => session()->get('username'),
-            'role'       => session()->get('role'),
+            'titre'         => 'Mon panier — ' . esc($company['name']),
+            'company'       => $company,
+            'cart'          => $cart,
+            'stocks'        => $stocks,
+            'hasStockIssue' => $hasStockIssue,
+            'amountHt'      => $amountHt,
+            'vatRate'       => $vatRate,
+            'amountTtc'     => $amountTtc,
+            'cartCount'     => count($cart),
+            'isLoggedIn'    => (bool) session()->get('isLoggedIn'),
+            'username'      => session()->get('username'),
+            'role'          => session()->get('role'),
         ]);
     }
 
@@ -160,7 +207,28 @@ class CartController extends BaseController
 
     private function buildCartHtml(string $slug, array $cart): string
     {
-        return view('shop/_cart_items', ['cart' => $cart, 'slug' => $slug]);
+        return view('shop/_cart_items', [
+            'cart'   => $cart,
+            'slug'   => $slug,
+            'stocks' => $this->fetchStocks($cart),
+        ]);
+    }
+
+    private function fetchStocks(array $cart): array
+    {
+        if (empty($cart)) {
+            return [];
+        }
+        $productIds = array_map('intval', array_keys($cart));
+        $rows       = model(ProductModel::class)
+            ->whereIn('id', $productIds)
+            ->where('deleted_at', null)
+            ->findAll();
+        $stocks = [];
+        foreach ($rows as $row) {
+            $stocks[(int) $row['id']] = (int) $row['stock'];
+        }
+        return $stocks;
     }
 
     private function calcTtc(array $cart): float

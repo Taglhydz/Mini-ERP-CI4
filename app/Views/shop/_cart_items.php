@@ -1,8 +1,9 @@
 <?php
 /**
  * Fragment inclus dans l'offcanvas panier (rendu par CartController::buildCartHtml).
- * Variables : $cart (array), $slug (string)
+ * Variables : $cart (array), $slug (string), $stocks (array productId => int)
  */
+$stocks ??= [];
 ?>
 <?php if (empty($cart)): ?>
     <div class="text-center text-muted py-5">
@@ -10,8 +11,11 @@
         <p class="mb-0">Votre panier est vide.</p>
     </div>
 <?php else: ?>
-    <?php foreach ($cart as $productId => $item): ?>
-    <div class="cart-item d-flex align-items-start gap-3 py-3 border-bottom"
+    <?php foreach ($cart as $productId => $item):
+        $currentStock = $stocks[(int)$productId] ?? PHP_INT_MAX;
+        $hasIssue     = $currentStock < (int) $item['qty'];
+    ?>
+    <div class="cart-item d-flex align-items-start gap-3 py-3 border-bottom<?= $hasIssue ? ' border-warning' : '' ?>"
          data-product-id="<?= (int) $productId ?>">
 
         <div class="flex-grow-1 overflow-hidden">
@@ -19,6 +23,18 @@
             <p class="text-muted small mb-0">
                 <?= number_format((float) $item['price'], 2, ',', ' ') ?> € / u
             </p>
+            <?php if ($hasIssue): ?>
+            <div class="stock-warning d-flex align-items-center gap-1 mt-1">
+                <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size:.75rem;"></i>
+                <span class="text-warning small fw-semibold">
+                    <?php if ($currentStock === 0): ?>
+                        Rupture de stock
+                    <?php else: ?>
+                        Stock : <?= (int) $currentStock ?> (commandé : <?= (int) $item['qty'] ?>)
+                    <?php endif; ?>
+                </span>
+            </div>
+            <?php endif; ?>
         </div>
 
         <!-- Contrôles quantité -->

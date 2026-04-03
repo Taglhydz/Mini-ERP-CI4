@@ -232,9 +232,63 @@ class OrderController extends BaseController
         $vatRate   = (float) ($post['vat_rate'] ?? 20);
         $amountTtc = round($amountHt * (1 + $vatRate / 100), 2);
 
+        $newStatus = $post['status'];
+        $oldStatus = $order['status'];
+
+        // ── Blocage passage en "Livrée" si stock insuffisant ──────────────────
+        if ($newStatus === 'delivered' && $oldStatus !== 'delivered') {
+            // Utiliser les items du formulaire, ou les items existants en DB
+            $itemsToCheck  = ! empty($items) ? $items : $this->itemModel->getByOrder($id);
+            $productModel  = model(ProductModel::class);
+            $stockErrors   = [];
+
+            foreach ($itemsToCheck as $item) {
+                $pid     = (int) ($item['product_id'] ?? 0);
+                if ($pid === 0) {
+                    continue;
+                }
+                $product = $productModel->find($pid);
+                if (! $product) {
+                    continue;
+                }
+                $currentStock = (int) $product['stock'];
+                $orderedQty   = (int) ($item['quantity'] ?? 0);
+
+                if ($currentStock < $orderedQty) {
+                    $stockErrors[] = sprintf(
+                        '<strong>%s</strong> (stock\u00a0: %d, command\u00e9\u00a0: %d) — '
+                        . '<a href="%s" class="alert-link">R\u00e9approvisionner</a>',
+                        htmlspecialchars($product['name'], ENT_QUOTES | ENT_HTML5, 'UTF-8'),
+                        $currentStock,
+                        $orderedQty,
+                        base_url('products/' . $pid . '/edit')
+                    );
+                }
+            }
+
+            if (! empty($stockErrors)) {
+                return redirect()->back()->withInput()
+                    ->with('stock_errors', $stockErrors);
+            }
+
+            // Stock suffisant : déduire les quantités
+            foreach ($itemsToCheck as $item) {
+                $pid = (int) ($item['product_id'] ?? 0);
+                if ($pid === 0) {
+                    continue;
+                }
+                $product = $productModel->find($pid);
+                if (! $product) {
+                    continue;
+                }
+                $newStock = max(0, (int) $product['stock'] - (int) ($item['quantity'] ?? 0));
+                $productModel->update($pid, ['stock' => $newStock]);
+            }
+        }
+
         $data = [
             'user_id'    => (int) $post['user_id'],
-            'status'     => $post['status'],
+            'status'     => $newStatus,
             'order_date' => $post['order_date'],
             'amount_ht'  => $amountHt,
             'vat_rate'   => $vatRate,

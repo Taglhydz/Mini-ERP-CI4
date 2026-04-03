@@ -140,8 +140,11 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
                         <i class="bi bi-list-ul me-1"></i>Articles
                     </h2>
                     <div class="d-flex flex-column gap-3">
-                        <?php foreach ($cart as $productId => $item): ?>
-                        <div class="card cart-item-card border-0 rounded-3">
+                        <?php foreach ($cart as $productId => $item):
+                            $currentStock = ($stocks[(int)$productId]) ?? PHP_INT_MAX;
+                            $itemHasIssue = $currentStock < (int) $item['qty'];
+                        ?>
+                        <div class="card cart-item-card border-0 rounded-3<?= $itemHasIssue ? ' border-warning' : '' ?>">
                             <div class="card-body d-flex align-items-center gap-3 py-3 px-4">
                                 <!-- Icône produit -->
                                 <div class="d-flex align-items-center justify-content-center flex-shrink-0 rounded-2"
@@ -150,12 +153,24 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
                                     <i class="bi bi-box text-primary"></i>
                                 </div>
 
-                                <!-- Nom -->
+                                <!-- Nom + avertissement stock -->
                                 <div class="flex-grow-1 min-width-0">
                                     <p class="fw-semibold mb-0 text-truncate"><?= esc($item['name']) ?></p>
                                     <p class="text-muted small mb-0">
                                         <?= number_format((float) $item['price'], 2, ',', ' ') ?> € / unité
                                     </p>
+                                    <?php if ($itemHasIssue): ?>
+                                    <div class="d-flex align-items-center gap-1 mt-1">
+                                        <i class="bi bi-exclamation-triangle-fill text-warning small"></i>
+                                        <span class="text-warning small fw-semibold">
+                                            <?php if ($currentStock === 0): ?>
+                                                Rupture de stock — retirez cet article pour commander
+                                            <?php else: ?>
+                                                Stock insuffisant : <?= (int) $currentStock ?> disponible(s), <?= (int) $item['qty'] ?> commandé(s)
+                                            <?php endif; ?>
+                                        </span>
+                                    </div>
+                                    <?php endif; ?>
                                 </div>
 
                                 <!-- Quantité -->
@@ -224,9 +239,16 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
                                 </span>
                             </div>
                             <a href="<?= base_url('shop/' . esc($company['slug']) . '/checkout') ?>"
-                               class="btn btn-primary w-100 btn-lg">
+                               class="btn btn-primary w-100 btn-lg<?= $hasStockIssue ? ' disabled' : '' ?>"
+                               <?= $hasStockIssue ? 'aria-disabled="true" tabindex="-1"' : '' ?>>
                                 <i class="bi bi-bag-check me-2"></i>Passer la commande
                             </a>
+                            <?php if ($hasStockIssue): ?>
+                            <p class="text-warning small text-center mt-2 mb-0">
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                Retirez les articles en rupture pour continuer.
+                            </p>
+                            <?php endif; ?>
                             <a href="<?= base_url('shop/' . esc($company['slug']) . '/catalog') ?>"
                                class="btn btn-outline-secondary w-100 mt-2 d-none d-lg-block">
                                 <i class="bi bi-arrow-left me-1"></i>Continuer mes achats

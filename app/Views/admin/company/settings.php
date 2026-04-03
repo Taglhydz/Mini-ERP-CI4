@@ -284,6 +284,11 @@
                                        style="font-size:1.1rem;text-shadow:0 2px 6px rgba(0,0,0,.5);">
                                         <?= esc($company['name']) ?>
                                     </p>
+                                    <?php if (! empty($company['city'])): ?>
+                                    <p class="text-white-50 small mb-0 mt-1">
+                                        <i class="bi bi-geo-alt me-1"></i><?= esc($company['city']) ?>
+                                    </p>
+                                    <?php endif; ?>
                                 </div>
                             </div>
                         </div>
@@ -299,21 +304,69 @@
                                     <i class="bi bi-image text-muted opacity-40 fs-2"></i>
                                 </div>
                                 <div class="card-body p-3">
-                                    <div class="mb-2">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
                                         <span class="preview-badge-secondary badge px-2 py-1"
-                                              style="background:var(--preview-color2,#6c757d);
-                                                     color:#fff;font-size:.7rem;">
+                                              style="background:var(--preview-color2,#6c757d);color:#fff;font-size:.65rem;">
                                             <i class="bi bi-upc me-1"></i>PROD-001
                                         </span>
+                                        <span class="badge bg-success" style="font-size:.65rem;">En stock</span>
                                     </div>
-                                    <div class="fw-semibold small mb-1">Produit exemple</div>
-                                    <div class="text-muted small mb-3">19,90 € HT</div>
+                                    <div class="fw-semibold small mb-0">Produit exemple</div>
+                                    <div class="text-muted small mb-1" style="font-size:.75rem;">Description courte…</div>
+                                    <div class="fw-bold mb-2" style="color:var(--preview-color,#0d6efd);font-size:.9rem;">19,90 € HT</div>
                                     <button type="button" class="btn btn-sm w-100 preview-btn-primary"
                                             style="background:var(--preview-color,#0d6efd);
-                                                   border-color:var(--preview-color,#0d6efd);
-                                                   color:#fff;">
+                                                   border-color:var(--preview-color,#0d6efd);color:#fff;">
                                         <i class="bi bi-cart-plus me-1"></i>Ajouter au panier
                                     </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Menu latéral boutique -->
+                        <div class="col-md-4">
+                            <p class="text-muted small mb-2 fw-semibold">Menu latéral boutique</p>
+                            <div id="preview-sidebar" class="rounded shadow overflow-hidden"
+                                 style="max-width:220px;background:var(--preview-color2,#f8f9fa);">
+                                <!-- Header sidebar -->
+                                <div id="preview-sidebar-header"
+                                     class="d-flex align-items-center gap-2 p-3"
+                                     style="background:var(--preview-color,#0d6efd);">
+                                    <?php if (! empty($company['logo_path'])): ?>
+                                        <img id="preview-sidebar-logo"
+                                             src="<?= base_url(esc($company['logo_path'])) ?>"
+                                             alt="Logo"
+                                             style="width:32px;height:32px;object-fit:contain;
+                                                    filter:drop-shadow(0 1px 4px rgba(0,0,0,.4));">
+                                    <?php else: ?>
+                                        <div id="preview-sidebar-logo"
+                                             class="d-flex align-items-center justify-content-center flex-shrink-0"
+                                             style="width:32px;height:32px;border-radius:.4rem;
+                                                    background:rgba(255,255,255,.2);">
+                                            <i class="bi bi-shop text-white" style="font-size:.85rem;"></i>
+                                        </div>
+                                    <?php endif; ?>
+                                    <span id="preview-sidebar-name"
+                                          class="text-white fw-semibold small text-truncate <?= empty($company['show_name']) ? 'd-none' : '' ?>">
+                                        <?= esc($company['name']) ?>
+                                    </span>
+                                </div>
+                                <!-- Nav items -->
+                                <div class="p-2">
+                                    <div class="px-3 py-2 rounded small fw-semibold d-flex align-items-center gap-2 preview-sidebar-active"
+                                         style="background:rgba(13,110,253,.08);
+                                                border-left:3px solid var(--preview-color,#0d6efd);
+                                                color:var(--preview-color,#0d6efd);">
+                                        <i class="bi bi-grid"></i> Tous les produits
+                                    </div>
+                                    <div class="px-3 py-2 rounded small text-muted d-flex align-items-center gap-2 mt-1"
+                                         style="border-left:3px solid transparent;">
+                                        <i class="bi bi-tag"></i> Catégorie A
+                                    </div>
+                                    <div class="px-3 py-2 rounded small text-muted d-flex align-items-center gap-2 mt-1"
+                                         style="border-left:3px solid transparent;">
+                                        <i class="bi bi-tag"></i> Catégorie B
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -381,11 +434,13 @@
                     lpv.replaceWith(img);
                 }
             }
-            // Live previews
+            // Live previews — toutes les zones logo
             swapToImg('preview-card-logo', src,
                 'position:relative;max-width:90px;max-height:65px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.55));');
             swapToImg('preview-hero-logo', src,
                 'max-width:90px;max-height:55px;object-fit:contain;margin-bottom:.5rem;filter:drop-shadow(0 2px 8px rgba(0,0,0,.55));');
+            swapToImg('preview-sidebar-logo', src,
+                'width:32px;height:32px;object-fit:contain;filter:drop-shadow(0 1px 4px rgba(0,0,0,.4));');
         });
     });
 
@@ -416,7 +471,7 @@
     // ── Afficher le nom ───────────────────────────────────────────────
     document.getElementById('input-show-name').addEventListener('change', function () {
         var show = this.checked;
-        ['preview-card-name', 'preview-hero-name'].forEach(function (id) {
+        ['preview-card-name', 'preview-hero-name', 'preview-sidebar-name'].forEach(function (id) {
             var el = document.getElementById(id);
             if (el) el.classList.toggle('d-none', ! show);
         });
@@ -426,7 +481,7 @@
     document.getElementById('input-color-primary').addEventListener('input', function () {
         var color = this.value;
         document.documentElement.style.setProperty('--preview-color', color);
-        // Bouton dans la card preview
+        // Boutons preview
         document.querySelectorAll('.preview-btn-primary').forEach(function (btn) {
             btn.style.background = color;
             btn.style.borderColor = color;
@@ -441,20 +496,28 @@
         if (hero && ! hero.style.backgroundImage.startsWith('url')) {
             hero.style.background = grad;
         }
+        // Header sidebar
+        var sidebarHeader = document.getElementById('preview-sidebar-header');
+        if (sidebarHeader) sidebarHeader.style.background = color;
+        // Item actif sidebar
+        document.querySelectorAll('.preview-sidebar-active').forEach(function (el) {
+            el.style.borderLeftColor = color;
+            el.style.color = color;
+        });
     });
 
     // ── Couleur secondaire ────────────────────────────────────────────
     document.getElementById('input-color-secondary').addEventListener('input', function () {
         var color = this.value;
         document.documentElement.style.setProperty('--preview-color2', color);
-        // Bouton sur fond primaire → couleur secondaire (texte)
-        document.querySelectorAll('.preview-btn-primary').forEach(function (btn) {
-            btn.style.color = '#fff'; // toujours blanc pour lisibilité bouton
-        });
         // Badge référence produit → fond secondaire
         document.querySelectorAll('.preview-badge-secondary').forEach(function (badge) {
             badge.style.background = color;
         });
+        // Prix produit → couleur secondaire si lisible, sinon primaryCouleur
+        // Fond du menu latéral → couleur secondaire
+        var sidebar = document.getElementById('preview-sidebar');
+        if (sidebar) sidebar.style.background = color;
     });
 
 })();

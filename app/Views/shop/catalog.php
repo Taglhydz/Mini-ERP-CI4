@@ -156,13 +156,24 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
                                 <?php endif; ?>
                             </div>
                             <div class="card-footer bg-transparent">
+                                <?php $stockQty = (int) $product['stock']; ?>
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span class="fw-bold text-primary fs-5">
                                         <?= number_format((float)$product['unit_price'], 2, ',', ' ') ?> €
                                     </span>
-                                    <span class="badge bg-success bg-opacity-10 text-success small">
-                                        <i class="bi bi-check-circle me-1"></i>En stock
-                                    </span>
+                                    <?php if ($stockQty > 5): ?>
+                                        <span class="badge bg-success bg-opacity-10 text-success small">
+                                            <i class="bi bi-check-circle me-1"></i>En stock
+                                        </span>
+                                    <?php elseif ($stockQty > 0): ?>
+                                        <span class="badge bg-warning bg-opacity-25 text-warning-emphasis small">
+                                            <i class="bi bi-exclamation-triangle me-1"></i>Plus que <?= $stockQty ?> en stock
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="badge bg-danger bg-opacity-10 text-danger small">
+                                            <i class="bi bi-x-circle me-1"></i>Rupture de stock
+                                        </span>
+                                    <?php endif; ?>
                                 </div>
                                 <form method="post"
                                       action="<?= base_url('shop/' . esc($company['slug']) . '/cart/add') ?>"
@@ -170,7 +181,9 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="product_id" value="<?= (int) $product['id'] ?>">
                                     <input type="hidden" name="quantity" value="1">
-                                    <button type="submit" class="btn btn-primary btn-sm w-100">
+                                    <button type="submit"
+                                            class="btn btn-primary btn-sm w-100<?= $stockQty === 0 ? ' disabled' : '' ?>"
+                                            <?= $stockQty === 0 ? 'disabled aria-disabled="true"' : '' ?>>
                                         <i class="bi bi-cart-plus me-1"></i>Ajouter au panier
                                     </button>
                                 </form>

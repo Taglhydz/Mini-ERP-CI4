@@ -61,7 +61,7 @@ class InitialSeeder extends Seeder
 
         echo "\n";
         echo "  ✓ Entreprise : Mon Entreprise (id={$companyId})\n";
-        echo "  ✓ Admin      : admin@demo.fr   / Admin123!   ← À CHANGER EN PRODUCTION\n";
-        echo "  ✓ Manager    : manager@demo.fr / Manager123! ← À CHANGER EN PRODUCTION\n";
+        echo "  ✓ Admin      : admin@demo.fr   / Admin123!\n";
+        echo "  ✓ Manager    : manager@demo.fr / Manager123!\n";
     }
 }

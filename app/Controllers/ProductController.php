@@ -68,6 +68,24 @@ class ProductController extends BaseController
 
         $data = array_map(function (array $row): array {
             $row['unit_price_formatted'] = number_format((float) $row['unit_price'], 2, ',', ' ') . ' €';
+
+            // Badge coloré selon le stock
+            $qty = (int) $row['stock'];
+            if ($qty === 0) {
+                $badge = '<span class="badge bg-danger">' . $qty . '</span>';
+            } elseif ($qty <= 5) {
+                $badge = '<span class="badge bg-warning text-dark">' . $qty . '</span>';
+            } else {
+                $badge = '<span class="badge bg-success">' . $qty . '</span>';
+            }
+            $row['stock_badge'] = $badge
+                . ' <button type="button" class="btn btn-link p-0 ms-1 align-baseline btn-edit-stock"'
+                . ' data-id="' . (int) $row['id'] . '"'
+                . ' data-stock="' . $qty . '"'
+                . ' data-name="' . htmlspecialchars($row['name'], ENT_QUOTES | ENT_HTML5, 'UTF-8') . '"'
+                . ' title="Modifier le stock" style="font-size:.8rem;vertical-align:middle;">'
+                . '<i class="bi bi-pencil-square text-primary"></i></button>';
+
             $row['actions']              = sprintf(
                 '<a href="%s" class="btn btn-sm btn-outline-primary me-1" title="Modifier"><i class="bi bi-pencil"></i></a>'
                 . '<button type="button" class="btn btn-sm btn-outline-danger" title="Supprimer"'
@@ -173,5 +191,30 @@ class ProductController extends BaseController
         $this->productModel->delete($id);
 
         return $this->response->setJSON(['success' => true, 'message' => 'Produit supprimé.']);
+    }
+
+    // ─── Mise à jour rapide du stock (AJAX) ───────────────────────────────────
+
+    public function updateStock(int $id): ResponseInterface
+    {
+        $product = $this->productModel->find($id);
+        if (! $product) {
+            return $this->response->setStatusCode(404)
+                ->setJSON(['success' => false, 'message' => 'Produit introuvable.']);
+        }
+
+        if (! $this->isAdmin() && $this->getCompanyId() !== (int) ($product['company_id'] ?? 0)) {
+            return $this->response->setStatusCode(403)
+                ->setJSON(['success' => false, 'message' => 'Accès refusé.']);
+        }
+
+        $newStock = (int) $this->request->getPost('stock');
+        if ($newStock < 0) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Le stock ne peut pas être négatif.']);
+        }
+
+        $this->productModel->update($id, ['stock' => $newStock]);
+
+        return $this->response->setJSON(['success' => true, 'stock' => $newStock]);
     }
 }

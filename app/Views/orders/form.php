@@ -14,6 +14,21 @@
     </a>
 </div>
 
+<?php $stockErrors = session()->getFlashdata('stock_errors'); if (! empty($stockErrors)): ?>
+<div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+    <h6 class="alert-heading fw-bold">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>Stock insuffisant — passage en « Livrée » impossible
+    </h6>
+    <p class="mb-2 small">Réapprovisionnez les articles concernés avant de marquer cette commande comme livrée&nbsp;:</p>
+    <ul class="mb-0 small">
+        <?php foreach ($stockErrors as $msg): ?>
+            <li><?= $msg ?></li>
+        <?php endforeach; ?>
+    </ul>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+</div>
+<?php endif; ?>
+
 <form action="<?= isset($order) ? base_url('orders/' . $order['id'] . '/update') : base_url('orders/store') ?>"
       method="post" id="form-order">
     <?= csrf_field() ?>

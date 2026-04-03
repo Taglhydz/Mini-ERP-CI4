@@ -54,13 +54,14 @@ $routes->group('', ['filter' => 'auth'], static function (RouteCollection $route
         $routes->post('clients/(:num)/delete', 'ClientController::delete/$1');
 
         // Products
-        $routes->get ('products',               'ProductController::index');
-        $routes->post('products/ajax',          'ProductController::ajax');
-        $routes->get ('products/create',        'ProductController::create');
-        $routes->post('products/store',         'ProductController::store');
-        $routes->get ('products/(:num)/edit',   'ProductController::edit/$1');
-        $routes->post('products/(:num)/update', 'ProductController::update/$1');
-        $routes->post('products/(:num)/delete', 'ProductController::delete/$1');
+        $routes->get ('products',                    'ProductController::index');
+        $routes->post('products/ajax',               'ProductController::ajax');
+        $routes->get ('products/create',             'ProductController::create');
+        $routes->post('products/store',              'ProductController::store');
+        $routes->get ('products/(:num)/edit',        'ProductController::edit/$1');
+        $routes->post('products/(:num)/update',      'ProductController::update/$1');
+        $routes->post('products/(:num)/delete',      'ProductController::delete/$1');
+        $routes->post('products/(:num)/stock',       'ProductController::updateStock/$1');
 
         // Orders
         $routes->get ('orders',               'OrderController::index');

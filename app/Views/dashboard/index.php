@@ -9,6 +9,45 @@
     </div>
 </div>
 
+<?php if (! empty($low_stock_products)): ?>
+<?php
+    $outOfStock  = array_filter($low_stock_products, fn($p) => (int)$p['stock'] === 0);
+    $lowStock    = array_filter($low_stock_products, fn($p) => (int)$p['stock'] > 0);
+    $alertType   = ! empty($outOfStock) ? 'danger' : 'warning';
+    $alertIcon   = ! empty($outOfStock) ? 'x-circle-fill' : 'exclamation-triangle-fill';
+?>
+<div class="alert alert-<?= $alertType ?> alert-dismissible fade show shadow-sm mb-4" role="alert">
+    <div class="d-flex align-items-start gap-2">
+        <i class="bi bi-<?= $alertIcon ?> flex-shrink-0 mt-1"></i>
+        <div class="flex-grow-1">
+            <strong>Alerte stock</strong>
+            <?php if (! empty($outOfStock)): ?>
+                — <?= count($outOfStock) ?> produit(s) en rupture de stock.
+            <?php endif; ?>
+            <?php if (! empty($lowStock)): ?>
+                — <?= count($lowStock) ?> produit(s) à stock faible.
+            <?php endif; ?>
+            <ul class="mb-0 mt-2 small">
+                <?php foreach ($low_stock_products as $p): ?>
+                <li class="mb-1">
+                    <strong><?= esc($p['name']) ?></strong>
+                    <?php if ((int)$p['stock'] === 0): ?>
+                        <span class="badge bg-danger ms-1">Rupture</span>
+                    <?php else: ?>
+                        <span class="badge bg-warning text-dark ms-1"><?= (int)$p['stock'] ?> restant(s)</span>
+                    <?php endif; ?>
+                    <a href="<?= base_url('products/' . $p['id'] . '/edit') ?>" class="ms-2 small alert-link">
+                        Réapprovisionner <i class="bi bi-arrow-right"></i>
+                    </a>
+                </li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+</div>
+<?php endif; ?>
+
 <!-- Cartes statistiques -->
 <div class="row g-4 mb-5">
     <div class="col-sm-6 col-xl-3">
