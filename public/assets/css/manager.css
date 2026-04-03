@@ -6,3 +6,7 @@
 /* Ajoutez ici les surcharges visuelles propres à l'interface manager.
    Les styles communs back-office (sidebar, tableaux, cards) sont déjà
    couverts par base.css + components.css + layout.css.               */
+
+#preview-card-footer {
+	background-color: rgba(0, 0, 0, .25) !important;
+}

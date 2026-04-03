@@ -224,14 +224,13 @@
                         <div class="col-md-4">
                             <p class="text-muted small mb-2 fw-semibold">Card d’accueil</p>
                             <div class="card border-0 shadow overflow-hidden" id="preview-shop-card"
-                                 style="max-width:320px;">
+                                 style="max-width:320px;background:<?= ! empty($company['cover_path'])
+                                                ? 'url(' . base_url(esc($company['cover_path'])) . ') center/cover no-repeat'
+                                                : 'linear-gradient(135deg,var(--preview-color,#0d6efd) 0%,color-mix(in srgb,var(--preview-color,#0d6efd) 75%,#000) 100%)' ?>;">
                                 <!-- Fond cover -->
                                 <div id="preview-card-cover"
                                      class="position-relative d-flex align-items-center justify-content-center"
-                                     style="height:110px;
-                                            background:<?= ! empty($company['cover_path'])
-                                                ? 'url(' . base_url(esc($company['cover_path'])) . ') center/cover no-repeat'
-                                                : 'linear-gradient(135deg,var(--preview-color,#0d6efd) 0%,color-mix(in srgb,var(--preview-color,#0d6efd) 75%,#000) 100%)' ?>;">
+                                     style="height:110px;">
                                     <div style="position:absolute;inset:0;background:rgba(0,0,0,.25);"></div>
                                     <?php if (! empty($company['logo_path'])): ?>
                                         <img id="preview-card-logo"
@@ -249,7 +248,7 @@
                                         </div>
                                     <?php endif; ?>
                                 </div>
-                                <div class="card-body p-3">
+                                <div id="preview-card-footer" class="card-body p-3">
                                     <p id="preview-card-name"
                                        class="fw-semibold mb-1 <?= empty($company['show_name']) ? 'd-none' : '' ?>">
                                         <?= esc($company['name']) ?>
@@ -259,12 +258,6 @@
                                             <i class="bi bi-geo-alt me-1"></i><?= esc($company['city']) ?>
                                         </p>
                                     <?php endif; ?>
-                                    <a href="#" class="btn btn-sm w-100 preview-btn-primary"
-                                       style="background:var(--preview-color,#0d6efd);
-                                              border-color:var(--preview-color,#0d6efd);
-                                              color:var(--preview-color2,#fff);">
-                                        <i class="bi bi-shop me-1"></i>Visiter la boutique
-                                    </a>
                                 </div>
                             </div>
                         </div>
