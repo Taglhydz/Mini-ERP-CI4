@@ -31,7 +31,7 @@ class ProductController extends BaseController
         $length = (int) $this->request->getPost('length');
         $search = $this->request->getPost('search')['value'] ?? '';
 
-        $columns = ['reference', 'name', 'name', 'unit_price', 'stock'];
+        $columns = ['reference', 'name', 'unit_price', 'stock', 'stock'];
 
         $orderColIndex = (int) ($this->request->getPost('order')[0]['column'] ?? 1);
         $orderDir      = strtoupper($this->request->getPost('order')[0]['dir'] ?? 'ASC');
@@ -47,6 +47,8 @@ class ProductController extends BaseController
             $builder->where('company_id', $companyId);
         }
 
+        $total = (clone $builder)->countAllResults(false);
+
         if ($search !== '') {
             $builder->groupStart()
                 ->like('reference', $search)
@@ -54,11 +56,6 @@ class ProductController extends BaseController
                 ->groupEnd();
         }
 
-        $totalB = $this->productModel->builder()->where('deleted_at', null);
-        if ($companyId !== null) {
-            $totalB->where('company_id', $companyId);
-        }
-        $total    = $totalB->countAllResults();
         $filtered = $builder->countAllResults(false);
 
         $rows = $builder->orderBy($orderCol, $orderDir)
@@ -78,20 +75,19 @@ class ProductController extends BaseController
             } else {
                 $badge = '<span class="badge bg-success">' . $qty . '</span>';
             }
-            $row['stock_badge'] = $badge
-                . ' <button type="button" class="btn btn-link p-0 ms-1 align-baseline btn-edit-stock"'
-                . ' data-id="' . (int) $row['id'] . '"'
-                . ' data-stock="' . $qty . '"'
-                . ' data-name="' . htmlspecialchars($row['name'], ENT_QUOTES | ENT_HTML5, 'UTF-8') . '"'
-                . ' title="Modifier le stock" style="font-size:.8rem;vertical-align:middle;">'
-                . '<i class="bi bi-pencil-square text-primary"></i></button>';
+            $row['stock_badge'] = $badge;
 
             $row['actions']              = sprintf(
                 '<a href="%s" class="btn btn-sm btn-outline-primary me-1" title="Modifier"><i class="bi bi-pencil"></i></a>'
+                . '<button type="button" class="btn btn-sm btn-outline-success me-1 btn-restock" title="Réapprovisionner"'
+                . ' data-id="%d" data-stock="%d" data-name="%s"><i class="bi bi-plus-circle"></i></button>'
                 . '<button type="button" class="btn btn-sm btn-outline-danger" title="Supprimer"'
                 . ' data-confirm="Supprimer le produit &laquo;%s&raquo; ?"'
                 . ' data-delete-url="%s" data-table="table-products"><i class="bi bi-trash"></i></button>',
                 base_url('products/' . $row['id'] . '/edit'),
+                (int) $row['id'],
+                $qty,
+                htmlspecialchars($row['name'], ENT_QUOTES | ENT_HTML5, 'UTF-8'),
                 htmlspecialchars($row['name'], ENT_QUOTES | ENT_HTML5, 'UTF-8'),
                 base_url('products/' . $row['id'] . '/delete')
             );
@@ -141,10 +137,19 @@ class ProductController extends BaseController
     {
         $product = $this->productModel->find($id);
         if (! $product) {
+            log_message('warning', 'ProductController::edit - produit id={0} introuvable (inexistant ou supprimé)', [$id]);
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
         }
 
-        $this->assertCompanyAccess((int) ($product['company_id'] ?? 0));
+        $resourceCompanyId = (int) ($product['company_id'] ?? 0);
+        if (! $this->isAdmin() && $this->getCompanyId() !== $resourceCompanyId) {
+            log_message('warning', 'ProductController::edit - accès refusé: user company_id={0}, product company_id={1}, product id={2}', [
+                $this->getCompanyId() ?? 'null',
+                $resourceCompanyId,
+                $id,
+            ]);
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+        }
 
         return view('products/form', ['titre' => 'Modifier le produit', 'product' => $product]);
     }
@@ -161,7 +166,7 @@ class ProductController extends BaseController
         $data = $this->request->getPost(['reference', 'name', 'description', 'unit_price', 'stock']);
 
         // Vérification unicité référence par entreprise (step 4 : filtrée par company_id)
-        if (! $this->productModel->isReferenceUnique($data['reference'], $product['company_id'] ?? null, $id)) {
+        if (! $this->productModel->isReferenceUnique($data['reference'], isset($product['company_id']) ? (int) $product['company_id'] : null, $id)) {
             return redirect()->back()->withInput()
                 ->with('errors', ['reference' => 'Cette référence est déjà utilisée.']);
         }
@@ -193,9 +198,9 @@ class ProductController extends BaseController
         return $this->response->setJSON(['success' => true, 'message' => 'Produit supprimé.']);
     }
 
-    // ─── Mise à jour rapide du stock (AJAX) ───────────────────────────────────
+    // ─── Réapprovisionnement (AJAX) ──────────────────────────────────────────
 
-    public function updateStock(int $id): ResponseInterface
+    public function restock(int $id): ResponseInterface
     {
         $product = $this->productModel->find($id);
         if (! $product) {
@@ -208,12 +213,21 @@ class ProductController extends BaseController
                 ->setJSON(['success' => false, 'message' => 'Accès refusé.']);
         }
 
-        $newStock = (int) $this->request->getPost('stock');
-        if ($newStock < 0) {
-            return $this->response->setJSON(['success' => false, 'message' => 'Le stock ne peut pas être négatif.']);
+        $qtyAdd = (int) $this->request->getPost('qty_add');
+        if ($qtyAdd < 1) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'La quantité à ajouter doit être au moins 1.',
+            ]);
         }
 
-        $this->productModel->update($id, ['stock' => $newStock]);
+        $currentStock = (int) $product['stock'];
+        $newStock     = $currentStock + $qtyAdd;
+
+        if (! $this->productModel->update($id, ['stock' => $newStock])) {
+            log_message('error', 'ProductController::restock - echec mise a jour stock, product_id=' . $id);
+            return $this->response->setJSON(['success' => false, 'message' => 'Erreur lors de la mise à jour.']);
+        }
 
         return $this->response->setJSON(['success' => true, 'stock' => $newStock]);
     }

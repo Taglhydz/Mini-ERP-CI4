@@ -45,15 +45,17 @@ class DashboardController extends BaseController
         }
         $latest_orders = $latestQ->limit(5)->findAll();
 
-        // ── Produits en rupture ou stock faible (≤ 5) ─────────────────────────
-        $lowStockB = $productModel->builder()
-            ->where('deleted_at', null)
-            ->where('stock <=', 5)
-            ->orderBy('stock', 'ASC');
-        if ($companyId !== null) {
-            $lowStockB->where('company_id', $companyId);
+        // ── Produits en rupture ou stock faible (≤ 5) — managers uniquement ────
+        $low_stock_products = [];
+        if (session()->get('role') === 'manager' && $companyId !== null) {
+            $low_stock_products = $productModel->builder()
+                ->where('deleted_at', null)
+                ->where('stock <=', 5)
+                ->where('company_id', $companyId)
+                ->orderBy('stock', 'ASC')
+                ->get()
+                ->getResultArray();
         }
-        $low_stock_products = $lowStockB->get()->getResultArray();
 
         return view('dashboard/index', [
             'titre'              => 'Tableau de bord',

@@ -28,26 +28,34 @@
     </div>
 </div>
 
-<!-- ── Modal mise à jour rapide du stock ──────────────────────────────────── -->
-<div class="modal fade" id="modal-stock" tabindex="-1" aria-labelledby="modal-stock-label" aria-hidden="true">
+<!-- ── Modal réapprovisionnement (Option A — quantité à ajouter) ─────────── -->
+<div class="modal fade" id="modal-restock" tabindex="-1" aria-labelledby="modal-restock-label" aria-hidden="true">
     <div class="modal-dialog modal-sm">
         <div class="modal-content">
             <div class="modal-header">
-                <h6 class="modal-title fw-bold" id="modal-stock-label">
-                    <i class="bi bi-boxes me-2 text-success"></i>Modifier le stock
+                <h6 class="modal-title fw-bold" id="modal-restock-label">
+                    <i class="bi bi-plus-circle me-2 text-success"></i>Réapprovisionner
                 </h6>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
             </div>
             <div class="modal-body">
-                <p class="text-muted small mb-3" id="modal-stock-product-name"></p>
-                <label for="modal-stock-input" class="form-label fw-semibold">Nouvelle quantité</label>
-                <input type="number" id="modal-stock-input" class="form-control"
-                       min="0" step="1" value="0">
+                <p class="fw-semibold mb-1" id="modal-restock-name"></p>
+                <p class="text-muted small mb-3">
+                    Stock actuel&nbsp;: <span class="fw-bold text-dark" id="modal-restock-current"></span>
+                </p>
+                <label for="modal-restock-input" class="form-label fw-semibold">
+                    Quantité à ajouter <span class="text-danger">*</span>
+                </label>
+                <input type="number" id="modal-restock-input" class="form-control"
+                       min="1" step="1" value="1" required>
+                <p class="mt-2 mb-0 small text-muted">
+                    Nouveau stock&nbsp;: <span class="fw-bold text-success" id="modal-restock-preview"></span>
+                </p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-success btn-sm" id="modal-stock-save">
-                    <i class="bi bi-floppy me-1"></i>Enregistrer
+                <button type="button" class="btn btn-success btn-sm" id="modal-restock-save">
+                    <i class="bi bi-plus-circle me-1"></i>Confirmer
                 </button>
             </div>
         </div>
@@ -80,40 +88,71 @@ $(function () {
         columnDefs: [{ targets: 'no-sort', orderable: false }],
     });
 
-    // ── Modal mise à jour stock ───────────────────────────────────────────────
-    var currentProductId = null;
-    var modal            = new bootstrap.Modal(document.getElementById('modal-stock'));
+    // ── Modal réapprovisionnement (Option A — quantité à ajouter) ──────────────
+    var currentRestockId    = null;
+    var currentRestockStock = 0;
+    var $restockInput       = $('#modal-restock-input');
+    var $restockPreview     = $('#modal-restock-preview');
+    var modalEl             = document.getElementById('modal-restock');
+    var bsModal             = modalEl ? new bootstrap.Modal(modalEl) : null;
 
-    $('#table-products').on('click', '.btn-edit-stock', function () {
-        currentProductId = $(this).data('id');
-        var name         = $(this).data('name');
-        var stock        = $(this).data('stock');
-        $('#modal-stock-product-name').text(name);
-        $('#modal-stock-input').val(stock);
-        modal.show();
+    $('#table-products').on('click', '.btn-restock', function () {
+        var $btn            = $(this);
+        currentRestockId    = parseInt($btn.data('id'),    10);
+        currentRestockStock = parseInt($btn.data('stock'), 10);
+        var name            = String($btn.data('name') || '');
+
+        if (isNaN(currentRestockId)    || currentRestockId <= 0)   { return; }
+        if (isNaN(currentRestockStock) || currentRestockStock < 0) { currentRestockStock = 0; }
+
+        $('#modal-restock-name').text(name);
+        $('#modal-restock-current').text(currentRestockStock);
+        $restockInput.val(1);
+        $restockPreview.text(currentRestockStock + 1);
+
+        if (bsModal) { bsModal.show(); }
     });
 
-    $('#modal-stock-save').on('click', function () {
-        if (! currentProductId) return;
-        var newStock = parseInt($('#modal-stock-input').val(), 10);
-        if (isNaN(newStock) || newStock < 0) {
-            showToast('Quantité invalide.', 'danger');
+    $restockInput.on('input', function () {
+        var addQty = parseInt($(this).val(), 10);
+        if (!isNaN(addQty) && addQty >= 1) {
+            $restockPreview
+                .text(currentRestockStock + addQty)
+                .removeClass('text-danger').addClass('text-success');
+        } else {
+            $restockPreview
+                .text('—')
+                .removeClass('text-success').addClass('text-danger');
+        }
+    });
+
+    $('#modal-restock-save').on('click', function () {
+        if (!currentRestockId) { return; }
+
+        var addQty = parseInt($restockInput.val(), 10);
+        if (isNaN(addQty) || addQty < 1) {
+            showToast('Veuillez saisir une quantité valide (≥ 1).', 'danger');
             return;
         }
 
         var csrfName  = $('meta[name="csrf-name"]').attr('content');
         var csrfToken = $('meta[name="csrf-token"]').attr('content');
-        var data      = {};
-        data[csrfName] = csrfToken;
-        data['stock']  = newStock;
+        if (!csrfName || !csrfToken) {
+            showToast('Erreur CSRF, veuillez recharger la page.', 'danger');
+            return;
+        }
+
+        var data        = {};
+        data[csrfName]  = csrfToken;
+        data['qty_add'] = addQty;
 
         $.ajax({
-            url:  BASE_URL + 'products/' + currentProductId + '/stock',
+            url:  '<?= base_url('products/') ?>' + currentRestockId + '/restock',
             type: 'POST',
             data: data,
             success: function (res) {
                 if (res.success) {
-                    modal.hide();
+                    if (bsModal) { bsModal.hide(); }
                     table.ajax.reload(null, false);
                     showToast('Stock mis à jour\u00a0!', 'success');
                 } else {

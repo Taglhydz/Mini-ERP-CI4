@@ -48,6 +48,8 @@ class ClientController extends BaseController
             $builder->where('company_id', $companyId);
         }
 
+        $total = (clone $builder)->countAllResults(false);
+
         if ($search !== '') {
             $builder->groupStart()
                 ->like('last_name', $search)
@@ -57,11 +59,6 @@ class ClientController extends BaseController
                 ->groupEnd();
         }
 
-        $totalB = $this->userModel->builder()->where('deleted_at', null)->where('role', 'client');
-        if ($companyId !== null) {
-            $totalB->where('company_id', $companyId);
-        }
-        $total    = $totalB->countAllResults();
         $filtered = $builder->countAllResults(false);
 
         $rows = $builder->orderBy($orderCol, $orderDir)

@@ -8,10 +8,10 @@ use CodeIgniter\Router\RouteCollection;
 
 // ─── Routes publiques (sans authentification) ────────────────────────────────
 $routes->get('/', 'HomeController::index');
-$routes->match(['get', 'post'], 'login',  'AuthController::login');
+$routes->match(['GET', 'POST'], 'login',  'AuthController::login');
 $routes->get('logout',                    'AuthController::logout');
 $routes->get('shop/(:segment)/catalog',   'ShopController::catalog/$1');
-$routes->match(['get', 'post'], 'shop/(:segment)/register', 'ShopController::register/$1');
+$routes->match(['GET', 'POST'], 'shop/(:segment)/register', 'ShopController::register/$1');
 $routes->post('shop/(:segment)/cart/add',         'CartController::add/$1');
 $routes->post('shop/(:segment)/cart/update',      'CartController::update/$1');
 $routes->post('shop/(:segment)/cart/remove',      'CartController::remove/$1');
@@ -22,8 +22,8 @@ $routes->post('shop/(:segment)/checkout/confirm', 'OrderController::confirm/$1')
 
 // ─── Groupe auth/* (compatibilité backward) ──────────────────────────────────
 $routes->group('auth', static function (RouteCollection $routes) {
-    $routes->match(['get', 'post'], 'login',    'AuthController::login');
-    $routes->match(['get', 'post'], 'register', 'AuthController::register');
+    $routes->match(['GET', 'POST'], 'login',    'AuthController::login');
+    $routes->match(['GET', 'POST'], 'register', 'AuthController::register');
     $routes->get('logout',                      'AuthController::logout');
 });
 
@@ -63,7 +63,7 @@ $routes->group('', ['filter' => 'auth'], static function (RouteCollection $route
         $routes->get ('products/(:num)/edit',        'ProductController::edit/$1');
         $routes->post('products/(:num)/update',      'ProductController::update/$1');
         $routes->post('products/(:num)/delete',      'ProductController::delete/$1');
-        $routes->post('products/(:num)/stock',       'ProductController::updateStock/$1');
+        $routes->post('products/(:num)/restock',     'ProductController::restock/$1');
 
         // Orders
         $routes->get ('orders',               'OrderController::index');
