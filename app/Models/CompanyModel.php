@@ -35,7 +35,7 @@ class CompanyModel extends Model
 
     protected $validationRules = [
         'name' => 'required|min_length[2]|max_length[150]',
-        'slug' => 'required|max_length[100]|is_unique[companies.slug,id,{id}]|alpha_dash',
+        'slug' => 'required|max_length[100]|alpha_dash',
     ];
 
     protected $validationMessages = [

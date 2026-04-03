@@ -177,13 +177,15 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
                                 </div>
                                 <form method="post"
                                       action="<?= base_url('shop/' . esc($company['slug']) . '/cart/add') ?>"
-                                      class="cart-add-form">
+                                      class="cart-add-form"
+                                      data-product-id="<?= (int) $product['id'] ?>">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="product_id" value="<?= (int) $product['id'] ?>">
                                     <input type="hidden" name="quantity" value="1">
                                     <button type="submit"
                                             class="btn btn-primary btn-sm w-100<?= $stockQty === 0 ? ' disabled' : '' ?>"
-                                            <?= $stockQty === 0 ? 'disabled aria-disabled="true"' : '' ?>>
+                                            data-stock="<?= $stockQty ?>"
+                                            <?= $stockQty === 0 ? 'disabled aria-disabled="true" title="Rupture de stock"' : '' ?>>
                                         <i class="bi bi-cart-plus me-1"></i>Ajouter au panier
                                     </button>
                                 </form>

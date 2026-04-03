@@ -50,17 +50,19 @@
                     </div>
                     <div class="col-12">
                         <label class="form-label fw-semibold" for="slug">
-                            Slug <span class="text-danger">*</span>
-                            <span class="text-muted fw-normal small ms-1">(identifiant URL unique)</span>
+                            Slug
+                            <span class="text-muted fw-normal small ms-1">(généré automatiquement depuis le nom)</span>
                         </label>
                         <div class="input-group">
                             <span class="input-group-text text-muted small font-monospace">/shop/</span>
-                            <input type="text" name="slug" id="slug" class="form-control font-monospace"
+                            <input type="text" name="slug" id="slug" class="form-control font-monospace bg-body-secondary"
                                    value="<?= esc(old('slug', $company['slug'] ?? '')) ?>"
-                                   required maxlength="100" pattern="[a-zA-Z0-9\-_]+"
-                                   placeholder="ma-boutique">
+                                   maxlength="100" readonly aria-readonly="true"
+                                   placeholder="généré-depuis-le-nom">
                         </div>
-                        <div class="form-text">Lettres, chiffres et tirets uniquement.</div>
+                        <div class="form-text">
+                            <i class="bi bi-magic me-1"></i>Mis à jour automatiquement depuis le nom — toujours unique.
+                        </div>
                     </div>
                     <div class="col-12">
                         <label class="form-label fw-semibold" for="email">Email</label>
@@ -166,6 +168,56 @@
 
     </div><!-- /row -->
 
+    <?php if ($company): ?>
+    <!-- ── Logo / Cover actuels (suppression modération) ────────────────────────────────── -->
+    <div class="row g-4 mt-1">
+        <?php if (! empty($company['logo_path'])): ?>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent fw-semibold">
+                    <i class="bi bi-image me-2 text-primary"></i>Logo actuel
+                </div>
+                <div class="card-body d-flex align-items-center gap-3">
+                    <img src="<?= base_url(esc($company['logo_path'])) ?>"
+                         alt="Logo" class="rounded-circle border shadow"
+                         style="width:72px;height:72px;object-fit:contain;">
+                    <form method="post"
+                          action="<?= base_url('admin/companies/' . $company['id'] . '/remove-logo') ?>"
+                          onsubmit="return confirm('Supprimer ce logo ?');">
+                        <?= csrf_field() ?>
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash me-1"></i>Supprimer le logo
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+        <?php if (! empty($company['cover_path'])): ?>
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-transparent fw-semibold">
+                    <i class="bi bi-card-image me-2 text-primary"></i>Image de fond actuelle
+                </div>
+                <div class="card-body">
+                    <img src="<?= base_url(esc($company['cover_path'])) ?>"
+                         alt="Fond" class="rounded shadow mb-3"
+                         style="width:100%;max-height:100px;object-fit:cover;">
+                    <form method="post"
+                          action="<?= base_url('admin/companies/' . $company['id'] . '/remove-cover') ?>"
+                          onsubmit="return confirm('Supprimer cette image de fond ?');">
+                        <?= csrf_field() ?>
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash me-1"></i>Supprimer le fond
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
+
     <div class="mt-4 d-flex gap-2">
         <button type="submit" class="btn btn-primary px-4">
             <i class="bi bi-check-lg me-1"></i><?= $company ? 'Enregistrer' : 'Créer la boutique' ?>
@@ -221,6 +273,33 @@
     if (nameInput && prevName) {
         nameInput.addEventListener('input', function () {
             prevName.textContent = nameInput.value || 'Nom boutique';
+        });
+    }
+
+    /* Auto-génération du slug depuis le nom */
+    var slugInput = document.getElementById('slug');
+    function slugify(text) {
+        var map = {
+            'à':'a','â':'a','ä':'a','á':'a','ã':'a','å':'a',
+            'è':'e','ê':'e','ë':'e','é':'e',
+            'ì':'i','î':'i','ï':'i','í':'i',
+            'ò':'o','ô':'o','ö':'o','ó':'o','õ':'o','ø':'o',
+            'ù':'u','û':'u','ü':'u','ú':'u',
+            'ç':'c','ñ':'n','ý':'y','ÿ':'y',
+            'œ':'oe','æ':'ae',
+        };
+        text = text.split('').map(function(c) {
+            return map[c.toLowerCase()] || c.toLowerCase();
+        }).join('');
+        return text
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .replace(/-{2,}/g, '-')
+            .substring(0, 80);
+    }
+    if (nameInput && slugInput) {
+        nameInput.addEventListener('input', function () {
+            slugInput.value = slugify(nameInput.value) || '';
         });
     }
 

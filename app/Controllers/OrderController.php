@@ -235,57 +235,6 @@ class OrderController extends BaseController
         $newStatus = $post['status'];
         $oldStatus = $order['status'];
 
-        // ── Blocage passage en "Livrée" si stock insuffisant ──────────────────
-        if ($newStatus === 'delivered' && $oldStatus !== 'delivered') {
-            // Utiliser les items du formulaire, ou les items existants en DB
-            $itemsToCheck  = ! empty($items) ? $items : $this->itemModel->getByOrder($id);
-            $productModel  = model(ProductModel::class);
-            $stockErrors   = [];
-
-            foreach ($itemsToCheck as $item) {
-                $pid     = (int) ($item['product_id'] ?? 0);
-                if ($pid === 0) {
-                    continue;
-                }
-                $product = $productModel->find($pid);
-                if (! $product) {
-                    continue;
-                }
-                $currentStock = (int) $product['stock'];
-                $orderedQty   = (int) ($item['quantity'] ?? 0);
-
-                if ($currentStock < $orderedQty) {
-                    $stockErrors[] = sprintf(
-                        '<strong>%s</strong> (stock\u00a0: %d, command\u00e9\u00a0: %d) — '
-                        . '<a href="%s" class="alert-link">R\u00e9approvisionner</a>',
-                        htmlspecialchars($product['name'], ENT_QUOTES | ENT_HTML5, 'UTF-8'),
-                        $currentStock,
-                        $orderedQty,
-                        base_url('products/' . $pid . '/edit')
-                    );
-                }
-            }
-
-            if (! empty($stockErrors)) {
-                return redirect()->back()->withInput()
-                    ->with('stock_errors', $stockErrors);
-            }
-
-            // Stock suffisant : déduire les quantités
-            foreach ($itemsToCheck as $item) {
-                $pid = (int) ($item['product_id'] ?? 0);
-                if ($pid === 0) {
-                    continue;
-                }
-                $product = $productModel->find($pid);
-                if (! $product) {
-                    continue;
-                }
-                $newStock = max(0, (int) $product['stock'] - (int) ($item['quantity'] ?? 0));
-                $productModel->update($pid, ['stock' => $newStock]);
-            }
-        }
-
         $data = [
             'user_id'    => (int) $post['user_id'],
             'status'     => $newStatus,
@@ -444,6 +393,36 @@ class OrderController extends BaseController
         $vatRate   = 20.0;
         $amountTtc = round($amountHt * (1 + $vatRate / 100), 2);
 
+        $productModel = model(ProductModel::class);
+        $db           = \Config\Database::connect();
+
+        // ── Vérification atomique des stocks ─────────────────────────────────
+        $db->transStart();
+
+        $stockErrors = [];
+        $products    = [];
+
+        foreach ($cart as $productId => $item) {
+            $product = $productModel->where('id', (int) $productId)->where('deleted_at', null)->first();
+            if (! $product) {
+                $stockErrors[] = htmlspecialchars($item['name'] ?? 'Produit inconnu', ENT_QUOTES | ENT_HTML5, 'UTF-8')
+                    . ' est introuvable.';
+                continue;
+            }
+            $products[(int) $productId] = $product;
+            if ((int) $product['stock'] < (int) $item['qty']) {
+                $stockErrors[] = htmlspecialchars($product['name'], ENT_QUOTES | ENT_HTML5, 'UTF-8')
+                    . ' (stock\u00a0: ' . $product['stock'] . ', demand\u00e9\u00a0: ' . $item['qty'] . ')';
+            }
+        }
+
+        if (! empty($stockErrors)) {
+            $db->transRollback();
+            return redirect()->to(base_url('shop/' . $slug . '/checkout'))
+                ->with('stock_errors', $stockErrors);
+        }
+
+        // ── Créer la commande ─────────────────────────────────────────────────
         $orderData = [
             'company_id' => $sessionCompany,
             'user_id'    => $userId,
@@ -456,14 +435,15 @@ class OrderController extends BaseController
         ];
 
         if (! $this->orderModel->save($orderData)) {
+            $db->transRollback();
             return redirect()->back()->with('error', 'Erreur lors de la création de la commande.');
         }
 
-        $orderId = $this->orderModel->getInsertID();
-        $items   = [];
+        $orderId   = $this->orderModel->getInsertID();
+        $itemsData = [];
 
         foreach ($cart as $productId => $item) {
-            $items[] = [
+            $itemsData[] = [
                 'order_id'   => $orderId,
                 'product_id' => (int) $productId,
                 'name'       => $item['name'],
@@ -473,7 +453,23 @@ class OrderController extends BaseController
             ];
         }
 
-        $this->itemModel->insertBatch($items);
+        $this->itemModel->insertBatch($itemsData);
+
+        // ── Déduire les stocks ────────────────────────────────────────────────
+        foreach ($cart as $productId => $item) {
+            $product  = $products[(int) $productId] ?? null;
+            if (! $product) {
+                continue;
+            }
+            $newStock = max(0, (int) $product['stock'] - (int) $item['qty']);
+            $productModel->update((int) $productId, ['stock' => $newStock]);
+        }
+
+        $db->transComplete();
+
+        if (! $db->transStatus()) {
+            return redirect()->back()->with('error', 'Erreur lors de la validation de la commande. Veuillez réessayer.');
+        }
 
         session()->remove('cart');
 
@@ -483,7 +479,7 @@ class OrderController extends BaseController
             'titre'      => 'Commande confirmée — ' . esc($company['name']),
             'company'    => $company,
             'order'      => $orderRow,
-            'items'      => $items,
+            'items'      => $itemsData,
             'isLoggedIn' => true,
             'username'   => session()->get('username'),
             'role'       => session()->get('role'),

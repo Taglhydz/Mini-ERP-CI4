@@ -74,6 +74,19 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
         <div class="row g-4 justify-content-center">
             <div class="col-lg-8">
 
+                <?php $stockErrors = session()->getFlashdata('stock_errors'); if (! empty($stockErrors)): ?>
+                <div class="alert alert-danger mb-4" role="alert">
+                    <h6 class="alert-heading fw-bold mb-2">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>Stock insuffisant — commande non validée
+                    </h6>
+                    <ul class="mb-0">
+                        <?php foreach ($stockErrors as $err): ?>
+                            <li><?= $err ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+                <?php endif; ?>
+
                 <!-- Récapitulatif des articles -->
                 <div class="card checkout-recap-card border-0 rounded-3 mb-4">
                     <div class="card-header fw-semibold">

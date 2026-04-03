@@ -69,10 +69,11 @@ class CartController extends BaseController
         if ($this->request->isAJAX()) {
             $ttc = $this->calcTtc($cart);
             return $this->response->setJSON([
-                'success'    => true,
-                'cart_count' => count($cart),
-                'cart_html'  => $this->buildCartHtml($slug, $cart),
-                'total_ttc'  => number_format($ttc, 2, ',', ' ') . ' €',
+                'success'     => true,
+                'cart_count'  => count($cart),
+                'cart_html'   => $this->buildCartHtml($slug, $cart),
+                'total_ttc'   => number_format($ttc, 2, ',', ' ') . ' €',
+                'cart_limits' => $this->buildCartLimits($cart),
             ]);
         }
 
@@ -111,10 +112,11 @@ class CartController extends BaseController
 
         $ttc = $this->calcTtc($cart);
         return $this->response->setJSON([
-            'success'    => true,
-            'cart_count' => count($cart),
-            'cart_html'  => $this->buildCartHtml($slug, $cart),
-            'total_ttc'  => number_format($ttc, 2, ',', ' ') . ' €',
+            'success'      => true,
+            'cart_count'   => count($cart),
+            'cart_html'    => $this->buildCartHtml($slug, $cart),
+            'total_ttc'    => number_format($ttc, 2, ',', ' ') . ' €',
+            'cart_limits'  => $this->buildCartLimits($cart),
         ]);
     }
 
@@ -131,10 +133,11 @@ class CartController extends BaseController
         if ($this->request->isAJAX()) {
             $ttc = $this->calcTtc($cart);
             return $this->response->setJSON([
-                'success'    => true,
-                'cart_count' => count($cart),
-                'cart_html'  => $this->buildCartHtml($slug, $cart),
-                'total_ttc'  => number_format($ttc, 2, ',', ' ') . ' €',
+                'success'      => true,
+                'cart_count'   => count($cart),
+                'cart_html'    => $this->buildCartHtml($slug, $cart),
+                'total_ttc'    => number_format($ttc, 2, ',', ' ') . ' €',
+                'cart_limits'  => $this->buildCartLimits($cart),
             ]);
         }
 
@@ -149,9 +152,10 @@ class CartController extends BaseController
         $ttc  = $this->calcTtc($cart);
 
         return $this->response->setJSON([
-            'cart_count' => count($cart),
-            'cart_html'  => $this->buildCartHtml($slug, $cart),
-            'total_ttc'  => number_format($ttc, 2, ',', ' ') . ' €',
+            'cart_count'  => count($cart),
+            'cart_html'   => $this->buildCartHtml($slug, $cart),
+            'total_ttc'   => number_format($ttc, 2, ',', ' ') . ' €',
+            'cart_limits' => $this->buildCartLimits($cart),
         ]);
     }
 
@@ -204,6 +208,22 @@ class CartController extends BaseController
     }
 
     // ─── Helpers privés ───────────────────────────────────────────────────────
+
+    private function buildCartLimits(array $cart): array
+    {
+        $limits = [];
+        $stocks = $this->fetchStocks($cart);
+        foreach ($cart as $productId => $item) {
+            $stock              = $stocks[(int) $productId] ?? PHP_INT_MAX;
+            $qty                = (int) $item['qty'];
+            $limits[(string) $productId] = [
+                'qty'    => $qty,
+                'stock'  => $stock,
+                'at_max' => $qty >= $stock,
+            ];
+        }
+        return $limits;
+    }
 
     private function buildCartHtml(string $slug, array $cart): string
     {

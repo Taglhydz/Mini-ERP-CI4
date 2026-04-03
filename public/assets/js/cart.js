@@ -67,9 +67,42 @@
             checkoutBtn.title    = hasWarning ? 'Un ou plusieurs articles sont en rupture ou stock insuffisant.' : '';
         }
 
+        // Mettre à jour les boutons "Ajouter au panier" dans le catalogue
+        if (data.cart_limits) {
+            updateCatalogButtons(data.cart_limits);
+        }
+
         syncPanel(count);
         bindItemEvents();
         storeCsrf(data);
+    }
+
+    // ── Mettre à jour l'état des boutons du catalogue selon les limites panier ─
+    function updateCatalogButtons(limits) {
+        document.querySelectorAll('.cart-add-form').forEach(function (form) {
+            var pid = form.dataset.productId
+                   || (form.querySelector('[name="product_id"]') || {}).value;
+            if (! pid) return;
+
+            var btn   = form.querySelector('[type="submit"]');
+            if (! btn) return;
+
+            var stock = parseInt(btn.dataset.stock, 10);
+            if (isNaN(stock) || stock <= 0) return; // bouton déjà disabled côté PHP
+
+            var limit  = limits[String(pid)];
+            var at_max = limit && limit.at_max;
+
+            if (at_max) {
+                btn.disabled = true;
+                btn.setAttribute('aria-disabled', 'true');
+                btn.title    = 'Quantit\u00e9 maximale atteinte (' + (limit.stock || 0) + ' en stock)';
+            } else {
+                btn.disabled = false;
+                btn.removeAttribute('aria-disabled');
+                btn.title    = '';
+            }
+        });
     }
 
     // ── Requêtes HTTP ─────────────────────────────────────────────────────────

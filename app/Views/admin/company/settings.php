@@ -61,7 +61,15 @@
                              alt="Logo actuel"
                              class="rounded-circle border shadow"
                              style="width:90px;height:90px;object-fit:contain;">
-                        <p class="text-muted small mt-1 mb-0">Logo actuel</p>
+                        <p class="text-muted small mt-1 mb-2">Logo actuel</p>
+                        <form method="post"
+                              action="<?= base_url('admin/company/settings/remove-logo') ?>"
+                              onsubmit="return confirm('Supprimer ce logo ?');">
+                            <?= csrf_field() ?>
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash me-1"></i>Supprimer
+                            </button>
+                        </form>
                     </div>
                     <?php else: ?>
                     <div class="mb-3 text-center">
@@ -98,7 +106,15 @@
                              alt="Fond actuel"
                              class="rounded shadow"
                              style="width:100%;max-height:120px;object-fit:cover;">
-                        <p class="text-muted small mt-1 mb-0">Image de fond actuelle</p>
+                        <p class="text-muted small mt-1 mb-2">Image de fond actuelle</p>
+                        <form method="post"
+                              action="<?= base_url('admin/company/settings/remove-cover') ?>"
+                              onsubmit="return confirm('Supprimer cette image de fond ?');">
+                            <?= csrf_field() ?>
+                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash me-1"></i>Supprimer
+                            </button>
+                        </form>
                     </div>
                     <?php else: ?>
                     <div class="mb-3 text-center">

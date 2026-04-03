@@ -41,8 +41,10 @@ $routes->group('', ['filter' => 'auth'], static function (RouteCollection $route
     // ─── Back-office (Admin + Manager) ───────────────────────────────────────
     $routes->group('', ['filter' => 'role:manager'], static function (RouteCollection $routes) {
         // Paramètres boutique
-        $routes->get ('admin/company/settings', 'CompanyController::settings');
-        $routes->post('admin/company/settings', 'CompanyController::updateSettings');
+        $routes->get ('admin/company/settings',              'CompanyController::settings');
+        $routes->post('admin/company/settings',              'CompanyController::updateSettings');
+        $routes->post('admin/company/settings/remove-logo',  'CompanyController::removeLogo');
+        $routes->post('admin/company/settings/remove-cover', 'CompanyController::removeCover');
 
         // Clients
         $routes->get ('clients',               'ClientController::index');
@@ -77,13 +79,15 @@ $routes->group('', ['filter' => 'auth'], static function (RouteCollection $route
 
     // ─── Boutiques (Admin uniquement) ─────────────────────────────────────────
     $routes->group('', ['filter' => 'role:admin'], static function (RouteCollection $routes) {
-        $routes->get ('admin/companies',                 'AdminCompanyController::index');
-        $routes->get ('admin/companies/create',          'AdminCompanyController::create');
-        $routes->post('admin/companies/store',           'AdminCompanyController::store');
-        $routes->get ('admin/companies/(:num)/edit',     'AdminCompanyController::edit/$1');
-        $routes->post('admin/companies/(:num)/update',   'AdminCompanyController::update/$1');
-        $routes->post('admin/companies/(:num)/delete',   'AdminCompanyController::delete/$1');
-        $routes->post('admin/companies/(:num)/toggle',   'AdminCompanyController::toggle/$1');
+        $routes->get ('admin/companies',                         'AdminCompanyController::index');
+        $routes->get ('admin/companies/create',                  'AdminCompanyController::create');
+        $routes->post('admin/companies/store',                   'AdminCompanyController::store');
+        $routes->get ('admin/companies/(:num)/edit',             'AdminCompanyController::edit/$1');
+        $routes->post('admin/companies/(:num)/update',           'AdminCompanyController::update/$1');
+        $routes->post('admin/companies/(:num)/delete',           'AdminCompanyController::delete/$1');
+        $routes->post('admin/companies/(:num)/toggle',           'AdminCompanyController::toggle/$1');
+        $routes->post('admin/companies/(:num)/remove-logo',      'AdminCompanyController::removeLogo/$1');
+        $routes->post('admin/companies/(:num)/remove-cover',     'AdminCompanyController::removeCover/$1');
     });
 });
 

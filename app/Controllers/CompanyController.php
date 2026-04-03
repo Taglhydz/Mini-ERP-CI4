@@ -93,6 +93,32 @@ class CompanyController extends BaseController
             ->with('success', 'Paramètres mis à jour avec succès.');
     }
 
+    // ─── Suppression logo / cover (manager) ───────────────────────────────────
+
+    public function removeLogo(): RedirectResponse
+    {
+        $companyId = (int) session()->get('company_id');
+        $company   = model(CompanyModel::class)->find($companyId);
+        if (! $company) {
+            return redirect()->back()->with('error', 'Entreprise introuvable.');
+        }
+        $this->deleteOldFiles(FCPATH . 'uploads/companies/' . $companyId . '/', 'logo');
+        model(CompanyModel::class)->update($companyId, ['logo_path' => null]);
+        return redirect()->back()->with('success', 'Logo supprimé.');
+    }
+
+    public function removeCover(): RedirectResponse
+    {
+        $companyId = (int) session()->get('company_id');
+        $company   = model(CompanyModel::class)->find($companyId);
+        if (! $company) {
+            return redirect()->back()->with('error', 'Entreprise introuvable.');
+        }
+        $this->deleteOldFiles(FCPATH . 'uploads/companies/' . $companyId . '/', 'cover');
+        model(CompanyModel::class)->update($companyId, ['cover_path' => null]);
+        return redirect()->back()->with('success', 'Image de fond supprimée.');
+    }
+
     // ─── Supprime les anciens fichiers d'un type (logo.* ou cover.*) ──────────
     private function deleteOldFiles(string $dir, string $prefix): void
     {
