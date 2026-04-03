@@ -3,13 +3,8 @@
 <?= $this->section('content') ?>
 
 <?php
-$hasCover     = ! empty($company['cover_path']);
-$hasLogo      = ! empty($company['logo_path']);
-$showName     = isset($company['show_name']) ? (bool) $company['show_name'] : true;
-$colorPrimary = (! empty($company['color_primary']) && preg_match('/^#[0-9a-fA-F]{6}$/', $company['color_primary']))
-    ? $company['color_primary'] : '#0d6efd';
-$colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-fA-F]{6}$/', $company['color_secondary']))
-    ? $company['color_secondary'] : '#ffffff';
+['hasCover' => $hasCover, 'hasLogo' => $hasLogo, 'showName' => $showName,
+ 'colorPrimary' => $colorPrimary, 'colorSecondary' => $colorSecondary] = company_theme($company);
 ?>
 
 <style>
@@ -17,86 +12,6 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
         --company-primary:   <?= esc($colorPrimary) ?>;
         --company-secondary: <?= esc($colorSecondary) ?>;
     }
-
-    /* Boutons */
-    .order-confirm-page .btn-primary,
-    .order-confirm-page .btn-primary:focus {
-        background-color: var(--company-primary);
-        border-color: var(--company-primary);
-    }
-    .order-confirm-page .btn-primary:hover {
-        background-color: color-mix(in srgb, var(--company-primary) 85%, #000);
-        border-color: color-mix(in srgb, var(--company-primary) 85%, #000);
-    }
-    .order-confirm-page .text-primary { color: var(--company-primary) !important; }
-
-    /* Bandeau de confirmation */
-    .confirm-banner {
-        background: #ecfdf5;
-        border: 1px solid #6ee7b7;
-        border-radius: .75rem;
-        overflow: hidden;
-        position: relative;
-    }
-    .confirm-banner::before {
-        content: '';
-        position: absolute;
-        left: 0; top: 0; bottom: 0;
-        width: 5px;
-        background: #059669;
-        border-radius: .75rem 0 0 .75rem;
-    }
-    .confirm-icon {
-        width: 52px; height: 52px; border-radius: 50%;
-        background: #059669;
-        flex-shrink: 0;
-        display: flex; align-items: center; justify-content: center;
-        box-shadow: 0 0 0 6px rgba(5,150,105,.12);
-    }
-
-    /* Card détails commande */
-    .order-card {
-        background: color-mix(in srgb, var(--company-primary) 7%, var(--bs-body-bg));
-        border: 1px solid color-mix(in srgb, var(--company-primary) 28%, transparent) !important;
-    }
-    .order-card .card-header {
-        background: color-mix(in srgb, var(--company-primary) 18%, var(--bs-body-bg));
-        border-bottom: 1px solid color-mix(in srgb, var(--company-primary) 22%, transparent);
-        font-weight: 600;
-    }
-
-    /* DataTable overrides */
-    #table-confirm-items_wrapper .dt-layout-row:first-child,
-    #table-confirm-items_wrapper .dt-layout-row:last-child { display: none; } /* cacher search/pagination si peu de lignes */
-    #table-confirm-items thead th {
-        background: var(--company-primary) !important;
-        color: #fff !important;
-        border-color: color-mix(in srgb, var(--company-primary) 80%, #000) !important;
-    }
-    #table-confirm-items tbody tr:nth-child(even) td {
-        background: color-mix(in srgb, var(--company-primary) 6%, var(--bs-body-bg)) !important;
-    }
-    #table-confirm-items tbody tr:hover td {
-        background: color-mix(in srgb, var(--company-primary) 14%, var(--bs-body-bg)) !important;
-    }
-    #table-confirm-items tfoot td {
-        background: color-mix(in srgb, var(--company-primary) 10%, var(--bs-body-bg));
-    }
-
-    /* Card résumé financier — fond color_secondary (zone totaux) */
-    .summary-card {
-        background: color-mix(in srgb, var(--company-secondary) 20%, var(--bs-body-bg));
-        border: 1px solid color-mix(in srgb, var(--company-primary) 35%, transparent) !important;
-    }
-    .summary-card .card-header {
-        background: color-mix(in srgb, var(--company-secondary) 35%, var(--bs-body-bg));
-        border-bottom: 1px solid color-mix(in srgb, var(--company-secondary) 55%, var(--bs-border-color));
-        font-weight: 600;
-    }
-    /* Total TTC : texte neutre fort, sans coloration de marque */
-    .summary-ttc { font-size: 1.6rem; font-weight: 700; color: var(--bs-body-color); }
-    /* Séparateur horizontal — color_secondary */
-    .summary-divider { border-color: var(--company-secondary); }
 </style>
 
 <div class="order-confirm-page">
@@ -143,7 +58,7 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
                         <p class="fw-bold fs-5 mb-1" style="color:#065f46;">Commande validée !</p>
                         <p class="mb-0 small" style="color:#047857;">
                             Votre commande <strong><?= esc($order['number']) ?></strong>
-                            a été enregistrée le <?= date('d/m/Y', strtotime($order['order_date'])) ?>.
+                            a été enregistrée le <?= format_date($order['order_date']) ?>.
                         </p>
                     </div>
                 </div>
@@ -164,7 +79,7 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
                             <div class="card-body text-center py-3">
                                 <i class="bi bi-calendar-check fs-4 text-primary mb-1 d-block"></i>
                                 <p class="text-muted small mb-1">Date</p>
-                                <p class="fw-bold mb-0"><?= date('d/m/Y', strtotime($order['order_date'])) ?></p>
+                                <p class="fw-bold mb-0"><?= format_date($order['order_date']) ?></p>
                             </div>
                         </div>
                     </div>
@@ -204,19 +119,19 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
                                     <tr>
                                         <td class="fw-semibold"><?= esc($item['name']) ?></td>
                                         <td class="text-center"><?= (int) $item['quantity'] ?></td>
-                                        <td class="text-end"><?= number_format((float) $item['unit_price'], 2, ',', ' ') ?> €</td>
-                                        <td class="text-end fw-semibold"><?= number_format((float) $item['subtotal'], 2, ',', ' ') ?> €</td>
+                                        <td class="text-end"><?= format_price($item['unit_price']) ?></td>
+                                        <td class="text-end fw-semibold"><?= format_price($item['subtotal']) ?></td>
                                     </tr>
                                     <?php endforeach; ?>
                                 </tbody>
                                 <tfoot>
                                     <tr>
                                         <td colspan="3" class="text-end text-muted">Total HT</td>
-                                        <td class="text-end fw-semibold"><?= number_format((float) $order['amount_ht'], 2, ',', ' ') ?> €</td>
+                                        <td class="text-end fw-semibold"><?= format_price($order['amount_ht']) ?></td>
                                     </tr>
                                     <tr>
                                         <td colspan="3" class="text-end text-muted">TVA (<?= (int) $order['vat_rate'] ?>%)</td>
-                                        <td class="text-end"><?= number_format((float) $order['amount_ttc'] - (float) $order['amount_ht'], 2, ',', ' ') ?> €</td>
+                                        <td class="text-end"><?= format_price((float) $order['amount_ttc'] - (float) $order['amount_ht']) ?></td>
                                     </tr>
                                 </tfoot>
                             </table>
@@ -234,16 +149,16 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
                             <div class="card-body px-4 py-3">
                                 <div class="d-flex justify-content-between mb-2">
                                     <span class="text-muted">Total HT</span>
-                                    <span class="fw-semibold"><?= number_format((float) $order['amount_ht'], 2, ',', ' ') ?> €</span>
+                                    <span class="fw-semibold"><?= format_price($order['amount_ht']) ?></span>
                                 </div>
                                 <div class="d-flex justify-content-between mb-3">
                                     <span class="text-muted">TVA (<?= (int) $order['vat_rate'] ?>%)</span>
-                                    <span><?= number_format((float) $order['amount_ttc'] - (float) $order['amount_ht'], 2, ',', ' ') ?> €</span>
+                                    <span><?= format_price((float) $order['amount_ttc'] - (float) $order['amount_ht']) ?></span>
                                 </div>
                                 <hr class="summary-divider my-2">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <span class="fw-bold fs-5">Total TTC</span>
-                                    <span class="summary-ttc"><?= number_format((float) $order['amount_ttc'], 2, ',', ' ') ?> €</span>
+                                    <span class="summary-ttc"><?= format_price($order['amount_ttc']) ?></span>
                                 </div>
                             </div>
                         </div>

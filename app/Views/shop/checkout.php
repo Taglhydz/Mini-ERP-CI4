@@ -3,13 +3,8 @@
 <?= $this->section('content') ?>
 
 <?php
-$hasCover     = ! empty($company['cover_path']);
-$hasLogo      = ! empty($company['logo_path']);
-$showName     = isset($company['show_name']) ? (bool) $company['show_name'] : true;
-$colorPrimary = (! empty($company['color_primary']) && preg_match('/^#[0-9a-fA-F]{6}$/', $company['color_primary']))
-    ? $company['color_primary'] : '#0d6efd';
-$colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-fA-F]{6}$/', $company['color_secondary']))
-    ? $company['color_secondary'] : '#ffffff';
+['hasCover' => $hasCover, 'hasLogo' => $hasLogo, 'showName' => $showName,
+ 'colorPrimary' => $colorPrimary, 'colorSecondary' => $colorSecondary] = company_theme($company);
 ?>
 
 <style>
@@ -17,27 +12,6 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
         --company-primary:   <?= esc($colorPrimary) ?>;
         --company-secondary: <?= esc($colorSecondary) ?>;
     }
-    .checkout-page .btn-primary,
-    .checkout-page .btn-primary:focus {
-        background-color: var(--company-primary);
-        border-color: var(--company-primary);
-    }
-    .checkout-page .btn-primary:hover {
-        background-color: color-mix(in srgb, var(--company-primary) 85%, #000);
-        border-color: color-mix(in srgb, var(--company-primary) 85%, #000);
-    }
-    .checkout-page .text-primary { color: var(--company-primary) !important; }
-    /* Récapitulatif — fond color_secondary (zone totaux) */
-    .checkout-recap-card {
-        background: color-mix(in srgb, var(--company-secondary) 20%, var(--bs-body-bg));
-        border: 1px solid color-mix(in srgb, var(--company-primary) 30%, transparent) !important;
-    }
-    .checkout-recap-card .card-header {
-        background: color-mix(in srgb, var(--company-secondary) 35%, var(--bs-body-bg));
-        border-bottom: 1px solid color-mix(in srgb, var(--company-secondary) 55%, var(--bs-border-color));
-    }
-    /* Séparateur en pied de tableau — remplacé par accent primary (bordure gauche, pas texte) */
-    .checkout-recap-card tfoot tr:last-child td { font-weight: 700; }
 </style>
 
 <div class="checkout-page">
@@ -107,9 +81,9 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
                                 <tr>
                                     <td class="ps-4 fw-semibold"><?= esc($item['name']) ?></td>
                                     <td class="text-center"><?= (int) $item['qty'] ?></td>
-                                    <td class="text-end"><?= number_format((float) $item['price'], 2, ',', ' ') ?> €</td>
+                                    <td class="text-end"><?= format_price($item['price']) ?></td>
                                     <td class="text-end pe-4 fw-semibold">
-                                        <?= number_format((float) $item['qty'] * (float) $item['price'], 2, ',', ' ') ?> €
+                                        <?= format_price((float) $item['qty'] * (float) $item['price']) ?>
                                     </td>
                                 </tr>
                                 <?php endforeach; ?>
@@ -117,15 +91,15 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
                             <tfoot>
                                 <tr>
                                     <td colspan="3" class="text-end pe-3 text-muted">Total HT</td>
-                                    <td class="text-end pe-4 fw-semibold"><?= number_format($amountHt, 2, ',', ' ') ?> €</td>
+                                    <td class="text-end pe-4 fw-semibold"><?= format_price($amountHt) ?></td>
                                 </tr>
                                 <tr>
                                     <td colspan="3" class="text-end pe-3 text-muted">TVA (<?= (int) $vatRate ?>%)</td>
-                                    <td class="text-end pe-4"><?= number_format($amountTtc - $amountHt, 2, ',', ' ') ?> €</td>
+                                    <td class="text-end pe-4"><?= format_price($amountTtc - $amountHt) ?></td>
                                 </tr>
                                 <tr>
                                     <td colspan="3" class="text-end pe-3 fw-bold fs-5">Total TTC</td>
-                                    <td class="text-end pe-4 fw-bold fs-5"><?= number_format($amountTtc, 2, ',', ' ') ?> €</td>
+                                    <td class="text-end pe-4 fw-bold fs-5"><?= format_price($amountTtc) ?></td>
                                 </tr>
                             </tfoot>
                         </table>

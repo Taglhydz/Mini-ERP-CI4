@@ -117,7 +117,7 @@
                     <i class="bi bi-currency-euro fs-3 text-info"></i>
                 </div>
                 <div>
-                    <div class="fs-2 fw-bold"><?= number_format($stats['ca_total'], 2, ',', ' ') ?> €</div>
+                    <div class="fs-2 fw-bold"><?= format_price($stats['ca_total']) ?></div>
                     <div class="text-muted small">CA total (HT)</div>
                 </div>
             </div>
@@ -163,9 +163,9 @@
                     <tr>
                         <td class="fw-semibold"><?= esc($cmd['number']) ?></td>
                         <td><?= esc($cmd['user_name']) ?></td>
-                        <td><?= date('d/m/Y', strtotime($cmd['order_date'])) ?></td>
-                        <td><?= number_format($cmd['amount_ttc'], 2, ',', ' ') ?> €</td>
-                        <td><?= view('partials/badge_status', ['status' => $cmd['status']]) ?></td>
+                        <td><?= format_date($cmd['order_date']) ?></td>
+                        <td><?= format_price($cmd['amount_ttc']) ?></td>
+                        <td><?= badge_status($cmd['status']) ?></td>
                         <td class="text-center">
                             <a href="<?= base_url('orders/' . $cmd['id']) ?>"
                                class="btn btn-sm btn-outline-secondary" title="Voir">

@@ -4,15 +4,8 @@
 
 <?php
 // ── Variables thème entreprise ─────────────────────────────────────────────
-$hasCover     = ! empty($company['cover_path']);
-$hasLogo      = ! empty($company['logo_path']);
-$showName     = isset($company['show_name']) ? (bool) $company['show_name'] : true;
-$colorPrimary = (! empty($company['color_primary']) && preg_match('/^#[0-9a-fA-F]{6}$/', $company['color_primary']))
-    ? $company['color_primary']
-    : '#0d6efd';
-$colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-fA-F]{6}$/', $company['color_secondary']))
-    ? $company['color_secondary']
-    : '#ffffff';
+['hasCover' => $hasCover, 'hasLogo' => $hasLogo, 'showName' => $showName,
+ 'colorPrimary' => $colorPrimary, 'colorSecondary' => $colorSecondary] = company_theme($company);
 ?>
 
 <style>
@@ -21,51 +14,6 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
         --company-secondary: <?= esc($colorSecondary) ?>;
         --company-cover: <?= $hasCover ? "url('" . base_url(esc($company['cover_path'])) . "')" : 'none' ?>;
     }
-    .catalog-content .btn-primary,
-    .catalog-content .btn-primary:focus {
-        background-color: var(--company-primary);
-        border-color: var(--company-primary);
-    }
-    .catalog-content .btn-primary:hover {
-        background-color: color-mix(in srgb, var(--company-primary) 85%, #000);
-        border-color: color-mix(in srgb, var(--company-primary) 85%, #000);
-    }
-    .catalog-content .text-primary     { color: var(--company-primary) !important; }
-    .catalog-content .badge.bg-primary  { background-color: var(--company-primary) !important; }
-
-    /* ── Cards produits : fond atténué avec color_primary ─────────────────── */
-    .catalog-content .card {
-        background-color: color-mix(in srgb, var(--company-primary) 10%, var(--bs-body-bg));
-        border: 1px solid color-mix(in srgb, var(--company-primary) 30%, transparent) !important;
-        transition: transform .18s, box-shadow .18s, border-color .18s;
-    }
-    .catalog-content .card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 .5rem 1.5rem color-mix(in srgb, var(--company-primary) 25%, transparent) !important;
-        border-color: color-mix(in srgb, var(--company-primary) 60%, transparent) !important;
-    }
-    /* Bouton sur bannière : fond blanc semi-opaque, texte primary via style inline */
-    .catalog-hero .btn-light {
-        background-color: rgba(255,255,255,.92) !important;
-        border-color: transparent !important;
-    }
-
-    /* Bande de section sous le hero — fond color_secondary */
-    .catalog-section-header {
-        background: color-mix(in srgb, var(--company-secondary) 22%, var(--bs-body-bg));
-        border-bottom: 1px solid color-mix(in srgb, var(--company-secondary) 55%, var(--bs-border-color));
-        padding: .9rem 0;
-    }
-
-    /* Badge référence produit — fond color_secondary (petit élément décoratif) */
-    .product-ref-badge {
-        background-color: color-mix(in srgb, var(--company-secondary) 35%, var(--bs-body-bg)) !important;
-        color: var(--bs-body-color) !important;
-        border: 1px solid color-mix(in srgb, var(--company-secondary) 60%, var(--bs-border-color));
-        font-weight: 500;
-    }
-
-
 </style>
 
 <div class="catalog-wrapper">
@@ -159,7 +107,7 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
                                 <?php $stockQty = (int) $product['stock']; ?>
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <span class="fw-bold text-primary fs-5">
-                                        <?= number_format((float)$product['unit_price'], 2, ',', ' ') ?> €
+                                        <?= format_price($product['unit_price']) ?>
                                     </span>
                                     <?php if ($stockQty > 5): ?>
                                         <span class="badge bg-success bg-opacity-10 text-success small">
@@ -219,102 +167,6 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
     <span class="cart-tab-label">Panier</span>
 </button>
 
-<?= $this->endSection() ?>
-
-<?= $this->section('styles') ?>
-<style>
-/* ── Layout catalogue + panneau ─────────────────────────────────────────────── */
-.catalog-wrapper {
-    display: flex;
-    align-items: flex-start;
-}
-.catalog-content {
-    flex: 1;
-    min-width: 0;
-}
-
-/* ── @property pour animation des variables de hauteur ─────────────────────── */
-@property --header-height    { syntax: '<length>'; inherits: true; initial-value: 64px; }
-@property --footer-visible-h { syntax: '<length>'; inherits: true; initial-value: 0px; }
-
-/* ── Panneau panier ──────────────────────────────────────────────────────────── */
-.cart-panel {
-    width: 0;
-    overflow: hidden;
-    flex-shrink: 0;
-    position: sticky;
-    top: var(--header-height);
-    height: calc(100vh - var(--header-height) - var(--footer-visible-h));
-    transition: width .3s ease, top .3s ease, height .3s ease;
-    border-left: 0 solid var(--bs-border-color);
-    background: var(--bs-body-bg);
-}
-.cart-panel.open {
-    width: 360px;
-    border-left-width: 1px;
-    box-shadow: -4px 0 16px rgba(0, 0, 0, .07);
-}
-
-/* ── Languette d'accès (tab fixe) ─────────────────────────────────────────── */
-.cart-tab {
-    position: fixed;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%) translateX(0);
-    z-index: 200;
-    border: none;
-    background: var(--company-primary, #0d6efd);
-    color: #fff;
-    width: 52px;
-    padding: 1.1rem .6rem;
-    border-radius: .75rem 0 0 .75rem;
-    box-shadow: -3px 0 18px color-mix(in srgb, var(--company-primary, #0d6efd) 45%, transparent),
-                0 4px 12px rgba(0,0,0,.18);
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: .55rem;
-    transition: width .2s ease, box-shadow .2s ease, transform .2s ease;
-}
-.cart-tab:hover {
-    width: 60px;
-    transform: translateY(-50%) translateX(-2px);
-    box-shadow: -5px 0 24px color-mix(in srgb, var(--company-primary, #0d6efd) 60%, transparent),
-                0 6px 18px rgba(0,0,0,.22);
-}
-.cart-tab:hover { filter: none; }
-.cart-tab .cart-tab-icon {
-    font-size: 1.35rem;
-    line-height: 1;
-    transition: transform .2s ease;
-}
-.cart-tab:hover .cart-tab-icon { transform: scale(1.12); }
-.cart-tab .cart-tab-label {
-    font-size: .6rem;
-    font-weight: 600;
-    letter-spacing: .04em;
-    text-transform: uppercase;
-    opacity: .85;
-    line-height: 1;
-}
-.cart-tab .cart-tab-badge {
-    background: #fff;
-    color: var(--company-primary, #0d6efd);
-    border-radius: 999px;
-    font-size: .65rem;
-    font-weight: 700;
-    min-width: 1.25rem;
-    height: 1.25rem;
-    line-height: 1.25rem;
-    text-align: center;
-    padding: 0 .3rem;
-}
-.cart-tab .cart-tab-badge.empty { opacity: 0; pointer-events: none; }
-
-/* ── Cards produit ───────────────────────────────────────────────────────────── */
-/* Les transitions sont gérées dans le bloc <style> injecté en tête de page */
-</style>
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>

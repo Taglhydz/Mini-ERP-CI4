@@ -151,7 +151,7 @@
                                         <td><input type="text" name="name[]" class="form-control form-control-sm input-name" value="<?= esc($item['name']) ?>"></td>
                                         <td><input type="number" name="quantity[]" value="<?= esc($item['quantity']) ?>" min="1" class="form-control form-control-sm input-qty"></td>
                                         <td><input type="number" name="unit_price[]" step="0.01" min="0" value="<?= esc($item['unit_price']) ?>" class="form-control form-control-sm input-price"></td>
-                                        <td class="text-end fw-semibold span-subtotal"><?= number_format((float)$item['subtotal'], 2, ',', ' ') ?> €</td>
+                                        <td class="text-end fw-semibold span-subtotal"><?= format_price($item['subtotal']) ?></td>
                                         <td><button type="button" class="btn btn-sm btn-outline-danger btn-del-item"><i class="bi bi-x"></i></button></td>
                                     </tr>
                                     <?php endforeach; ?>

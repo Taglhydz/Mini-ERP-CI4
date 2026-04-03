@@ -58,7 +58,7 @@
             <div class="doc-title">FACTURE</div>
             <div class="doc-meta">
                 N° <?= esc($order['number']) ?><br>
-                Date : <?= date('d/m/Y', strtotime($order['order_date'])) ?>
+                Date : <?= format_date($order['order_date']) ?>
             </div>
         </div>
     </div>
@@ -107,8 +107,8 @@
             <tr>
                 <td><?= esc($item['name']) ?></td>
                 <td class="text-right"><?= esc($item['quantity']) ?></td>
-                <td class="text-right"><?= number_format((float)$item['unit_price'], 2, ',', ' ') ?> €</td>
-                <td class="text-right"><?= number_format((float)$item['subtotal'], 2, ',', ' ') ?> €</td>
+                <td class="text-right"><?= format_price($item['unit_price']) ?></td>
+                <td class="text-right"><?= format_price($item['subtotal']) ?></td>
             </tr>
         <?php endforeach; ?>
         </tbody>
@@ -119,17 +119,17 @@
         <table>
             <tr class="total-ht">
                 <td>Total HT</td>
-                <td class="text-right"><?= number_format((float)$order['amount_ht'], 2, ',', ' ') ?> €</td>
+                <td class="text-right"><?= format_price($order['amount_ht']) ?></td>
             </tr>
             <tr>
                 <td>TVA (<?= esc($order['vat_rate']) ?>%)</td>
                 <td class="text-right">
-                    <?= number_format((float)$order['amount_ttc'] - (float)$order['amount_ht'], 2, ',', ' ') ?> €
+                    <?= format_price((float)$order['amount_ttc'] - (float)$order['amount_ht']) ?>
                 </td>
             </tr>
             <tr class="total-ttc">
                 <td>Total TTC</td>
-                <td class="text-right"><?= number_format((float)$order['amount_ttc'], 2, ',', ' ') ?> €</td>
+                <td class="text-right"><?= format_price($order['amount_ttc']) ?></td>
             </tr>
         </table>
     </div>

@@ -72,7 +72,7 @@ class CartController extends BaseController
                 'success'     => true,
                 'cart_count'  => count($cart),
                 'cart_html'   => $this->buildCartHtml($slug, $cart),
-                'total_ttc'   => number_format($ttc, 2, ',', ' ') . ' €',
+                'total_ttc'   => format_price($ttc),
                 'cart_limits' => $this->buildCartLimits($cart),
             ]);
         }
@@ -115,7 +115,7 @@ class CartController extends BaseController
             'success'      => true,
             'cart_count'   => count($cart),
             'cart_html'    => $this->buildCartHtml($slug, $cart),
-            'total_ttc'    => number_format($ttc, 2, ',', ' ') . ' €',
+            'total_ttc'    => format_price($ttc),
             'cart_limits'  => $this->buildCartLimits($cart),
         ]);
     }
@@ -136,7 +136,7 @@ class CartController extends BaseController
                 'success'      => true,
                 'cart_count'   => count($cart),
                 'cart_html'    => $this->buildCartHtml($slug, $cart),
-                'total_ttc'    => number_format($ttc, 2, ',', ' ') . ' €',
+                'total_ttc'      => format_price($ttc),
                 'cart_limits'  => $this->buildCartLimits($cart),
             ]);
         }
@@ -154,7 +154,7 @@ class CartController extends BaseController
         return $this->response->setJSON([
             'cart_count'  => count($cart),
             'cart_html'   => $this->buildCartHtml($slug, $cart),
-            'total_ttc'   => number_format($ttc, 2, ',', ' ') . ' €',
+            'total_ttc'   => format_price($ttc),
             'cart_limits' => $this->buildCartLimits($cart),
         ]);
     }

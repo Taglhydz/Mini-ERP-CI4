@@ -63,8 +63,8 @@ class AdminCompanyController extends BaseController
 
         $data['slug']            = $this->generateUniqueSlug((string) $data['name']);
         $data['show_name']       = $data['show_name'] === '1' ? 1 : 0;
-        $data['color_primary']   = $this->sanitizeColor($data['color_primary'], '#0d6efd');
-        $data['color_secondary'] = $this->sanitizeColor($data['color_secondary'], '#6c757d');
+        $data['color_primary']   = sanitize_hex_color($data['color_primary'], '#0d6efd');
+        $data['color_secondary'] = sanitize_hex_color($data['color_secondary'], '#6c757d');
 
         if (! $this->companyModel->save($data)) {
             return redirect()->back()->withInput()->with('errors', $this->companyModel->errors());
@@ -101,8 +101,8 @@ class AdminCompanyController extends BaseController
 
         $data['slug']            = $this->generateUniqueSlug((string) $data['name'], $id);
         $data['show_name']       = $data['show_name'] === '1' ? 1 : 0;
-        $data['color_primary']   = $this->sanitizeColor($data['color_primary'], $company['color_primary'] ?? '#0d6efd');
-        $data['color_secondary'] = $this->sanitizeColor($data['color_secondary'], $company['color_secondary'] ?? '#6c757d');
+        $data['color_primary']   = sanitize_hex_color($data['color_primary'], $company['color_primary'] ?? '#0d6efd');
+        $data['color_secondary'] = sanitize_hex_color($data['color_secondary'], $company['color_secondary'] ?? '#6c757d');
 
         if (! $this->companyModel->skipValidation(false)->update($id, $data)) {
             return redirect()->back()->withInput()->with('errors', $this->companyModel->errors());
@@ -157,11 +157,6 @@ class AdminCompanyController extends BaseController
 
     // ─── Helpers privés ───────────────────────────────────────────────────────
 
-    private function sanitizeColor(mixed $value, string $default): string
-    {
-        $value = (string) $value;
-        return preg_match('/^#[0-9a-fA-F]{6}$/', $value) ? $value : $default;
-    }
 
     private function slugify(string $text): string
     {

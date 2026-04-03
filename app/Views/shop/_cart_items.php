@@ -21,7 +21,7 @@ $stocks ??= [];
         <div class="flex-grow-1 overflow-hidden">
             <p class="fw-semibold small mb-1 text-truncate"><?= esc($item['name']) ?></p>
             <p class="text-muted small mb-0">
-                <?= number_format((float) $item['price'], 2, ',', ' ') ?> € / u
+                <?= format_price($item['price']) ?> / u
             </p>
             <?php if ($hasIssue): ?>
             <div class="stock-warning d-flex align-items-center gap-1 mt-1">
@@ -59,7 +59,7 @@ $stocks ??= [];
         <!-- Sous-total + suppression -->
         <div class="text-end flex-shrink-0" style="min-width:60px;">
             <p class="fw-semibold small mb-1">
-                <?= number_format((float) $item['qty'] * (float) $item['price'], 2, ',', ' ') ?> €
+                <?= format_price((float) $item['qty'] * (float) $item['price']) ?>
             </p>
             <button type="button"
                     class="btn btn-link text-danger p-0 btn-cart-remove"

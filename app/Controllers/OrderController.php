@@ -77,9 +77,9 @@ class OrderController extends BaseController
             ->getResultArray();
 
         $data = array_map(function (array $row): array {
-            $row['amount_ht_fmt']  = number_format((float) $row['amount_ht'], 2, ',', ' ') . ' €';
-            $row['amount_ttc_fmt'] = number_format((float) $row['amount_ttc'], 2, ',', ' ') . ' €';
-            $row['status_badge']   = view('partials/badge_status', ['status' => $row['status']]);
+            $row['amount_ht_fmt']  = format_price($row['amount_ht']);
+            $row['amount_ttc_fmt'] = format_price($row['amount_ttc']);
+            $row['status_badge']   = badge_status($row['status']);
             $row['actions']        = sprintf(
                 '<a href="%s" class="btn btn-sm btn-outline-secondary me-1" title="Voir"><i class="bi bi-eye"></i></a>'
                 . '<a href="%s" class="btn btn-sm btn-outline-primary me-1" title="Modifier"><i class="bi bi-pencil"></i></a>'
@@ -152,9 +152,10 @@ class OrderController extends BaseController
     {
         $post      = $this->request->getPost();
         $items     = $this->parseItems($post);
-        $amountHt  = array_sum(array_column($items, 'subtotal'));
         $vatRate   = (float) ($post['vat_rate'] ?? 20);
-        $amountTtc = round($amountHt * (1 + $vatRate / 100), 2);
+        $totals    = calc_order_totals($items, $vatRate);
+        $amountHt  = $totals['amount_ht'];
+        $amountTtc = $totals['amount_ttc'];
 
         $data = [
             'number'     => $this->orderModel->generateNumber(),
@@ -228,9 +229,10 @@ class OrderController extends BaseController
 
         $post      = $this->request->getPost();
         $items     = $this->parseItems($post);
-        $amountHt  = array_sum(array_column($items, 'subtotal'));
         $vatRate   = (float) ($post['vat_rate'] ?? 20);
-        $amountTtc = round($amountHt * (1 + $vatRate / 100), 2);
+        $totals    = calc_order_totals($items, $vatRate);
+        $amountHt  = $totals['amount_ht'];
+        $amountTtc = $totals['amount_ttc'];
 
         $newStatus = $post['status'];
         $oldStatus = $order['status'];

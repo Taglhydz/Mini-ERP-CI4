@@ -4,114 +4,13 @@
  * Rendu à l'intérieur du div#cart-panel dans catalog.php.
  * Variables : $company (array), $isLoggedIn (bool)
  */
-$hasCover       = ! empty($company['cover_path']);
-$hasLogo        = ! empty($company['logo_path']);
-$showName       = isset($company['show_name']) ? (bool) $company['show_name'] : true;
-$colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-fA-F]{6}$/', $company['color_secondary']))
-    ? $company['color_secondary'] : '#ffffff';
+['hasCover' => $hasCover, 'hasLogo' => $hasLogo, 'showName' => $showName,
+ 'colorSecondary' => $colorSecondary] = company_theme($company);
 ?>
 
 <style>
-/* ── Panneau intérieur ────────────────────────────────────────────────────── */
-.cart-panel-inner { width: 360px; }
-
-/* ── En-tête avec cover / color_primary ──────────────────────────────────── */
-.panel-header {
-    position: relative;
-    overflow: hidden;
-    min-height: 72px;
-    background-color: color-mix(in srgb, var(--company-primary) 85%, #000);
-    <?php if ($hasCover): ?>
-    background-image: url('<?= base_url(esc($company['cover_path'])) ?>');
-    background-size: cover;
-    background-position: center;
-    <?php endif; ?>
-}
-.panel-header-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,<?= $hasCover ? '.58' : '.18' ?>);
-}
-.panel-header-content {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: .6rem;
-    padding: .85rem 1rem;
-}
-
-/* ── Articles ─────────────────────────────────────────────────────────────── */
-.cart-panel-inner .cart-item {
-    border-bottom: none !important;
-    border: 1px solid color-mix(in srgb, var(--company-primary) 22%, transparent) !important;
-    border-radius: .375rem;
-    background: color-mix(in srgb, var(--company-primary) 9%, var(--bs-body-bg));
-    padding: .6rem .75rem !important;
-    margin-bottom: .5rem;
-    transition: border-color .15s;
-}
-.cart-panel-inner .cart-item:last-child { margin-bottom: 0; }
-.cart-panel-inner .cart-item:hover {
-    border-color: color-mix(in srgb, var(--company-primary) 50%, transparent) !important;
-}
-
-/* ── Boutons +/- quantité ─────────────────────────────────────────────────── */
-.cart-panel-inner .btn-qty-dec,
-.cart-panel-inner .btn-qty-inc {
-    border-color: color-mix(in srgb, var(--company-primary) 45%, transparent) !important;
-    color: var(--company-primary) !important;
-}
-.cart-panel-inner .btn-qty-dec:hover,
-.cart-panel-inner .btn-qty-inc:hover {
-    background-color: var(--company-primary) !important;
-    border-color: var(--company-primary) !important;
-    color: #fff !important;
-}
-
-/* ── Sous-total article ───────────────────────────────────────────────────── */
-.cart-panel-inner .cart-item .fw-semibold {
-    color: var(--company-primary);
-}
-
-/* ── Bouton suppression ───────────────────────────────────────────────────── */
-.cart-panel-inner .btn-cart-remove {
-    opacity: .55;
-    transition: opacity .15s;
-}
-.cart-panel-inner .btn-cart-remove:hover { opacity: 1; }
-
-/* ── Scrollbar fine ───────────────────────────────────────────────────────── */
-#cart-panel-items::-webkit-scrollbar { width: 4px; }
-#cart-panel-items::-webkit-scrollbar-track { background: transparent; }
-#cart-panel-items::-webkit-scrollbar-thumb {
-    background: color-mix(in srgb, var(--company-primary) 55%, transparent);
-    border-radius: 2px;
-}
-#cart-panel-items::-webkit-scrollbar-thumb:hover { background: var(--company-primary); }
-/* Firefox */
-#cart-panel-items { scrollbar-width: thin; scrollbar-color: var(--company-primary) transparent; }
-
-/* ── Total ────────────────────────────────────────────────────────────────── */
-.panel-total { color: var(--company-primary); }
-
-/* ── Boutons footer ───────────────────────────────────────────────────────── */
-.cart-panel-inner .btn-panel-secondary {
-    background: transparent;
-    border: 1px solid color-mix(in srgb, var(--company-primary) 50%, transparent);
-    color: var(--company-primary);
-    transition: background .15s, border-color .15s;
-}
-.cart-panel-inner .btn-panel-secondary:hover {
-    background: color-mix(in srgb, var(--company-primary) 12%, transparent);
-    border-color: var(--company-primary);
-}
-.cart-panel-inner .btn-panel-primary {
-    background: var(--company-primary);
-    border-color: var(--company-primary);
-    color: #fff;
-    transition: filter .15s;
-}
-.cart-panel-inner .btn-panel-primary:hover { filter: brightness(.88); }
+/* Opacité de l'overlay varie selon la présence d'une image de couverture */
+.panel-header-overlay { background: rgba(0,0,0,<?= $hasCover ? '.58' : '.18' ?>); }
 </style>
 
 <div class="cart-panel-inner d-flex flex-column h-100">

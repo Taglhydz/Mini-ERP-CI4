@@ -64,18 +64,11 @@ class ProductController extends BaseController
             ->getResultArray();
 
         $data = array_map(function (array $row): array {
-            $row['unit_price_formatted'] = number_format((float) $row['unit_price'], 2, ',', ' ') . ' €';
+            $row['unit_price_formatted'] = format_price($row['unit_price']);
 
             // Badge coloré selon le stock
             $qty = (int) $row['stock'];
-            if ($qty === 0) {
-                $badge = '<span class="badge bg-danger">' . $qty . '</span>';
-            } elseif ($qty <= 5) {
-                $badge = '<span class="badge bg-warning text-dark">' . $qty . '</span>';
-            } else {
-                $badge = '<span class="badge bg-success">' . $qty . '</span>';
-            }
-            $row['stock_badge'] = $badge;
+            $row['stock_badge'] = badge_stock($qty, 'admin');
 
             $row['actions']              = sprintf(
                 '<a href="%s" class="btn btn-sm btn-outline-primary me-1" title="Modifier"><i class="bi bi-pencil"></i></a>'

@@ -78,12 +78,12 @@ class CompanyController extends BaseController
         $updateData['show_name'] = $this->request->getPost('show_name') === '1' ? 1 : 0;
 
         $colorPrimary = (string) $this->request->getPost('color_primary');
-        if (preg_match('/^#[0-9a-fA-F]{6}$/', $colorPrimary)) {
+        if (is_valid_hex_color($colorPrimary)) {
             $updateData['color_primary'] = $colorPrimary;
         }
 
         $colorSecondary = (string) $this->request->getPost('color_secondary');
-        if (preg_match('/^#[0-9a-fA-F]{6}$/', $colorSecondary)) {
+        if (is_valid_hex_color($colorSecondary)) {
             $updateData['color_secondary'] = $colorSecondary;
         }
 

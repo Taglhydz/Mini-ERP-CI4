@@ -6,8 +6,8 @@
     <div>
         <h1 class="h3 mb-0"><i class="bi bi-receipt me-2 text-warning"></i><?= esc($order['number']) ?></h1>
         <p class="text-muted small mb-0">
-            <?= view('partials/badge_status', ['status' => $order['status']]) ?>
-            &mdash; <?= date('d/m/Y', strtotime($order['order_date'])) ?>
+            <?= badge_status($order['status']) ?>
+            &mdash; <?= format_date($order['order_date']) ?>
         </p>
     </div>
     <div class="d-flex gap-2">
@@ -48,9 +48,9 @@
                     <dt class="col-sm-4 text-muted">Numéro</dt>
                     <dd class="col-sm-8"><?= esc($order['number']) ?></dd>
                     <dt class="col-sm-4 text-muted">Date</dt>
-                    <dd class="col-sm-8"><?= date('d/m/Y', strtotime($order['order_date'])) ?></dd>
+                    <dd class="col-sm-8"><?= format_date($order['order_date']) ?></dd>
                     <dt class="col-sm-4 text-muted">Statut</dt>
-                    <dd class="col-sm-8"><?= view('partials/badge_status', ['status' => $order['status']]) ?></dd>
+                    <dd class="col-sm-8"><?= badge_status($order['status']) ?></dd>
                     <dt class="col-sm-4 text-muted">TVA</dt>
                     <dd class="col-sm-8"><?= esc($order['vat_rate']) ?> %</dd>
                 </dl>
@@ -80,25 +80,25 @@
                             <tr>
                                 <td><?= esc($item['name']) ?></td>
                                 <td class="text-center"><?= esc($item['quantity']) ?></td>
-                                <td class="text-end"><?= number_format((float)$item['unit_price'], 2, ',', ' ') ?> €</td>
-                                <td class="text-end"><?= number_format((float)$item['subtotal'], 2, ',', ' ') ?> €</td>
+                                <td class="text-end"><?= format_price($item['unit_price']) ?></td>
+                                <td class="text-end"><?= format_price($item['subtotal']) ?></td>
                             </tr>
                         <?php endforeach; ?>
                         </tbody>
                         <tfoot class="fw-bold">
                             <tr>
                                 <td colspan="3" class="text-end">Total HT</td>
-                                <td class="text-end"><?= number_format((float)$order['amount_ht'], 2, ',', ' ') ?> €</td>
+                                <td class="text-end"><?= format_price($order['amount_ht']) ?></td>
                             </tr>
                             <tr>
                                 <td colspan="3" class="text-end">TVA (<?= esc($order['vat_rate']) ?>%)</td>
                                 <td class="text-end">
-                                    <?= number_format((float)$order['amount_ttc'] - (float)$order['amount_ht'], 2, ',', ' ') ?> €
+                                    <?= format_price((float)$order['amount_ttc'] - (float)$order['amount_ht']) ?>
                                 </td>
                             </tr>
                             <tr class="table-active">
                                 <td colspan="3" class="text-end fs-5">Total TTC</td>
-                                <td class="text-end fs-5"><?= number_format((float)$order['amount_ttc'], 2, ',', ' ') ?> €</td>
+                                <td class="text-end fs-5"><?= format_price($order['amount_ttc']) ?></td>
                             </tr>
                         </tfoot>
                     </table>

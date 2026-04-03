@@ -8,114 +8,15 @@
 
 <?php
 // ── Variables thème entreprise ─────────────────────────────────────────────
-$hasCover       = ! empty($company['cover_path'] ?? null);
-$hasLogo        = ! empty($company['logo_path'] ?? null);
-$showName       = isset($company['show_name']) ? (bool) $company['show_name'] : true;
-$colorPrimary   = (! empty($company['color_primary'] ?? null) && preg_match('/^#[0-9a-fA-F]{6}$/', $company['color_primary']))
-    ? $company['color_primary'] : '#0d6efd';
-$colorSecondary = (! empty($company['color_secondary'] ?? null) && preg_match('/^#[0-9a-fA-F]{6}$/', $company['color_secondary']))
-    ? $company['color_secondary'] : '#ffffff';
-$companySlug    = $company['slug'] ?? session('company_slug') ?? '';
+['hasCover' => $hasCover, 'hasLogo' => $hasLogo, 'showName' => $showName,
+ 'colorPrimary' => $colorPrimary, 'colorSecondary' => $colorSecondary] = company_theme($company);
+$companySlug = $company['slug'] ?? session('company_slug') ?? '';
 ?>
 
 <style>
     :root {
         --company-primary:   <?= esc($colorPrimary) ?>;
         --company-secondary: <?= esc($colorSecondary) ?>;
-    }
-
-    /* ── Boutons primary ─────────────────────────────────────────────────── */
-    .espace-client .btn-primary,
-    .espace-client .btn-primary:focus {
-        background-color: var(--company-primary);
-        border-color: var(--company-primary);
-        color: #fff;
-    }
-        background-color: color-mix(in srgb, var(--company-primary) 85%, #000);
-        border-color: color-mix(in srgb, var(--company-primary) 85%, #000);
-    }
-    .espace-client .btn-outline-primary {
-        color: var(--company-primary);
-        border-color: var(--company-primary);
-    }
-    .espace-client .btn-outline-primary:hover {
-        background-color: var(--company-primary);
-        border-color: var(--company-primary);
-        color: #fff;
-    }
-    .espace-client .text-primary { color: var(--company-primary) !important; }
-
-    /* ── Card commandes ─────────────────────────────────────────────────── */
-    .orders-card {
-        background-color: var(--bs-body-bg);
-        border: 1px solid color-mix(in srgb, var(--company-primary) 30%, transparent) !important;
-    }
-    .orders-card .card-header {
-        background-color: var(--company-primary);
-        color: #fff;
-        border-bottom: none;
-    }
-
-    /* ── Fil d'Ariane ───────────────────────────────────────────────────── */
-    .breadcrumb-item a { color: var(--company-primary); }
-    .breadcrumb-item.active { color: var(--bs-secondary-color, #6c757d); }
-    .breadcrumb-item + .breadcrumb-item::before { color: var(--bs-border-color, #dee2e6); }
-
-    /* ── DataTables overrides ────────────────────────────────────────────── */
-    #table-client-orders thead th {
-        background: var(--company-primary) !important;
-        color: #fff !important;
-        border-color: color-mix(in srgb, var(--company-primary) 70%, #000) !important;
-    }
-    #table-client-orders tbody tr:nth-child(even) td {
-        background: color-mix(in srgb, var(--company-primary) 6%, var(--bs-body-bg)) !important;
-    }
-    #table-client-orders tbody tr:hover td {
-        background: color-mix(in srgb, var(--company-primary) 16%, var(--bs-body-bg)) !important;
-        cursor: pointer;
-    }
-    /* Pagination */
-    .dt-paging .dt-paging-button:hover { background: color-mix(in srgb, var(--company-primary) 15%, transparent) !important; }
-    .dt-paging .dt-paging-button.current,
-    .dt-paging .dt-paging-button.current:hover {
-        background: var(--company-primary) !important;
-        color: #fff !important;
-        border-color: var(--company-primary) !important;
-    }
-    /* Focus : bord primary + box-shadow secondary atténué */
-    .dt-input:focus {
-        border-color: var(--company-primary) !important;
-        box-shadow: 0 0 0 .2rem color-mix(in srgb, var(--company-secondary) 10%, transparent) !important;
-    }
-
-    /* Zone sous bannière : fond color_secondary */
-    .ec-subheader {
-        background-color: color-mix(in srgb, var(--company-secondary) 25%, var(--bs-body-bg));
-        border-bottom: 1px solid color-mix(in srgb, var(--company-secondary) 55%, var(--bs-border-color));
-        padding: .6rem 0;
-    }
-
-    /* Sidebar navigation : fond color_secondary, item actif primary */
-    .ec-sidebar {
-        background-color: color-mix(in srgb, var(--company-secondary) 40%, var(--bs-body-bg));
-        border: 1px solid color-mix(in srgb, var(--company-secondary) 60%, var(--bs-border-color));
-        border-radius: .5rem;
-        padding: .75rem .5rem;
-    }
-    .ec-sidebar .nav-link {
-        color: var(--bs-body-color);
-        border-radius: .375rem;
-        padding: .45rem .75rem;
-        font-size: .875rem;
-        transition: background .12s;
-    }
-    .ec-sidebar .nav-link:hover:not(.active) {
-        background-color: color-mix(in srgb, var(--company-primary) 12%, transparent);
-    }
-    .ec-sidebar .nav-link.active {
-        background-color: var(--company-primary);
-        color: #fff;
-        font-weight: 600;
     }
 </style>
 
@@ -249,9 +150,9 @@ $companySlug    = $company['slug'] ?? session('company_slug') ?? '';
                                             <?php foreach ($orders as $cmd): ?>
                                                 <tr>
                                                     <td class="fw-semibold"><?= esc($cmd['number'] ?? ('#' . $cmd['id'])) ?></td>
-                                                    <td><?= esc(date('d/m/Y', strtotime($cmd['order_date'] ?? $cmd['created_at']))) ?></td>
-                                                    <td><?= view('partials/badge_status', ['status' => $cmd['status'] ?? 'draft']) ?></td>
-                                                    <td class="text-end fw-semibold"><?= number_format((float) ($cmd['amount_ttc'] ?? 0), 2, ',', ' ') ?>&nbsp;€</td>
+                                                    <td><?= esc(format_date($cmd['order_date'] ?? $cmd['created_at'])) ?></td>
+                                                    <td><?= badge_status($cmd['status'] ?? 'draft') ?></td>
+                                                    <td class="text-end fw-semibold"><?= format_price($cmd['amount_ttc'] ?? 0) ?></td>
                                                 </tr>
                                             <?php endforeach; ?>
                                         </tbody>

@@ -4,63 +4,14 @@
 
 <?php
 // ── Variables thème entreprise ─────────────────────────────────────────────
-$hasCover     = ! empty($company['cover_path']);
-$hasLogo      = ! empty($company['logo_path']);
-$showName     = isset($company['show_name']) ? (bool) $company['show_name'] : true;
-$colorPrimary = (! empty($company['color_primary']) && preg_match('/^#[0-9a-fA-F]{6}$/', $company['color_primary']))
-    ? $company['color_primary']
-    : '#0d6efd';
-$colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-fA-F]{6}$/', $company['color_secondary']))
-    ? $company['color_secondary']
-    : '#ffffff';
+['hasCover' => $hasCover, 'hasLogo' => $hasLogo, 'showName' => $showName,
+ 'colorPrimary' => $colorPrimary, 'colorSecondary' => $colorSecondary] = company_theme($company);
 ?>
 
 <style>
     :root {
         --company-primary:   <?= esc($colorPrimary) ?>;
         --company-secondary: <?= esc($colorSecondary) ?>;
-    }
-
-    /* Boutons primary */
-    .cart-page .btn-primary,
-    .cart-page .btn-primary:focus {
-        background-color: var(--company-primary);
-        border-color: var(--company-primary);
-    }
-    .cart-page .btn-primary:hover {
-        background-color: color-mix(in srgb, var(--company-primary) 85%, #000);
-        border-color: color-mix(in srgb, var(--company-primary) 85%, #000);
-    }
-    .cart-page .text-primary { color: var(--company-primary) !important; }
-
-    /* Cards articles */
-    .cart-item-card {
-        background-color: color-mix(in srgb, var(--company-primary) 10%, var(--bs-body-bg));
-        border: 1px solid color-mix(in srgb, var(--company-primary) 30%, transparent) !important;
-        transition: box-shadow .18s, border-color .18s;
-    }
-    .cart-item-card:hover {
-        box-shadow: 0 .3rem 1rem color-mix(in srgb, var(--company-primary) 20%, transparent) !important;
-        border-color: color-mix(in srgb, var(--company-primary) 55%, transparent) !important;
-    }
-
-    /* Encart récapitulatif — fond color_secondary (zone totaux/résumé) */
-    .cart-summary-card {
-        background-color: color-mix(in srgb, var(--company-secondary) 20%, var(--bs-body-bg));
-        border: 1px solid color-mix(in srgb, var(--company-primary) 35%, transparent) !important;
-    }
-    .cart-summary-card .card-header {
-        background-color: color-mix(in srgb, var(--company-secondary) 35%, var(--bs-body-bg));
-        border-bottom: 1px solid color-mix(in srgb, var(--company-secondary) 55%, var(--bs-border-color));
-    }
-    /* Séparateur horizontal — color_secondary */
-    .cart-summary-card hr { border-color: color-mix(in srgb, var(--company-secondary) 60%, var(--bs-border-color)); }
-    .cart-total-amount { font-weight: 700; }
-
-    /* Badge quantité — élément décoratif : color_secondary */
-    .qty-badge {
-        background-color: var(--company-secondary) !important;
-        color: var(--bs-body-color) !important;
     }
 </style>
 
@@ -157,7 +108,7 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
                                 <div class="flex-grow-1 min-width-0">
                                     <p class="fw-semibold mb-0 text-truncate"><?= esc($item['name']) ?></p>
                                     <p class="text-muted small mb-0">
-                                        <?= number_format((float) $item['price'], 2, ',', ' ') ?> € / unité
+                                        <?= format_price($item['price']) ?> / unité
                                     </p>
                                     <?php if ($itemHasIssue): ?>
                                     <div class="d-flex align-items-center gap-1 mt-1">
@@ -181,7 +132,7 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
                                 <!-- Sous-total -->
                                 <div class="text-end flex-shrink-0" style="min-width:90px;">
                                     <p class="fw-bold mb-0 text-primary fs-6">
-                                        <?= number_format((float) $item['qty'] * (float) $item['price'], 2, ',', ' ') ?> €
+                                        <?= format_price((float) $item['qty'] * (float) $item['price']) ?>
                                     </p>
                                 </div>
 
@@ -222,20 +173,20 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span class="text-muted">Total HT</span>
                                 <span class="fw-semibold">
-                                    <?= number_format($amountHt, 2, ',', ' ') ?> €
+                                    <?= format_price($amountHt) ?>
                                 </span>
                             </div>
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <span class="text-muted">TVA (<?= (int) $vatRate ?>%)</span>
                                 <span>
-                                    <?= number_format($amountTtc - $amountHt, 2, ',', ' ') ?> €
+                                    <?= format_price($amountTtc - $amountHt) ?>
                                 </span>
                             </div>
                             <hr class="my-2" style="border-color:color-mix(in srgb,var(--company-primary) 30%,transparent);">
                             <div class="d-flex justify-content-between align-items-center mb-4">
                                 <span class="fw-bold fs-5">Total TTC</span>
                                 <span class="fw-bold cart-total-amount fs-4">
-                                    <?= number_format($amountTtc, 2, ',', ' ') ?> €
+                                    <?= format_price($amountTtc) ?>
                                 </span>
                             </div>
                             <a href="<?= base_url('shop/' . esc($company['slug']) . '/checkout') ?>"
@@ -265,8 +216,4 @@ $colorSecondary = (! empty($company['color_secondary']) && preg_match('/^#[0-9a-
 
 <?= $this->endSection() ?>
 
-<?= $this->section('styles') ?>
-<style>
-.ls-1 { letter-spacing: .06em; }
-</style>
-<?= $this->endSection() ?>
+
