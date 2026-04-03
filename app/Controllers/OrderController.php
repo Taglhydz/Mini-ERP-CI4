@@ -316,7 +316,7 @@ class OrderController extends BaseController
         if (! $isLoggedIn) {
             // Mémoriser la destination pour la reprendre après connexion
             session()->set('redirect_after_login', base_url('shop/' . $slug . '/checkout'));
-            return redirect()->to(base_url('login'))
+            return redirect()->to(base_url('login') . '?shop=' . urlencode($slug))
                 ->with('info', 'Veuillez vous connecter pour finaliser votre commande.');
         }
 

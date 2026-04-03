@@ -76,7 +76,7 @@
 
                     <p class="text-center text-muted small mt-3 mb-0">
                         Déjà un compte ?
-                        <a href="<?= base_url('login') ?>">Se connecter</a>
+                        <a href="<?= base_url('login') . '?shop=' . urlencode($company['slug']) ?>">Se connecter</a>
                     </p>
                 </div>
             </div>

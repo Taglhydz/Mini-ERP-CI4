@@ -23,7 +23,22 @@ class AuthController extends BaseController
     public function login()
     {
         if (session()->get('isLoggedIn')) {
-            return redirect()->to('/');
+            return $this->redirectLoggedIn();
+        }
+
+        // ── Contexte boutique : GET ?shop=slug (affichage) ou POST shop_slug (soumission) ──
+        $rawSlug     = trim((string) ($this->request->getGet('shop') ?? $this->request->getPost('shop_slug') ?? ''));
+        $shopCompany = null;
+
+        if ($rawSlug !== '') {
+            $shopCompany = model(CompanyModel::class)
+                ->where('slug', $rawSlug)
+                ->where('deleted_at', null)
+                ->first();
+            // Slug inconnu → on le traite silencieusement comme absent
+            if (! $shopCompany) {
+                $rawSlug = '';
+            }
         }
 
         if ($this->request->is('post')) {
@@ -38,74 +53,122 @@ class AuthController extends BaseController
                     ->with('errors', $this->validator->getErrors());
             }
 
-            $email     = (string) $this->request->getPost('email');
-            $password  = (string) $this->request->getPost('password');
-            $companyId = session()->get('current_company_id');
+            $email    = (string) $this->request->getPost('email');
+            $password = (string) $this->request->getPost('password');
 
-            if ($companyId) {
-                // Chemin client : email + entreprise
-                $user = $this->userModel
-                    ->where('email', $email)
-                    ->where('company_id', (int) $companyId)
-                    ->first();
-            } else {
-                // Chemin admin / manager : pas de contexte boutique
-                $user = $this->userModel
-                    ->where('email', $email)
-                    ->groupStart()
-                        ->where('company_id', null)
-                        ->orWhereIn('role', ['admin', 'manager'])
-                    ->groupEnd()
-                    ->first();
+            // ── 1. Admin / Manager : priorité absolue, aucune restriction company ──
+            $staffUser = $this->userModel
+                ->whereIn('role', ['admin', 'manager'])
+                ->where('email', $email)
+                ->where('deleted_at', null)
+                ->first();
+
+            if ($staffUser) {
+                if (! password_verify($password, $staffUser['password_hash'])) {
+                    return redirect()->back()->withInput()
+                        ->with('errors', ['login' => 'Email ou mot de passe invalide.']);
+                }
+                return $this->loginUser($staffUser);
             }
 
-            if (! $user || ! password_verify($password, $user['password_hash'])) {
-                return redirect()->back()
-                    ->withInput()
+            // ── 2. Client : contexte boutique obligatoire ──────────────────────
+            $contextCompanyId = $shopCompany
+                ? (int) $shopCompany['id']
+                : ((int) session()->get('current_company_id') ?: null);
+
+            if ($contextCompanyId === null) {
+                return redirect()->back()->withInput()->with('errors', [
+                    'login' => 'Vous devez accéder à une boutique pour vous connecter. '
+                        . 'Veuillez choisir votre boutique depuis l\'accueil.',
+                ]);
+            }
+
+            $clientUser = $this->userModel
+                ->where('role', 'client')
+                ->where('email', $email)
+                ->where('company_id', $contextCompanyId)
+                ->where('deleted_at', null)
+                ->first();
+
+            // Message identique que l'email soit absent ou appartienne à une autre boutique
+            if (! $clientUser || ! password_verify($password, $clientUser['password_hash'])) {
+                return redirect()->back()->withInput()
                     ->with('errors', ['login' => 'Email ou mot de passe invalide.']);
             }
 
-            // Un client ne peut pas se connecter sans contexte boutique
-            if ($user['role'] === 'client' && ! $companyId) {
-                return redirect()->to('/')
-                    ->with('error', 'Veuillez d\'abord choisir une boutique pour vous connecter.');
-            }
-
-            $userId  = (int) $user['id'];
-            $company = $user['company_id']
-                ? model(CompanyModel::class)->find($user['company_id'])
-                : null;
-
-            session()->set([
-                'isLoggedIn'   => true,
-                'user_id'      => $userId,
-                'username'     => $user['username'],
-                'role'         => $user['role'],
-                'company_id'   => $user['company_id'],
-                'company_slug' => $company['slug'] ?? null,
-                'company_name' => $company['name'] ?? null,
-            ]);
-
-            $this->authTokenModel->where('user_id', $userId)->delete();
-            $tokenValue = $this->createToken($userId);
-            $this->response->setCookie($this->buildTokenCookie($tokenValue));
-
-            $successMsg    = 'Connexion réussie. Bienvenue, ' . esc($user['username']) . ' !';
-            $redirectAfter = session()->get('redirect_after_login');
-
-            if ($redirectAfter) {
-                session()->remove('redirect_after_login');
-                return redirect()->to($redirectAfter)->with('success', $successMsg);
-            }
-
-            return redirect()->to($this->redirectByRole($user['role'], $company['slug'] ?? null))
-                ->with('success', $successMsg);
+            return $this->loginUser($clientUser);
         }
 
         return view('auth/login', [
-            'titre'  => 'Connexion',
-            'errors' => session()->getFlashdata('errors') ?? [],
+            'titre'    => $shopCompany
+                ? 'Connexion — ' . esc($shopCompany['name'])
+                : 'Connexion',
+            'errors'   => session()->getFlashdata('errors') ?? [],
+            'shopSlug' => $rawSlug,
+            'shopName' => $shopCompany['name'] ?? null,
         ]);
+    }
+
+    private function loginUser(array $user): RedirectResponse
+    {
+        $userId  = (int) $user['id'];
+        $company = $user['company_id']
+            ? model(CompanyModel::class)->find($user['company_id'])
+            : null;
+
+        session()->set([
+            'isLoggedIn'   => true,
+            'user_id'      => $userId,
+            'username'     => $user['username'],
+            'role'         => $user['role'],
+            'company_id'   => $user['company_id'],
+            'company_slug' => $company['slug'] ?? null,
+            'company_name' => $company['name'] ?? null,
+        ]);
+
+        $this->authTokenModel->where('user_id', $userId)->delete();
+        $tokenValue = $this->createToken($userId);
+        $this->response->setCookie($this->buildTokenCookie($tokenValue));
+
+        $successMsg    = 'Connexion réussie. Bienvenue, ' . esc($user['username']) . ' !';
+        $redirectAfter = session()->get('redirect_after_login');
+        $slug          = $company['slug'] ?? null;
+
+        session()->remove('redirect_after_login');
+
+        // Admin/manager : redirect_after_login utilisable librement
+        if ($redirectAfter && in_array($user['role'], ['admin', 'manager'], true)) {
+            return redirect()->to($redirectAfter)->with('success', $successMsg);
+        }
+
+        // Client : redirect_after_login utilisable uniquement dans sa boutique
+        if ($redirectAfter && $user['role'] === 'client' && $slug !== null) {
+            if (str_starts_with($redirectAfter, base_url('shop/' . $slug . '/'))) {
+                return redirect()->to($redirectAfter)->with('success', $successMsg);
+            }
+        }
+
+        return redirect()->to($this->redirectByRole($user['role'], $slug))
+            ->with('success', $successMsg);
+    }
+
+    private function redirectLoggedIn(): RedirectResponse
+    {
+        return redirect()->to(
+            $this->redirectByRole(
+                (string) session()->get('role'),
+                session()->get('company_slug')
+            )
+        );
+    }
+
+    private function redirectByRole(string $role, ?string $slug = null): string
+    {
+        return match ($role) {
+            'admin', 'manager' => 'admin/dashboard',
+            'client'           => 'shop/' . ($slug ?? '') . '/catalog',
+            default            => '/',
+        };
     }
 
     public function register()
@@ -158,14 +221,6 @@ class AuthController extends BaseController
     private function getTokenLifetime(): int
     {
         return 60 * 60 * 24 * 7; // 7 jours
-    }
-
-    private function redirectByRole(string $role, ?string $slug = null): string
-    {
-        return match ($role) {
-            'client' => 'shop/' . ($slug ?? '') . '/catalog',
-            default  => 'admin/dashboard',
-        };
     }
 }
 
