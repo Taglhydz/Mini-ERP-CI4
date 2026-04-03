@@ -63,11 +63,17 @@
                         <button type="submit" class="btn btn-primary w-100">Se connecter</button>
                     </form>
 
-                    <p class="text-center text-muted mt-3 mb-0 small">
-                        <a href="<?= base_url('/') ?>">
+                    <div class="d-flex flex-column gap-2 mt-3">
+                        <?php if (! empty($shopSlug)): ?>
+                            <a href="<?= base_url('shop/' . esc($shopSlug) . '/register') ?>"
+                               class="btn btn-sm btn-outline-secondary w-100">
+                                <i class="bi bi-person-plus me-1"></i>Pas de compte ? Créer un compte
+                            </a>
+                        <?php endif; ?>
+                        <a href="<?= base_url('/') ?>" class="btn btn-sm btn-link text-muted">
                             <i class="bi bi-arrow-left me-1"></i>Retour vers les boutiques
                         </a>
-                    </p>
+                    </div>
                 </div>
             </div>
         </div>

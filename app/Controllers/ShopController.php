@@ -79,7 +79,7 @@ class ShopController extends BaseController
             $firstName = $this->request->getPost('first_name');
             $lastName  = $this->request->getPost('last_name');
 
-            $userModel->insert([
+            $newId = $userModel->insert([
                 'username'   => trim($firstName . ' ' . $lastName),
                 'first_name' => $firstName,
                 'last_name'  => $lastName,
@@ -89,8 +89,31 @@ class ShopController extends BaseController
                 'company_id' => (int) $company['id'],
             ]);
 
+            // ── Connexion automatique après inscription ────────────────────────
+            session()->set([
+                'isLoggedIn'   => true,
+                'user_id'      => $newId,
+                'username'     => trim($firstName . ' ' . $lastName),
+                'role'         => 'client',
+                'company_id'   => (int) $company['id'],
+                'company_slug' => $company['slug'],
+                'company_name' => $company['name'],
+            ]);
+
+            // ── Redirection : checkout si en cours, sinon catalogue ────────────
+            $redirectAfter = session()->get('redirect_after_login');
+            session()->remove('redirect_after_login');
+
+            if ($redirectAfter
+                && str_starts_with($redirectAfter, base_url('shop/' . $slug . '/'))
+                && str_starts_with(parse_url($redirectAfter, PHP_URL_HOST) ?? '', parse_url(base_url(), PHP_URL_HOST))
+            ) {
+                return redirect()->to($redirectAfter)
+                    ->with('success', 'Bienvenue ! Votre compte a été créé.');
+            }
+
             return redirect()->to('shop/' . $slug . '/catalog')
-                ->with('success', 'Compte créé avec succès ! Vous pouvez maintenant vous connecter.');
+                ->with('success', 'Bienvenue ! Votre compte a été créé. Vous pouvez maintenant passer commande.');
         }
 
         return view('shop/register', [
