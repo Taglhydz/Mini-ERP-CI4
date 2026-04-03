@@ -14,43 +14,13 @@
     <link rel="preload" href="<?= base_url('assets/css/bootstrap-icons.min.css') ?>?v=1.13.1" as="style" onload="this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="<?= base_url('assets/css/bootstrap-icons.min.css') ?>?v=1.13.1"></noscript>
 
-    <?= $this->renderSection('styles') ?>
-    <style>
-        /* ── Variables hauteur header/footer (mises à jour par header.js) ── */
-        :root {
-            --header-height: 64px;
-            --footer-visible-h: 0px;
-        }
+    <!-- CSS applicatif (ordre : base → composants → layout → client) -->
+    <link rel="stylesheet" href="<?= base_url('assets/css/base.css') ?>?v=1.0">
+    <link rel="stylesheet" href="<?= base_url('assets/css/components.css') ?>?v=1.0">
+    <link rel="stylesheet" href="<?= base_url('assets/css/layout.css') ?>?v=1.0">
+    <link rel="stylesheet" href="<?= base_url('assets/css/client.css') ?>?v=1.0">
 
-        .navbar-public {
-            background: linear-gradient(135deg, #0d6efd 0%, #0a4fb4 100%);
-            border-bottom: 3px solid rgba(255,255,255,.15);
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1030;
-            transform: translateY(0);
-            transition: transform .3s ease;
-        }
-        .navbar-public.navbar-hidden {
-            transform: translateY(-100%);
-        }
-        .navbar-public .navbar-brand {
-            font-size: 1.2rem;
-            letter-spacing: .03em;
-        }
-        body > main {
-            /* Compense la navbar fixe — mis à jour dynamiquement par header.js */
-            padding-top: var(--header-height);
-        }
-        .footer-public {
-            background: var(--bs-secondary-bg);
-            border-top: 1px solid var(--bs-border-color);
-            font-size: .82rem;
-            color: var(--bs-secondary-color);
-        }
-    </style>
+    <?= $this->renderSection('styles') ?>
 </head>
 <body class="d-flex flex-column min-vh-100">
 

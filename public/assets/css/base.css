@@ -1,0 +1,53 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   base.css — Variables CSS et tokens de design partagés
+   Mini-ERP · Bootstrap 5 overlay
+   Chargé en premier dans tous les layouts (main.php + public.php)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Custom Properties (design tokens) ─────────────────────────────────── */
+:root {
+    /* Couleurs brand */
+    --color-primary:      #0d6efd;
+    --color-primary-dark: #0a4fb4;
+
+    /* Thème boutique — injectées inline par chaque vue PHP client
+       Les règles les utilisant sont dans client.css                */
+    --company-primary:   #0d6efd;
+    --company-secondary: #ffffff;
+    --company-cover:     none;      /* url('...') si cover, none sinon */
+
+    /* Sidebar back-office */
+    --sidebar-bg:    #1e2530;
+    --sidebar-text:  rgba(255,255,255,.75);
+    --sidebar-width: 240px;
+
+    /* Border-radius */
+    --radius-sm:   .25rem;
+    --radius-card: .5rem;
+    --radius-btn:  .375rem;
+    --radius-pill: 999px;
+
+    /* Ombres */
+    --shadow-xs: 0 1px 3px rgba(0,0,0,.06);
+    --shadow-sm: 0 1px 6px rgba(0,0,0,.08);
+    --shadow-md: 0 .35rem 1rem rgba(0,0,0,.1);
+    --shadow-lg: 0 .5rem 1.5rem rgba(0,0,0,.12);
+
+    /* Transitions */
+    --ease-base:   .18s ease;
+    --ease-smooth: .3s cubic-bezier(.33, 1, .68, 1);
+
+    /* Layout — mis à jour dynamiquement par header.js côté public */
+    --header-height:    64px;
+    --footer-visible-h: 0px;
+}
+
+/* ── Dark mode — ombres renforcées ─────────────────────────────────────── */
+[data-bs-theme="dark"] {
+    --shadow-sm: 0 1px 8px rgba(0,0,0,.25);
+    --shadow-md: 0 .35rem 1rem rgba(0,0,0,.3);
+    --shadow-lg: 0 .5rem 1.5rem rgba(0,0,0,.35);
+}
+
+/* ── Utilitaires globaux ─────────────────────────────────────────────────── */
+.ls-1 { letter-spacing: .06em; }

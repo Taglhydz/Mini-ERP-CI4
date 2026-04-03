@@ -79,32 +79,3 @@
 </div>
 
 <?= $this->endSection() ?>
-
-<?= $this->section('styles') ?>
-<style>
-.shop-card {
-    transition: transform .2s ease, box-shadow .2s ease;
-    cursor: pointer;
-}
-.shop-card-link:hover .shop-card {
-    transform: scale(1.04);
-    box-shadow: 0 .75rem 2rem rgba(0,0,0,.25) !important;
-}
-.shop-card-body {
-    /* fond semi-transparent pour lisibilité du logo si image de couverture */
-    background: rgba(0,0,0,.12);
-}
-.shop-logo {
-    transition: transform .2s ease;
-}
-.shop-card-footer {
-    background: rgba(0,0,0,.05) !important;
-}
-.shop-card-footer--nameless {
-    background: rgba(0,0,0,.12) !important;
-}
-.shop-card-link:hover .shop-logo {
-    transform: scale(1.08);
-}
-</style>
-<?= $this->endSection() ?>

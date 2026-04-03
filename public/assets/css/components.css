@@ -1,0 +1,128 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   components.css — Composants UI unifiés
+   Cards · Modals · Bouton thème · Toasts · DataTables (back-office)
+   Utilisé dans tous les layouts (main.php + public.php)
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────
+   CARDS — radius et ombre unifiés
+   ───────────────────────────────────────────────────────────── */
+.card {
+    border-radius: var(--radius-card) !important;
+}
+.card.border-0 {
+    box-shadow: var(--shadow-sm) !important;
+}
+[data-bs-theme="dark"] .card.border-0 {
+    box-shadow: 0 1px 8px rgba(0,0,0,.25) !important;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MODALS — radius cohérent avec les cards
+   ───────────────────────────────────────────────────────────── */
+.modal-content {
+    border-radius: var(--radius-card);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   BOUTON TOGGLE THÈME (clair / sombre)
+   ───────────────────────────────────────────────────────────── */
+#btn-theme-toggle {
+    width: 64px;
+    height: 34px;
+    padding: 0;
+    border-radius: var(--radius-pill);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    transition: transform var(--ease-smooth);
+}
+#btn-theme-toggle .theme-switch {
+    width: 58px;
+    height: 28px;
+    border-radius: var(--radius-pill);
+    background: rgba(255,255,255,.15);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+    gap: .1rem;
+    font-size: 0;
+}
+#btn-theme-toggle .theme-icon {
+    font-size: 14px;
+    color: var(--bs-white);
+    opacity: .6;
+    transition: opacity var(--ease-smooth);
+}
+#btn-theme-toggle .theme-switch-thumb {
+    position: absolute;
+    top: 3px;
+    left: 4px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--bs-white);
+    box-shadow: 0 2px 6px rgba(0,0,0,.2);
+    transition: transform .35s cubic-bezier(.33, 1, .68, 1);
+}
+#btn-theme-toggle[data-theme="dark"] .theme-switch {
+    background: rgba(0,0,0,.4);
+}
+#btn-theme-toggle[data-theme="dark"] .theme-switch-thumb {
+    transform: translateX(26px);
+}
+#btn-theme-toggle[data-theme="light"] .theme-icon.sun,
+#btn-theme-toggle[data-theme="dark"]  .theme-icon.moon { opacity: 1; }
+#btn-theme-toggle[data-theme="light"] .theme-icon.moon,
+#btn-theme-toggle[data-theme="dark"]  .theme-icon.sun  { opacity: .4; }
+
+/* ─────────────────────────────────────────────────────────────
+   TOASTS — animation entrée / sortie
+   ───────────────────────────────────────────────────────────── */
+#toast-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: flex-end;
+    gap: .75rem;
+    pointer-events: none;
+}
+#toast-container .toast {
+    pointer-events: auto;
+    align-self: flex-end;
+    width: min(90vw, 360px);
+    transform: translate(24px, 14px);
+    opacity: 0;
+    transition: transform .35s cubic-bezier(.33, 1, .68, 1), opacity .25s ease;
+    will-change: transform, opacity;
+}
+#toast-container .toast.toast-entry {
+    transform: translate(0, 0);
+    opacity: 1;
+}
+#toast-container .toast.toast-exit {
+    transform: translateX(110%) translateY(0);
+    opacity: 0;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   DATATABLES — en-tête sombre (back-office uniquement)
+   Scopé à .sidebar-content pour ne pas affecter la vue client
+   ───────────────────────────────────────────────────────────── */
+.sidebar-content .table thead th {
+    background: #343a40;
+    color: #fff;
+    border-color: #4a5157;
+    font-size: .82rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+[data-bs-theme="dark"] .sidebar-content .table thead th {
+    background: #212529;
+    border-color: #3a3f45;
+}

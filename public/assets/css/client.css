@@ -1,0 +1,493 @@
+/* ══════════════════════════════════════════════════════════════════════════
+   client.css — Espace client / boutiques
+   Styles utilisant --company-primary / --company-secondary
+   Ces variables sont injectées inline par chaque vue PHP (valeurs PHP)
+   Chargé uniquement via public.php
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────
+   BOUTONS company-themed
+   catalog, cart, checkout, order_confirmation, espace_client
+   ───────────────────────────────────────────────────────────── */
+.catalog-content .btn-primary,
+.catalog-content .btn-primary:focus,
+.cart-page .btn-primary,
+.cart-page .btn-primary:focus,
+.checkout-page .btn-primary,
+.checkout-page .btn-primary:focus,
+.order-confirm-page .btn-primary,
+.order-confirm-page .btn-primary:focus,
+.espace-client .btn-primary,
+.espace-client .btn-primary:focus {
+    background-color: var(--company-primary);
+    border-color: var(--company-primary);
+    color: #fff;
+}
+.catalog-content .btn-primary:hover,
+.cart-page .btn-primary:hover,
+.checkout-page .btn-primary:hover,
+.order-confirm-page .btn-primary:hover,
+.espace-client .btn-primary:hover {
+    background-color: color-mix(in srgb, var(--company-primary) 85%, #000);
+    border-color: color-mix(in srgb, var(--company-primary) 85%, #000);
+}
+
+/* Outline-primary (espace client) */
+.espace-client .btn-outline-primary {
+    color: var(--company-primary);
+    border-color: var(--company-primary);
+}
+.espace-client .btn-outline-primary:hover {
+    background-color: var(--company-primary);
+    border-color: var(--company-primary);
+    color: #fff;
+}
+
+/* text-primary scopé aux vues client */
+.catalog-content .text-primary,
+.cart-page .text-primary,
+.checkout-page .text-primary,
+.order-confirm-page .text-primary,
+.espace-client .text-primary {
+    color: var(--company-primary) !important;
+}
+
+/* badge bg-primary → couleur company */
+.catalog-content .badge.bg-primary {
+    background-color: var(--company-primary) !important;
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   CATALOG — Cards produits
+   ───────────────────────────────────────────────────────────── */
+.catalog-content .card {
+    background-color: color-mix(in srgb, var(--company-primary) 10%, var(--bs-body-bg));
+    border: 1px solid color-mix(in srgb, var(--company-primary) 30%, transparent) !important;
+    transition: transform var(--ease-base), box-shadow var(--ease-base), border-color var(--ease-base);
+}
+.catalog-content .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 .5rem 1.5rem color-mix(in srgb, var(--company-primary) 25%, transparent) !important;
+    border-color: color-mix(in srgb, var(--company-primary) 60%, transparent) !important;
+}
+
+/* Bouton sur la bannière hero */
+.catalog-hero .btn-light {
+    background-color: rgba(255,255,255,.92) !important;
+    border-color: transparent !important;
+}
+
+/* Bande section sous le hero */
+.catalog-section-header {
+    background: color-mix(in srgb, var(--company-secondary) 22%, var(--bs-body-bg));
+    border-bottom: 1px solid color-mix(in srgb, var(--company-secondary) 55%, var(--bs-border-color));
+    padding: .9rem 0;
+}
+
+/* Badge référence produit */
+.product-ref-badge {
+    background-color: color-mix(in srgb, var(--company-secondary) 35%, var(--bs-body-bg)) !important;
+    color: var(--bs-body-color) !important;
+    border: 1px solid color-mix(in srgb, var(--company-secondary) 60%, var(--bs-border-color));
+    font-weight: 500;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   CATALOG — Wrapper + panneau panier latéral
+   ───────────────────────────────────────────────────────────── */
+.catalog-wrapper {
+    display: flex;
+    align-items: flex-start;
+}
+.catalog-content {
+    flex: 1;
+    min-width: 0;
+}
+
+/* @property pour transition fluide des variables de hauteur */
+@property --header-height    { syntax: '<length>'; inherits: true; initial-value: 64px; }
+@property --footer-visible-h { syntax: '<length>'; inherits: true; initial-value: 0px; }
+
+/* Panneau panier latéral */
+.cart-panel {
+    width: 0;
+    overflow: hidden;
+    flex-shrink: 0;
+    position: sticky;
+    top: var(--header-height);
+    height: calc(100vh - var(--header-height) - var(--footer-visible-h));
+    transition: width .3s ease, top .3s ease, height .3s ease;
+    border-left: 0 solid var(--bs-border-color);
+    background: var(--bs-body-bg);
+}
+.cart-panel.open {
+    width: 360px;
+    border-left-width: 1px;
+    box-shadow: -4px 0 16px rgba(0,0,0,.07);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   CATALOG — Languette d'accès panier (tab fixe)
+   ───────────────────────────────────────────────────────────── */
+.cart-tab {
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%) translateX(0);
+    z-index: 200;
+    border: none;
+    background: var(--company-primary, #0d6efd);
+    color: #fff;
+    width: 52px;
+    padding: 1.1rem .6rem;
+    border-radius: .75rem 0 0 .75rem;
+    box-shadow: -3px 0 18px color-mix(in srgb, var(--company-primary, #0d6efd) 45%, transparent),
+                0 4px 12px rgba(0,0,0,.18);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .55rem;
+    transition: width .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+.cart-tab:hover {
+    width: 60px;
+    transform: translateY(-50%) translateX(-2px);
+    box-shadow: -5px 0 24px color-mix(in srgb, var(--company-primary, #0d6efd) 60%, transparent),
+                0 6px 18px rgba(0,0,0,.22);
+}
+.cart-tab .cart-tab-icon {
+    font-size: 1.35rem;
+    line-height: 1;
+    transition: transform .2s ease;
+}
+.cart-tab:hover .cart-tab-icon { transform: scale(1.12); }
+.cart-tab .cart-tab-label {
+    font-size: .6rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    opacity: .85;
+    line-height: 1;
+}
+.cart-tab .cart-tab-badge {
+    background: #fff;
+    color: var(--company-primary, #0d6efd);
+    border-radius: var(--radius-pill);
+    font-size: .65rem;
+    font-weight: 700;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    line-height: 1.25rem;
+    text-align: center;
+    padding: 0 .3rem;
+}
+.cart-tab .cart-tab-badge.empty { opacity: 0; pointer-events: none; }
+
+
+/* ─────────────────────────────────────────────────────────────
+   CART — Carte article
+   ───────────────────────────────────────────────────────────── */
+.cart-item-card {
+    background-color: color-mix(in srgb, var(--company-primary) 10%, var(--bs-body-bg));
+    border: 1px solid color-mix(in srgb, var(--company-primary) 30%, transparent) !important;
+    transition: box-shadow var(--ease-base), border-color var(--ease-base);
+}
+.cart-item-card:hover {
+    box-shadow: 0 .3rem 1rem color-mix(in srgb, var(--company-primary) 20%, transparent) !important;
+    border-color: color-mix(in srgb, var(--company-primary) 55%, transparent) !important;
+}
+
+/* Badge quantité */
+.qty-badge {
+    background-color: var(--company-secondary) !important;
+    color: var(--bs-body-color) !important;
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   CART + CHECKOUT — Card récapitulatif
+   ───────────────────────────────────────────────────────────── */
+.cart-summary-card,
+.checkout-recap-card {
+    background-color: color-mix(in srgb, var(--company-secondary) 20%, var(--bs-body-bg));
+    border: 1px solid color-mix(in srgb, var(--company-primary) 35%, transparent) !important;
+}
+.cart-summary-card .card-header,
+.checkout-recap-card .card-header {
+    background-color: color-mix(in srgb, var(--company-secondary) 35%, var(--bs-body-bg));
+    border-bottom: 1px solid color-mix(in srgb, var(--company-secondary) 55%, var(--bs-border-color));
+}
+.cart-summary-card hr {
+    border-color: color-mix(in srgb, var(--company-secondary) 60%, var(--bs-border-color));
+}
+.checkout-recap-card tfoot tr:last-child td { font-weight: 700; }
+
+
+/* ─────────────────────────────────────────────────────────────
+   ORDER CONFIRMATION
+   ───────────────────────────────────────────────────────────── */
+.confirm-banner {
+    background: #ecfdf5;
+    border: 1px solid #6ee7b7;
+    border-radius: .75rem;
+    overflow: hidden;
+    position: relative;
+}
+.confirm-banner::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 5px;
+    background: #059669;
+    border-radius: .75rem 0 0 .75rem;
+}
+.confirm-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #059669;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 6px rgba(5,150,105,.12);
+}
+.order-card {
+    background: color-mix(in srgb, var(--company-primary) 7%, var(--bs-body-bg));
+    border: 1px solid color-mix(in srgb, var(--company-primary) 28%, transparent) !important;
+}
+.order-card .card-header {
+    background: color-mix(in srgb, var(--company-primary) 18%, var(--bs-body-bg));
+    border-bottom: 1px solid color-mix(in srgb, var(--company-primary) 22%, transparent);
+    font-weight: 600;
+}
+/* Card résumé financier */
+.summary-card {
+    background: color-mix(in srgb, var(--company-secondary) 20%, var(--bs-body-bg));
+    border: 1px solid color-mix(in srgb, var(--company-primary) 35%, transparent) !important;
+}
+.summary-card .card-header {
+    background: color-mix(in srgb, var(--company-secondary) 35%, var(--bs-body-bg));
+    border-bottom: 1px solid color-mix(in srgb, var(--company-secondary) 55%, var(--bs-border-color));
+    font-weight: 600;
+}
+.summary-ttc { font-size: 1.6rem; font-weight: 700; color: var(--bs-body-color); }
+.summary-divider { border-color: var(--company-secondary); }
+/* Ligne pied de tableau confirmation */
+#table-confirm-items tfoot td {
+    background: color-mix(in srgb, var(--company-primary) 10%, var(--bs-body-bg));
+}
+
+
+/* ─────────────────────────────────────────────────────────────
+   ESPACE CLIENT — Tableau de bord commandes
+   ───────────────────────────────────────────────────────────── */
+.orders-card {
+    background-color: var(--bs-body-bg);
+    border: 1px solid color-mix(in srgb, var(--company-primary) 30%, transparent) !important;
+}
+.orders-card .card-header {
+    background-color: var(--company-primary);
+    color: #fff;
+    border-bottom: none;
+}
+
+/* Sous-barre de navigation client */
+.ec-subheader {
+    background-color: color-mix(in srgb, var(--company-secondary) 25%, var(--bs-body-bg));
+    border-bottom: 1px solid color-mix(in srgb, var(--company-secondary) 55%, var(--bs-border-color));
+    padding: .6rem 0;
+}
+
+/* Sidebar navigation espace client */
+.ec-sidebar {
+    background-color: color-mix(in srgb, var(--company-secondary) 40%, var(--bs-body-bg));
+    border: 1px solid color-mix(in srgb, var(--company-secondary) 60%, var(--bs-border-color));
+    border-radius: var(--radius-card);
+    padding: .75rem .5rem;
+}
+.ec-sidebar .nav-link {
+    color: var(--bs-body-color);
+    border-radius: var(--radius-btn);
+    padding: .45rem .75rem;
+    font-size: .875rem;
+    transition: background var(--ease-base);
+}
+.ec-sidebar .nav-link:hover:not(.active) {
+    background-color: color-mix(in srgb, var(--company-primary) 12%, transparent);
+}
+.ec-sidebar .nav-link.active {
+    background-color: var(--company-primary);
+    color: #fff;
+    font-weight: 600;
+}
+
+/* Fil d'Ariane */
+.breadcrumb-item a { color: var(--company-primary); }
+.breadcrumb-item.active { color: var(--bs-secondary-color, #6c757d); }
+.breadcrumb-item + .breadcrumb-item::before { color: var(--bs-border-color, #dee2e6); }
+
+/* DataTables — thème company (espace client + order confirmation) */
+#table-client-orders thead th,
+#table-confirm-items thead th {
+    background: var(--company-primary) !important;
+    color: #fff !important;
+    border-color: color-mix(in srgb, var(--company-primary) 70%, #000) !important;
+}
+#table-client-orders tbody tr:nth-child(even) td,
+#table-confirm-items tbody tr:nth-child(even) td {
+    background: color-mix(in srgb, var(--company-primary) 6%, var(--bs-body-bg)) !important;
+}
+#table-client-orders tbody tr:hover td,
+#table-confirm-items tbody tr:hover td {
+    background: color-mix(in srgb, var(--company-primary) 16%, var(--bs-body-bg)) !important;
+    cursor: pointer;
+}
+.dt-paging .dt-paging-button:hover {
+    background: color-mix(in srgb, var(--company-primary) 15%, transparent) !important;
+}
+.dt-paging .dt-paging-button.current,
+.dt-paging .dt-paging-button.current:hover {
+    background: var(--company-primary) !important;
+    color: #fff !important;
+    border-color: var(--company-primary) !important;
+}
+.dt-input:focus {
+    border-color: var(--company-primary) !important;
+    box-shadow: 0 0 0 .2rem color-mix(in srgb, var(--company-secondary) 10%, transparent) !important;
+}
+/* Masquer search/pagination sur la page confirmation (tableau compact) */
+#table-confirm-items_wrapper .dt-layout-row:first-child,
+#table-confirm-items_wrapper .dt-layout-row:last-child { display: none; }
+
+
+/* ─────────────────────────────────────────────────────────────
+   CART PANEL — Panneau latéral du catalogue
+   ───────────────────────────────────────────────────────────── */
+.cart-panel-inner { width: 360px; }
+
+/* En-tête panel : fond company-primary, cover via --company-cover */
+.panel-header {
+    position: relative;
+    overflow: hidden;
+    min-height: 72px;
+    background-color: color-mix(in srgb, var(--company-primary) 85%, #000);
+    background-image: var(--company-cover);
+    background-size: cover;
+    background-position: center;
+}
+/* Opacité par défaut — surchargée inline si cover présent */
+.panel-header-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.18);
+}
+.panel-header-content {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .85rem 1rem;
+}
+
+/* Articles */
+.cart-panel-inner .cart-item {
+    border-bottom: none !important;
+    border: 1px solid color-mix(in srgb, var(--company-primary) 22%, transparent) !important;
+    border-radius: var(--radius-btn);
+    background: color-mix(in srgb, var(--company-primary) 9%, var(--bs-body-bg));
+    padding: .6rem .75rem !important;
+    margin-bottom: .5rem;
+    transition: border-color var(--ease-base);
+}
+.cart-panel-inner .cart-item:last-child { margin-bottom: 0; }
+.cart-panel-inner .cart-item:hover {
+    border-color: color-mix(in srgb, var(--company-primary) 50%, transparent) !important;
+}
+
+/* Boutons +/- quantité */
+.cart-panel-inner .btn-qty-dec,
+.cart-panel-inner .btn-qty-inc {
+    border-color: color-mix(in srgb, var(--company-primary) 45%, transparent) !important;
+    color: var(--company-primary) !important;
+}
+.cart-panel-inner .btn-qty-dec:hover,
+.cart-panel-inner .btn-qty-inc:hover {
+    background-color: var(--company-primary) !important;
+    border-color: var(--company-primary) !important;
+    color: #fff !important;
+}
+
+/* Sous-total article */
+.cart-panel-inner .cart-item .fw-semibold {
+    color: var(--company-primary);
+}
+
+/* Bouton suppression */
+.cart-panel-inner .btn-cart-remove {
+    opacity: .55;
+    transition: opacity var(--ease-base);
+}
+.cart-panel-inner .btn-cart-remove:hover { opacity: 1; }
+
+/* Scrollbar fine (WebKit + Firefox) */
+#cart-panel-items::-webkit-scrollbar { width: 4px; }
+#cart-panel-items::-webkit-scrollbar-track { background: transparent; }
+#cart-panel-items::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--company-primary) 55%, transparent);
+    border-radius: 2px;
+}
+#cart-panel-items::-webkit-scrollbar-thumb:hover { background: var(--company-primary); }
+#cart-panel-items { scrollbar-width: thin; scrollbar-color: var(--company-primary) transparent; }
+
+/* Total */
+.panel-total { color: var(--company-primary); }
+
+/* Boutons footer panel */
+.cart-panel-inner .btn-panel-secondary {
+    background: transparent;
+    border: 1px solid color-mix(in srgb, var(--company-primary) 50%, transparent);
+    color: var(--company-primary);
+    transition: background var(--ease-base), border-color var(--ease-base);
+}
+.cart-panel-inner .btn-panel-secondary:hover {
+    background: color-mix(in srgb, var(--company-primary) 12%, transparent);
+    border-color: var(--company-primary);
+}
+.cart-panel-inner .btn-panel-primary {
+    background: var(--company-primary);
+    border-color: var(--company-primary);
+    color: #fff;
+    transition: filter var(--ease-base);
+}
+.cart-panel-inner .btn-panel-primary:hover { filter: brightness(.88); }
+
+
+/* ─────────────────────────────────────────────────────────────
+   HOME — Cards boutiques (page d'accueil liste des shops)
+   ───────────────────────────────────────────────────────────── */
+.shop-card {
+    transition: transform .2s ease, box-shadow .2s ease;
+    cursor: pointer;
+}
+.shop-card-link:hover .shop-card {
+    transform: scale(1.04);
+    box-shadow: 0 .75rem 2rem rgba(0,0,0,.25) !important;
+}
+.shop-card-body {
+    background: rgba(0,0,0,.12);
+}
+.shop-logo {
+    transition: transform .2s ease;
+}
+.shop-card-footer {
+    background: rgba(0,0,0,.05) !important;
+}
+.shop-card-footer--nameless {
+    background: rgba(0,0,0,.12) !important;
+}
+.shop-card-link:hover .shop-logo {
+    transform: scale(1.08);
+}
